@@ -33,15 +33,21 @@ frontend/null
 
 
 
-# Duplicate root GeoJSON files
-AREA SRS.geojson
-BUFFER POS DAMKAR EKSISTING.geojson
-BUFFER POS DAMKAR RENCANA.geojson
-TINGKAT RISIKO.geojson
-TITIK BIRO ORGANISASI PEMERINTAH DAN SEKOLAH.geojson
-TITIK CAGAR BUDAYA.geojson
-TITIK POS DAMKAR EKSISTING.geojson
-TITIK POS DAMKAR RENCANA.geojson
+# Duplicate root GeoJSON files only (root level)
+/AREA SRS.geojson
+/BUFFER POS DAMKAR EKSISTING.geojson
+/BUFFER POS DAMKAR RENCANA.geojson
+/TINGKAT RISIKO.geojson
+/TITIK BIRO ORGANISASI PEMERINTAH DAN SEKOLAH.geojson
+/TITIK CAGAR BUDAYA.geojson
+/TITIK POS DAMKAR EKSISTING.geojson
+/TITIK POS DAMKAR RENCANA.geojson
+
+# Ensure web GeoJSON datasets are always included
+!backend/public/data/*.geojson
+!backend/public/data/*.json
+!frontend/data/*.geojson
+!frontend/data/*.json
 
 # Unused duplicate frontend public folder
 frontend/public/
