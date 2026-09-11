@@ -43,18 +43,18 @@ const createLaporan = async (req, res) => {
     `;
 
     const values = [
-      judul_kejadian,
-      nama_pelapor,
-      nomor_hp,
-      alamat,
-      latitude || '',
-      longitude || '',
+      judul_kejadian || 'Laporan Kejadian Kebakaran',
+      nama_pelapor || 'Pelapor Anonim',
+      nomor_hp || '-',
+      alamat || 'Lokasi Terdeteksi',
+      latitude ? String(latitude) : '',
+      longitude ? String(longitude) : '',
       kabupaten || '',
       kecamatan || '',
       kalurahan || '',
-      jenis_kejadian || '',
-      deskripsi,
-      foto
+      jenis_kejadian || 'Kebakaran',
+      deskripsi || 'Laporan kejadian kebakaran terkirim dari web.',
+      foto || null
     ];
 
     const result = await db.query(query, values);
