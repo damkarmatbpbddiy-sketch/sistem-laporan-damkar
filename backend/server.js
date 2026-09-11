@@ -12,6 +12,8 @@ const silakarRoutes = require('./routes/silakarRoutes');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+const fs = require('fs');
+
 // Middlewares
 const defaultAllowedOrigins = [
   'http://localhost:5000',
@@ -68,25 +70,34 @@ app.use('/uploads/arsip', express.static(path.join(__dirname, 'uploads', 'arsip'
 }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Resolve frontend path adaptively to support monorepo / Railway deployments
+const candidateFrontendPaths = [
+  path.resolve(__dirname, '../frontend'),
+  path.resolve(__dirname, '../../frontend'),
+  path.resolve(process.cwd(), 'frontend'),
+  path.resolve(process.cwd(), '../frontend')
+];
+const frontendPath = candidateFrontendPaths.find((p) => fs.existsSync(p)) || path.resolve(__dirname, '../frontend');
+
 // Serve Frontend Statically
-app.use(express.static(path.join(__dirname, '../frontend')));
-app.use('/data', express.static(path.join(__dirname, '..', 'frontend', 'data')));
+app.use(express.static(frontendPath));
+app.use('/data', express.static(path.join(frontendPath, 'data')));
 
 // Explicit page routes for clean navigation
 app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/admin.html'));
+  res.sendFile(path.join(frontendPath, 'admin.html'));
 });
 app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/login.html'));
+  res.sendFile(path.join(frontendPath, 'login.html'));
 });
 app.get('/laporan', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/laporan.html'));
+  res.sendFile(path.join(frontendPath, 'laporan.html'));
 });
 app.get('/detail', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/detail.html'));
+  res.sendFile(path.join(frontendPath, 'detail.html'));
 });
 app.get('/silakar', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/silakar.html'));
+  res.sendFile(path.join(frontendPath, 'silakar.html'));
 });
 
 // API Routes
@@ -101,7 +112,11 @@ app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
     return next();
   }
-  res.sendFile(path.join(__dirname, '../frontend/index.html'));
+  const indexPath = path.join(frontendPath, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    return res.sendFile(indexPath);
+  }
+  return next();
 });
 
 // Error handling middleware
