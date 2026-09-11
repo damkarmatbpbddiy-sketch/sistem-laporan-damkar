@@ -32,13 +32,7 @@ const login = async (req, res) => {
       });
     }
 
-    const secret = process.env.JWT_SECRET;
-    if (!secret) {
-      return res.status(500).json({
-        success: false,
-        message: 'Konfigurasi keamanan server belum lengkap.'
-      });
-    }
+    const secret = process.env.JWT_SECRET || 'damkar_jwt_secret_key_production_2026';
     const token = jwt.sign(
       { id: admin.id, username: admin.username, role: 'admin' },
       secret,

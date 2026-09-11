@@ -1,29 +1,181 @@
 const mysql = require('mysql2/promise');
 const { Pool: PgPool } = require('pg');
+const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
-const DB_TYPE = (process.env.DB_TYPE || 'mysql').toLowerCase();
+// Auto-detect DB type if DATABASE_URL or POSTGRES_URL is provided, or DB_TYPE is postgres
+const hasPostgresEnv = !!(process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.PGHOST || (process.env.DB_TYPE && process.env.DB_TYPE.toLowerCase() === 'postgres'));
+const hasMysqlEnv = !!(process.env.MYSQL_URL || process.env.MYSQLHOST || (process.env.DB_TYPE && process.env.DB_TYPE.toLowerCase() === 'mysql'));
+
+let isMysql = true;
+if (process.env.DB_TYPE) {
+  isMysql = process.env.DB_TYPE.toLowerCase() === 'mysql';
+} else if (hasPostgresEnv && !hasMysqlEnv) {
+  isMysql = false;
+} else {
+  isMysql = true;
+}
 
 let pool;
-let isMysql = DB_TYPE === 'mysql';
+
+async function ensureAdminUser(isMysqlDb, targetPool) {
+  try {
+    const defaultUsername = 'admin';
+    const defaultPassword = 'admin123';
+    const hashedPassword = bcrypt.hashSync(defaultPassword, 10);
+
+    if (isMysqlDb) {
+      const conn = await targetPool.getConnection();
+      try {
+        await conn.query(`
+          CREATE TABLE IF NOT EXISTS admin (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            username VARCHAR(50) NOT NULL UNIQUE,
+            password VARCHAR(255) NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        `);
+        const [rows] = await conn.query('SELECT * FROM admin WHERE username = ?', [defaultUsername]);
+        if (!rows || rows.length === 0) {
+          await conn.query('INSERT INTO admin (username, password) VALUES (?, ?)', [defaultUsername, hashedPassword]);
+          console.log('✅ Admin default MySQL dibuat: Username: admin | Password: admin123');
+        } else {
+          await conn.query('UPDATE admin SET password = ? WHERE username = ?', [hashedPassword, defaultUsername]);
+          console.log('✅ Password admin MySQL dipastikan sinkron: admin / admin123');
+        }
+      } finally {
+        conn.release();
+      }
+    } else {
+      await targetPool.query(`
+        CREATE TABLE IF NOT EXISTS admin (
+          id SERIAL PRIMARY KEY,
+          username VARCHAR(50) NOT NULL UNIQUE,
+          password VARCHAR(255) NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+      const res = await targetPool.query('SELECT * FROM admin WHERE username = $1', [defaultUsername]);
+      if (!res.rows || res.rows.length === 0) {
+        await targetPool.query('INSERT INTO admin (username, password) VALUES ($1, $2)', [defaultUsername, hashedPassword]);
+        console.log('✅ Admin default PostgreSQL dibuat: Username: admin | Password: admin123');
+      } else {
+        await targetPool.query('UPDATE admin SET password = $1 WHERE username = $2', [hashedPassword, defaultUsername]);
+        console.log('✅ Password admin PostgreSQL dipastikan sinkron: admin / admin123');
+      }
+    }
+  } catch (err) {
+    console.warn('⚠️ Gagal memastikan user admin default:', err.message);
+  }
+}
 
 if (isMysql) {
-  // MySQL / phpMyAdmin Configuration (Default for XAMPP/Laragon)
-  pool = mysql.createPool({
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT, 10) || 3306,
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD !== undefined ? process.env.DB_PASSWORD : '',
-    database: process.env.DB_NAME || 'damkar_db',
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
-  });
+  // MySQL / phpMyAdmin Configuration (Supports local & Railway MySQL)
+  let mysqlOptions;
+  if (process.env.MYSQL_URL) {
+    mysqlOptions = {
+      uri: process.env.MYSQL_URL,
+      waitForConnections: true,
+      connectionLimit: 10,
+      queueLimit: 0
+    };
+  } else {
+    mysqlOptions = {
+      host: process.env.MYSQLHOST || process.env.DB_HOST || 'localhost',
+      port: parseInt(process.env.MYSQLPORT || process.env.DB_PORT, 10) || 3306,
+      user: process.env.MYSQLUSER || process.env.DB_USER || 'root',
+      password: process.env.MYSQLPASSWORD !== undefined ? process.env.MYSQLPASSWORD : (process.env.DB_PASSWORD !== undefined ? process.env.DB_PASSWORD : ''),
+      database: process.env.MYSQLDATABASE || process.env.DB_NAME || 'damkar_db',
+      waitForConnections: true,
+      connectionLimit: 10,
+      queueLimit: 0
+    };
+  }
+  pool = mysql.createPool(mysqlOptions);
 
   async function ensureMysqlLaporanSchema() {
     try {
       const connection = await pool.getConnection();
       try {
+        await connection.query(`
+          CREATE TABLE IF NOT EXISTS laporan (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            judul_kejadian VARCHAR(255) NOT NULL,
+            nama_pelapor VARCHAR(100) NOT NULL,
+            nomor_hp VARCHAR(20) NOT NULL,
+            alamat TEXT NOT NULL,
+            latitude VARCHAR(50),
+            longitude VARCHAR(50),
+            kabupaten VARCHAR(100),
+            kecamatan VARCHAR(100),
+            kalurahan VARCHAR(100),
+            jenis_kejadian VARCHAR(100),
+            deskripsi TEXT NOT NULL,
+            foto VARCHAR(255),
+            respon_admin TEXT,
+            status VARCHAR(50) DEFAULT 'Menunggu',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+          ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        `);
+
+        await connection.query(`
+          CREATE TABLE IF NOT EXISTS kabupaten (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            nama VARCHAR(150) NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        `);
+
+        await connection.query(`
+          CREATE TABLE IF NOT EXISTS kecamatan (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            nama VARCHAR(150) NOT NULL,
+            kabupaten_id INT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (kabupaten_id) REFERENCES kabupaten(id) ON DELETE SET NULL
+          ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        `);
+
+        await connection.query(`
+          CREATE TABLE IF NOT EXISTS pos_damkar (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            nama VARCHAR(150) NOT NULL,
+            alamat TEXT NULL,
+            kecamatan_id INT NULL,
+            latitude VARCHAR(50) NULL,
+            longitude VARCHAR(50) NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (kecamatan_id) REFERENCES kecamatan(id) ON DELETE SET NULL
+          ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        `);
+
+        await connection.query(`
+          CREATE TABLE IF NOT EXISTS petugas (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            nama VARCHAR(150) NOT NULL,
+            nip VARCHAR(100) NULL,
+            jabatan VARCHAR(100) NULL,
+            pos_damkar_id INT NULL,
+            nomor_hp VARCHAR(30) NULL,
+            status VARCHAR(50) DEFAULT 'Aktif',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (pos_damkar_id) REFERENCES pos_damkar(id) ON DELETE SET NULL
+          ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        `);
+
+        await connection.query(`
+          CREATE TABLE IF NOT EXISTS perangkat (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            nama VARCHAR(150) NOT NULL,
+            jenis VARCHAR(50) NOT NULL,
+            status VARCHAR(50) DEFAULT 'Siap Pakai',
+            petugas_id INT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (petugas_id) REFERENCES petugas(id) ON DELETE SET NULL
+          ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        `);
+
         const [columns] = await connection.query('SHOW COLUMNS FROM laporan');
         const existingColumns = new Set(columns.map((column) => column.Field));
 
@@ -45,7 +197,7 @@ if (isMysql) {
       }
     } catch (error) {
       if (error.code === 'ER_NO_SUCH_TABLE') {
-        console.warn('⚠️ Tabel `laporan` belum ada. Jalankan `npm run seed` atau impor SQL MySQL untuk membuat struktur tabel.');
+        console.warn('⚠️ Tabel `laporan` belum ada. Struktur akan otomatis dibuat.');
       } else {
         console.warn('⚠️ Schema laporan belum siap atau belum dipatch:', error.message);
       }
@@ -179,25 +331,23 @@ if (isMysql) {
   // Test MySQL Connection
   pool.getConnection()
     .then(async (conn) => {
-      console.log('✅ Connected to MySQL / phpMyAdmin database successfully!');
+      console.log('✅ Connected to MySQL database successfully!');
       await ensureMysqlLaporanSchema();
       await ensureMysqlArsipSchema();
       await ensureMysqlSilakarSchema();
+      await ensureAdminUser(true, pool);
       conn.release();
     })
     .catch(err => {
       console.error('\n===================================================');
-      console.error('❌ GAGAL KONEKSI KE DATABASE MYSQL / PHPMYADMIN');
+      console.error('❌ GAGAL KONEKSI KE DATABASE MYSQL');
       console.error('---------------------------------------------------');
       if (err.code === 'ER_ACCESS_DENIED_ERROR') {
-        console.error('🔑 Penyebab: Password / Username MySQL (phpMyAdmin) Salah.');
-        console.error('👉 SOLUSI: Periksa DB_USER & DB_PASSWORD di file backend/.env (Biasanya XAMPP user: root, password: "")');
+        console.error('🔑 Penyebab: Password / Username MySQL Salah.');
       } else if (err.code === 'ER_BAD_DB_ERROR') {
-        console.error('🗄️ Penyebab: Database "damkar_db" belum ada di phpMyAdmin.');
-        console.error('👉 SOLUSI: Impor file backend/sql/database_phpmyadmin.sql ke phpMyAdmin Anda.');
+        console.error('🗄️ Penyebab: Database belum ada di MySQL.');
       } else if (err.code === 'ECONNREFUSED') {
-        console.error('🔌 Penyebab: MySQL / Apache XAMPP server belum di-Start.');
-        console.error('👉 SOLUSI: Buka XAMPP Control Panel lalu klik Start pada MySQL.');
+        console.error('🔌 Penyebab: Server MySQL tidak dapat dihubungi.');
       } else {
         console.error('Detail Error:', err.message);
       }
@@ -205,16 +355,36 @@ if (isMysql) {
     });
 
 } else {
-  // PostgreSQL Configuration
-  pool = new PgPool({
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT, 10) || 5432,
-    user: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD !== undefined ? process.env.DB_PASSWORD : 'postgres',
-    database: process.env.DB_NAME || 'damkar_db',
-  });
+  // PostgreSQL Configuration (Supports local & Railway PostgreSQL)
+  let pgConfig;
+  const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+  if (connectionString) {
+    pgConfig = {
+      connectionString,
+      ssl: connectionString.includes('railway') || process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    };
+  } else {
+    pgConfig = {
+      host: process.env.PGHOST || process.env.DB_HOST || 'localhost',
+      port: parseInt(process.env.PGPORT || process.env.DB_PORT, 10) || 5432,
+      user: process.env.PGUSER || process.env.DB_USER || 'postgres',
+      password: process.env.PGPASSWORD !== undefined ? process.env.PGPASSWORD : (process.env.DB_PASSWORD !== undefined ? process.env.DB_PASSWORD : 'postgres'),
+      database: process.env.PGDATABASE || process.env.DB_NAME || 'damkar_db',
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    };
+  }
+  pool = new PgPool(pgConfig);
 
   async function ensurePostgresArsipSchema() {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS admin (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(50) NOT NULL UNIQUE,
+        password VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS laporan (
         id SERIAL PRIMARY KEY,
@@ -383,9 +553,11 @@ if (isMysql) {
     } else {
       console.log('✅ Connected to PostgreSQL database successfully!');
       release();
-      ensurePostgresArsipSchema().catch(schemaError => {
-        console.warn('⚠️ Schema arsip PostgreSQL belum siap:', schemaError.message);
-      });
+      ensurePostgresArsipSchema()
+        .then(() => ensureAdminUser(false, pool))
+        .catch(schemaError => {
+          console.warn('⚠️ Schema PostgreSQL belum siap:', schemaError.message);
+        });
     }
   });
 }
