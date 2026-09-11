@@ -1,0 +1,240 @@
+{
+  "type": "FeatureCollection",
+  "name": "TITIK POS DAMKAR RENCANA",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:EPSG::32749"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "Id": 1,
+        "ID": 1,
+        "Nama": "Pos Damkar Rencana Pakem",
+        "NAMA": "Pos Damkar Rencana Pakem",
+        "nama": "Pos Damkar Rencana Pakem",
+        "Kabupaten": "Kabupaten Sleman",
+        "Kategori": "Rencana"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          436392.94964755053,
+          9154145.390871637
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Id": 2,
+        "ID": 2,
+        "Nama": "Pos Damkar Rencana Minggir / Tempel",
+        "NAMA": "Pos Damkar Rencana Minggir / Tempel",
+        "nama": "Pos Damkar Rencana Minggir / Tempel",
+        "Kabupaten": "Kabupaten Sleman",
+        "Kategori": "Rencana"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          414547.259079867,
+          9147002.23878349
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Id": 3,
+        "ID": 3,
+        "Nama": "Pos Damkar Rencana Bandara YIA / Temon",
+        "NAMA": "Pos Damkar Rencana Bandara YIA / Temon",
+        "nama": "Pos Damkar Rencana Bandara YIA / Temon",
+        "Kabupaten": "Kabupaten Kulon Progo",
+        "Kategori": "Rencana"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          401973.28686524124,
+          9129671.196263721
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Id": 4,
+        "ID": 4,
+        "Nama": "Pos Damkar Rencana Bambanglipuro / Sanden",
+        "NAMA": "Pos Damkar Rencana Bambanglipuro / Sanden",
+        "nama": "Pos Damkar Rencana Bambanglipuro / Sanden",
+        "Kabupaten": "Kabupaten Bantul",
+        "Kategori": "Rencana"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          427018.6844973301,
+          9125231.163589833
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Id": 5,
+        "ID": 5,
+        "Nama": "Pos Damkar Rencana Pajangan",
+        "NAMA": "Pos Damkar Rencana Pajangan",
+        "nama": "Pos Damkar Rencana Pajangan",
+        "Kabupaten": "Kabupaten Bantul",
+        "Kategori": "Rencana"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          417165.2562367416,
+          9135872.779130153
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Id": 6,
+        "ID": 6,
+        "Nama": "Pos Damkar Rencana Baciro / Gondokusuman",
+        "NAMA": "Pos Damkar Rencana Baciro / Gondokusuman",
+        "nama": "Pos Damkar Rencana Baciro / Gondokusuman",
+        "Kabupaten": "Kota Yogyakarta",
+        "Kategori": "Rencana"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          432349.8647999992,
+          9137983.201
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Id": 7,
+        "ID": 7,
+        "Nama": "Pos Damkar Rencana Kalasan / Prambanan",
+        "NAMA": "Pos Damkar Rencana Kalasan / Prambanan",
+        "nama": "Pos Damkar Rencana Kalasan / Prambanan",
+        "Kabupaten": "Kabupaten Sleman",
+        "Kategori": "Rencana"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          443388.5349054782,
+          9140476.908652486
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Id": 8,
+        "ID": 8,
+        "Nama": "Pos Damkar Rencana Semin / Ngawen",
+        "NAMA": "Pos Damkar Rencana Semin / Ngawen",
+        "nama": "Pos Damkar Rencana Semin / Ngawen",
+        "Kabupaten": "Kabupaten Gunungkidul",
+        "Kategori": "Rencana"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          467465.76912917796,
+          9128337.11863708
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Id": 9,
+        "ID": 9,
+        "Nama": "Pos Damkar Rencana Dlingo / Panggang",
+        "NAMA": "Pos Damkar Rencana Dlingo / Panggang",
+        "nama": "Pos Damkar Rencana Dlingo / Panggang",
+        "Kabupaten": "Kabupaten Bantul / Gunungkidul",
+        "Kategori": "Rencana"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          435995.0474000007,
+          9115801.8259
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Id": 10,
+        "ID": 10,
+        "Nama": "Pos Damkar Rencana Tepus / Girisubo",
+        "NAMA": "Pos Damkar Rencana Tepus / Girisubo",
+        "nama": "Pos Damkar Rencana Tepus / Girisubo",
+        "Kabupaten": "Kabupaten Gunungkidul",
+        "Kategori": "Rencana"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          466388.01085846295,
+          9102377.827262877
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Id": 11,
+        "ID": 11,
+        "Nama": "Pos Damkar Rencana Paliyan / Playen",
+        "NAMA": "Pos Damkar Rencana Paliyan / Playen",
+        "nama": "Pos Damkar Rencana Paliyan / Playen",
+        "Kabupaten": "Kabupaten Gunungkidul",
+        "Kategori": "Rencana"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          454565.71485609334,
+          9113107.976712188
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Id": 12,
+        "ID": 12,
+        "Nama": "Pos Damkar Rencana Mlati / Cebongan",
+        "NAMA": "Pos Damkar Rencana Mlati / Cebongan",
+        "nama": "Pos Damkar Rencana Mlati / Cebongan",
+        "Kabupaten": "Kabupaten Sleman",
+        "Kategori": "Rencana"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          428607.7992129245,
+          9148660.96632764
+        ]
+      }
+    }
+  ]
+}

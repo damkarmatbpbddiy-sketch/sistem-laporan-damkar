@@ -1,0 +1,306 @@
+{
+  "type": "FeatureCollection",
+  "name": "TITIK POS DAMKAR EKSISTING",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "Id": 1,
+        "Coordinate": "-7,901217 110,319301",
+        "DMS": "7° 54' 4,38\"S 110° 19' 9,48\"E",
+        "ID": 1,
+        "Nama": "Pos Damkar Bantul (Induk BPBD)",
+        "NAMA": "Pos Damkar Bantul (Induk BPBD)",
+        "nama": "Pos Damkar Bantul (Induk BPBD)",
+        "Kabupaten": "Kabupaten Bantul",
+        "Kategori": "Eksisting"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.31930051236023,
+          -7.901216896648954
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Id": 2,
+        "Coordinate": null,
+        "DMS": null,
+        "ID": 2,
+        "Nama": "Pos Damkar Wonosari",
+        "NAMA": "Pos Damkar Wonosari",
+        "nama": "Pos Damkar Wonosari",
+        "Kabupaten": "Kabupaten Gunungkidul",
+        "Kategori": "Eksisting"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.58066858626643,
+          -7.970071493108934
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Id": 3,
+        "Coordinate": null,
+        "DMS": null,
+        "ID": 3,
+        "Nama": "Pos Damkar Wates",
+        "NAMA": "Pos Damkar Wates",
+        "nama": "Pos Damkar Wates",
+        "Kabupaten": "Kabupaten Kulon Progo",
+        "Kategori": "Eksisting"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.16498577191409,
+          -7.85635409148423
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Id": 4,
+        "Coordinate": null,
+        "DMS": null,
+        "ID": 4,
+        "Nama": "Pos Damkar Kalibawang / Nanggulan",
+        "NAMA": "Pos Damkar Kalibawang / Nanggulan",
+        "nama": "Pos Damkar Kalibawang / Nanggulan",
+        "Kabupaten": "Kabupaten Kulon Progo",
+        "Kategori": "Eksisting"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.21018793322662,
+          -7.761198414177195
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Id": 5,
+        "Coordinate": null,
+        "DMS": null,
+        "ID": 5,
+        "Nama": "Pos Damkar Kyai Mojo",
+        "NAMA": "Pos Damkar Kyai Mojo",
+        "nama": "Pos Damkar Kyai Mojo",
+        "Kabupaten": "Kota Yogyakarta",
+        "Kategori": "Eksisting"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.35512996590747,
+          -7.782098430239794
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Id": 6,
+        "Coordinate": null,
+        "DMS": null,
+        "ID": 6,
+        "Nama": "Pos Damkar Balaikota Timoho",
+        "NAMA": "Pos Damkar Balaikota Timoho",
+        "nama": "Pos Damkar Balaikota Timoho",
+        "Kabupaten": "Kota Yogyakarta",
+        "Kategori": "Eksisting"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.39198558461999,
+          -7.801055711125864
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Id": 7,
+        "Coordinate": null,
+        "DMS": null,
+        "ID": 7,
+        "Nama": "Pos Damkar Tridadi (Induk Sleman)",
+        "NAMA": "Pos Damkar Tridadi (Induk Sleman)",
+        "nama": "Pos Damkar Tridadi (Induk Sleman)",
+        "Kabupaten": "Kabupaten Sleman",
+        "Kategori": "Eksisting"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.35524453093358,
+          -7.717657214506892
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Id": 8,
+        "Coordinate": null,
+        "DMS": null,
+        "ID": 8,
+        "Nama": "Pos Damkar Godean",
+        "NAMA": "Pos Damkar Godean",
+        "nama": "Pos Damkar Godean",
+        "Kabupaten": "Kabupaten Sleman",
+        "Kategori": "Eksisting"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.3004226544819,
+          -7.769937628473636
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Id": 9,
+        "Coordinate": null,
+        "DMS": null,
+        "ID": 9,
+        "Nama": "Pos Damkar Banguntapan",
+        "NAMA": "Pos Damkar Banguntapan",
+        "nama": "Pos Damkar Banguntapan",
+        "Kabupaten": "Kabupaten Bantul",
+        "Kategori": "Eksisting"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.41766879956548,
+          -7.829696538933814
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Id": 10,
+        "Coordinate": null,
+        "DMS": null,
+        "ID": 10,
+        "Nama": "Pos Damkar Piyungan",
+        "NAMA": "Pos Damkar Piyungan",
+        "nama": "Pos Damkar Piyungan",
+        "Kabupaten": "Kabupaten Bantul",
+        "Kategori": "Eksisting"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.46641118708666,
+          -7.834415413648813
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Id": 11,
+        "Coordinate": null,
+        "DMS": null,
+        "ID": 11,
+        "Nama": "Pos Damkar Sedayu",
+        "NAMA": "Pos Damkar Sedayu",
+        "nama": "Pos Damkar Sedayu",
+        "Kabupaten": "Kabupaten Bantul",
+        "Kategori": "Eksisting"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.25676185437919,
+          -7.816344905587488
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Id": 12,
+        "Coordinate": null,
+        "DMS": null,
+        "ID": 12,
+        "Nama": "Pos Damkar Kasihan",
+        "NAMA": "Pos Damkar Kasihan",
+        "nama": "Pos Damkar Kasihan",
+        "Kabupaten": "Kabupaten Bantul",
+        "Kategori": "Eksisting"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.33579129362712,
+          -7.829386302368078
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Id": 13,
+        "Coordinate": null,
+        "DMS": null,
+        "ID": 13,
+        "Nama": "Pos Damkar Imogiri",
+        "NAMA": "Pos Damkar Imogiri",
+        "nama": "Pos Damkar Imogiri",
+        "Kabupaten": "Kabupaten Bantul",
+        "Kategori": "Eksisting"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.38676008004582,
+          -7.909480788110499
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Id": 14,
+        "Coordinate": null,
+        "DMS": null,
+        "ID": 14,
+        "Nama": "Pos Damkar Pundong",
+        "NAMA": "Pos Damkar Pundong",
+        "nama": "Pos Damkar Pundong",
+        "Kabupaten": "Kabupaten Bantul",
+        "Kategori": "Eksisting"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          110.34371354447299,
+          -7.957421594350248
+        ]
+      }
+    }
+  ]
+}

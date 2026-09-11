@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SILATKAR DIY - Pusat Data Kejadian Kebakaran &amp; Penyelamatan</title>
+  <script src="js/app.js"></script>
+  <script>if (!isLoggedIn()) { window.location.href = 'login.html'; }</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <style>
+    :root {
+      --pb: #0f172a; --ps: #1e293b; --ps2: #263148; --pbr: #334155;
+      --pt: #f1f5f9; --pm: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--pb); color: var(--pt); min-height: 100vh; }
+    .pnav { background: var(--ps); border-bottom: 1px solid var(--pbr); padding: 0 1.5rem; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .pbrand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: white; }
+    .pbrand-icon { width: 36px; height: 36px; background: linear-gradient(135deg,#ef4444,#b91c1c); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: white; }
+    .pbrand-t { font-weight: 800; font-size: 1rem; letter-spacing: .5px; }
+    .pbrand-s { font-size: .7rem; color: var(--pm); }
+    .pnav-links { display: flex; align-items: center; gap: .75rem; }
+    .pnav-btn { background: rgba(255,255,255,.08); border: 1px solid var(--pbr); color: var(--pm); padding: 6px 13px; border-radius: 6px; font-size: .8rem; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; transition: background .2s; }
+    .pnav-btn:hover { background: rgba(255,255,255,.15); color: white; }
+    .pnav-btn.red { border-color: rgba(239,68,68,.4); }
+    .pnav-btn.red:hover { background: rgba(239,68,68,.15); color: #ef4444; }
+    .pnav-input { background: linear-gradient(135deg,#ef4444,#b91c1c); color: white; border: none; padding: 7px 16px; border-radius: 6px; font-size: .82rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: opacity .2s; }
+    .pnav-input:hover { opacity: .88; }
+    .sbar { background: var(--ps); border-bottom: 1px solid var(--pbr); padding: 5px 1.5rem; display: flex; align-items: center; gap: 1.5rem; font-size: .74rem; color: var(--pm); flex-wrap: wrap; }
+    .sdot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; animation: blink 1.5s infinite; }
+    .sdot.g { background: #10b981; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .pmain { padding: 1.25rem 1.5rem; }
+    .sgrid { display: grid; grid-template-columns: repeat(6,1fr); gap: 1rem; margin-bottom: 1.5rem; }
+    @media(max-width:1200px){ .sgrid { grid-template-columns: repeat(3,1fr); } }
+    @media(max-width:768px){ .sgrid { grid-template-columns: repeat(2,1fr); } }
+    .scard { background: var(--ps); border: 1px solid var(--pbr); border-radius: 12px; padding: 1.25rem; position: relative; overflow: hidden; transition: transform .2s; cursor: default; }
+    .scard:hover { transform: translateY(-2px); }
+    .scard::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+    .c0::before { background: linear-gradient(90deg,#ef4444,#f97316); }
+    .c1::before { background: linear-gradient(90deg,#f97316,#f59e0b); }
+    .c2::before { background: linear-gradient(90deg,#10b981,#059669); }
+    .c3::before { background: linear-gradient(90deg,#f97316,#ef4444); }
+    .c4::before { background: linear-gradient(90deg,#3b82f6,#6366f1); }
+    .c5::before { background: linear-gradient(90deg,#8b5cf6,#7c3aed); }
+    .sci { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-bottom: .75rem; }
+    .c0 .sci { background: rgba(239,68,68,.15); color: #ef4444; }
+    .c1 .sci { background: rgba(245,158,11,.15); color: #f59e0b; }
+    .c2 .sci { background: rgba(16,185,129,.15); color: #10b981; }
+    .c3 .sci { background: rgba(249,115,22,.15); color: #f97316; }
+    .c4 .sci { background: rgba(59,130,246,.15); color: #3b82f6; }
+    .c5 .sci { background: rgba(139,92,246,.15); color: #8b5cf6; }
+    .scv { font-size: 2.4rem; font-weight: 800; line-height: 1; margin-bottom: .3rem; color: white; }
+    .scl { font-size: .72rem; color: var(--pm); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+    .scbg { position: absolute; bottom: .75rem; right: .75rem; font-size: 2.5rem; opacity: .06; color: white; }
+    .sh { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .sth { font-size: .9rem; font-weight: 700; color: white; display: flex; align-items: center; gap: 8px; }
+    .std { width: 6px; height: 6px; border-radius: 50%; background: #ef4444; display: inline-block; }
+    .fwrap { background: var(--ps); border: 1px solid var(--pbr); border-radius: 10px; padding: 1rem; margin-bottom: 1rem; }
+    .fwrap label { font-size: .72rem; color: var(--pm); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; display: block; margin-bottom: 4px; }
+    .finput { width: 100%; background: var(--ps2); border: 1px solid var(--pbr); color: var(--pt); border-radius: 7px; font-size: .82rem; padding: 7px 10px; outline: none; font-family: 'Inter', sans-serif; }
+    .finput::placeholder { color: var(--pm); } .finput option { background: #1e293b; }
+    .finput:focus { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,.12); }
+    .fbtn { background: #ef4444; color: white; border: none; border-radius: 7px; padding: 7px 0; font-size: .82rem; font-weight: 600; cursor: pointer; width: 100%; }
+    .fbtn:hover { background: #dc2626; }
+    .twrap { background: var(--ps); border: 1px solid var(--pbr); border-radius: 12px; overflow: hidden; margin-bottom: 1.5rem; }
+    .ptbl { width: 100%; border-collapse: collapse; }
+    .ptbl thead th { background: #0f172a; color: var(--pm); font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; padding: 12px 14px; white-space: nowrap; border-bottom: 1px solid var(--pbr); }
+    .ptbl tbody td { padding: 10px 14px; font-size: .83rem; border-bottom: 1px solid rgba(51,65,85,.5); vertical-align: middle; color: var(--pt); }
+    .ptbl tbody tr:last-child td { border-bottom: none; }
+    .ptbl tbody tr:hover { background: rgba(255,255,255,.03); }
+    .idpill { background: rgba(239,68,68,.15); color: #ef4444; font-size: .72rem; font-weight: 700; padding: 2px 8px; border-radius: 5px; }
+    .bs { font-size: .72rem; padding: 3px 10px; border-radius: 20px; font-weight: 600; }
+    .bs.selesai { background: rgba(16,185,129,.15); color: #10b981; }
+    .bs.proses { background: rgba(245,158,11,.15); color: #f59e0b; }
+    .bs.batal { background: rgba(100,116,139,.2); color: #94a3b8; }
+    .abtn { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--pbr); background: transparent; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: .8rem; transition: all .15s; color: var(--pm); }
+    .abtn.v:hover { color: #3b82f6; border-color: #3b82f6; background: rgba(59,130,246,.1); }
+    .abtn.e:hover { color: #f59e0b; border-color: #f59e0b; background: rgba(245,158,11,.1); }
+    .abtn.d:hover { color: #ef4444; border-color: #ef4444; background: rgba(239,68,68,.1); }
+    .empty-st { text-align: center; padding: 3rem; color: var(--pm); }
+    .empty-st i { font-size: 2.5rem; display: block; margin-bottom: .75rem; opacity: .3; }
+    .cinfo { font-size: .74rem; color: var(--pm); padding: .75rem 1rem; }
+    .fpanel { display: none; background: var(--ps); border: 1px solid var(--pbr); border-radius: 12px; overflow: hidden; margin-bottom: 1.5rem; }
+    .fphead { background: #0f172a; border-bottom: 1px solid var(--pbr); padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; }
+    .fphead h5 { font-size: .9rem; font-weight: 700; color: white; display: flex; align-items: center; gap: 8px; margin: 0; }
+    .fpbody { padding: 1.5rem; }
+    .fsec { border: 1px solid var(--pbr); border-radius: 10px; padding: 1.25rem; margin-bottom: 1.25rem; }
+    .fsect { font-size: .72rem; font-weight: 700; color: #ef4444; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; display: flex; align-items: center; gap: 6px; }
+    .fsect::after { content: ''; flex: 1; height: 1px; background: var(--pbr); }
+    .flbl { display: block; font-size: .75rem; font-weight: 600; color: var(--pm); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .3px; }
+    .flbl .req { color: #ef4444; }
+    .pi { width: 100%; background: var(--ps2); border: 1px solid var(--pbr); color: var(--pt); border-radius: 7px; font-size: .85rem; padding: 8px 11px; outline: none; transition: border-color .2s; font-family: 'Inter', sans-serif; }
+    .pi::placeholder { color: var(--pm); } .pi option { background: #1e293b; }
+    .pi:focus { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,.12); }
+    .bsub { background: linear-gradient(135deg,#ef4444,#b91c1c); color: white; border: none; border-radius: 8px; padding: 9px 24px; font-size: .875rem; font-weight: 700; cursor: pointer; transition: opacity .2s; }
+    .bsub:hover { opacity: .88; }
+    .brst { background: transparent; border: 1px solid var(--pbr); color: var(--pm); border-radius: 8px; padding: 9px 20px; font-size: .875rem; cursor: pointer; }
+    .brst:hover { border-color: var(--pm); color: white; }
+    .bcls { background: rgba(255,255,255,.08); border: 1px solid var(--pbr); color: var(--pm); border-radius: 6px; padding: 4px 12px; font-size: .8rem; cursor: pointer; }
+    .bcls:hover { color: white; }
+    .dinfo { font-size: .75rem; color: #10b981; margin-top: 4px; display: none; }
+    .mback { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.75); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; }
+    .mback.show { display: flex; }
+    .mbox { background: var(--ps); border: 1px solid var(--pbr); border-radius: 14px; width: 100%; max-width: 780px; max-height: 90vh; overflow-y: auto; }
+    .mhead { padding: 1.25rem; border-bottom: 1px solid var(--pbr); display: flex; align-items: center; justify-content: space-between; background: #0f172a; border-radius: 14px 14px 0 0; }
+    .mhead h5 { font-size: .95rem; font-weight: 700; color: white; margin: 0; }
+    .mbody { padding: 1.25rem; }
+    .mcls { background: none; border: none; color: var(--pm); font-size: 1.1rem; cursor: pointer; padding: 4px 8px; }
+    .mcls:hover { color: white; }
+    .dtbl { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
+    .dtbl th { background: #0f172a; color: var(--pm); font-size: .72rem; text-transform: uppercase; letter-spacing: .5px; padding: 8px 12px; font-weight: 700; text-align: left; }
+    .dtbl td { padding: 8px 12px; font-size: .83rem; border-bottom: 1px solid rgba(51,65,85,.5); color: var(--pt); }
+    .dtbl td:first-child { color: var(--pm); width: 40%; font-weight: 500; }
+    .dtbl tr:last-child td { border-bottom: none; }
+    .dsh { font-size: .72rem; font-weight: 700; color: #ef4444; text-transform: uppercase; letter-spacing: 1px; margin: 1rem 0 .5rem; border-bottom: 1px solid var(--pbr); padding-bottom: .35rem; }
+  </style>
+</head>
+<body>
+<nav class="pnav">
+  <a class="pbrand" href="admin.html">
+    <div class="pbrand-icon"><i class="bi bi-fire"></i></div>
+    <div><div class="pbrand-t">SILATKAR DIY</div><div class="pbrand-s">Pusat Data Kebakaran &amp; Penyelamatan</div></div>
+  </a>
+  <div class="pnav-links">
+    <span style="font-size:.74rem;color:var(--pm)" id="nav-clock"></span>
+    <a href="admin.html" class="pnav-btn"><i class="bi bi-arrow-left"></i> Dashboard</a>
+    <button class="pnav-btn red" onclick="logoutAdmin()"><i class="bi bi-box-arrow-right"></i> Logout</button>
+    <button class="pnav-input" onclick="showForm()"><i class="bi bi-plus"></i> Input Data</button>
+  </div>
+</nav>
+<div class="sbar">
+  <span><span class="sdot g"></span>Sistem Aktif</span>
+  <span><i class="bi bi-database me-1"></i>Tabel: <strong style="color:white">kejadian_silakar</strong></span>
+  <span><i class="bi bi-geo-alt me-1"></i>Wilayah: <strong style="color:white">Daerah Istimewa Yogyakarta</strong></span>
+  <span id="sb-total"><i class="bi bi-archive me-1"></i>Total: <strong style="color:white">-</strong></span>
+  <span class="ms-auto" id="sb-update"></span>
+</div>
+<div class="pmain">
+<div class="sgrid">
+  <div class="scard c0"><div class="sci"><i class="bi bi-fire"></i></div><div class="scv" id="stat-total">-</div><div class="scl">Total Kejadian</div><div class="scbg"><i class="bi bi-fire"></i></div></div>
+  <div class="scard c1"><div class="sci"><i class="bi bi-hourglass-split"></i></div><div class="scv" id="stat-proses">-</div><div class="scl">Dalam Penanganan</div><div class="scbg"><i class="bi bi-hourglass-split"></i></div></div>
+  <div class="scard c2"><div class="sci"><i class="bi bi-check-circle"></i></div><div class="scv" id="stat-selesai">-</div><div class="scl">Selesai Ditangani</div><div class="scbg"><i class="bi bi-check-circle"></i></div></div>
+  <div class="scard c3"><div class="sci"><i class="bi bi-person-x"></i></div><div class="scv" id="stat-meninggal">-</div><div class="scl">Korban Meninggal</div><div class="scbg"><i class="bi bi-person-x"></i></div></div>
+  <div class="scard c4"><div class="sci"><i class="bi bi-bandaid"></i></div><div class="scv" id="stat-luka">-</div><div class="scl">Korban Luka</div><div class="scbg"><i class="bi bi-bandaid"></i></div></div>
+  <div class="scard c5"><div class="sci"><i class="bi bi-people"></i></div><div class="scv" id="stat-terdampak">-</div><div class="scl">Jiwa Terdampak</div><div class="scbg"><i class="bi bi-people"></i></div></div>
+</div>
+<div class="fpanel" id="form-panel">
+  <div class="fphead"><h5><i class="bi bi-plus-circle-fill" style="color:#ef4444"></i><span id="form-title">Input Data Kejadian Baru</span></h5><button class="bcls" onclick="hideForm()"><i class="bi bi-x"></i> Tutup</button></div>
+  <div class="fpbody">
+    <form id="form-silakar"><input type="hidden" id="edit-id">
+      <div class="fsec"><div class="fsect"><i class="bi bi-clock"></i>Waktu Kejadian</div>
+        <div class="row g-3">
+          <div class="col-md-3"><label class="flbl">Tanggal Kejadian <span class="req">*</span></label><input type="date" class="pi" id="f-tanggal" required></div>
+          <div class="col-md-3"><label class="flbl">Waktu Laporan</label><input type="time" class="pi" id="f-waktu-laporan"></div>
+          <div class="col-md-3"><label class="flbl">Waktu Berangkat</label><input type="time" class="pi" id="f-waktu-berangkat"></div>
+          <div class="col-md-3"><label class="flbl">Waktu Tiba</label><input type="time" class="pi" id="f-waktu-tiba"></div>
+        </div>
+      </div>
+      <div class="fsec"><div class="fsect"><i class="bi bi-geo-alt"></i>Lokasi Kejadian</div>
+        <div class="row g-3">
+          <div class="col-md-4"><label class="flbl">Kabupaten/Kota</label><select class="pi" id="f-kabupaten"><option value="">-- Pilih --</option><option>Kota Yogyakarta</option><option>Kabupaten Sleman</option><option>Kabupaten Bantul</option><option>Kabupaten Kulon Progo</option><option>Kabupaten Gunungkidul</option></select></div>
+          <div class="col-md-4"><label class="flbl">Kapanewon</label><input type="text" class="pi" id="f-kapanewon" placeholder="Nama kapanewon"></div>
+          <div class="col-md-4"><label class="flbl">Kalurahan</label><input type="text" class="pi" id="f-kalurahan" placeholder="Nama kalurahan"></div>
+          <div class="col-md-8"><label class="flbl">Alamat / Lokasi Detail</label><input type="text" class="pi" id="f-alamat" placeholder="Jl. ... No. ..."></div>
+          <div class="col-md-4"><label class="flbl">Koordinat (Lat, Long)</label><input type="text" class="pi" id="f-koordinat" placeholder="-7.8014, 110.3649"></div>
+        </div>
+      </div>
+      <div class="fsec"><div class="fsect"><i class="bi bi-person"></i>Informasi Pelapor</div>
+        <div class="row g-3">
+          <div class="col-md-4"><label class="flbl">Sumber Pengaduan</label><select class="pi" id="f-sumber"><option value="">-- Pilih --</option><option>Telepon 113</option><option>Whatsapp</option><option>Datang Langsung</option><option>Radio</option><option>Aplikasi</option><option>Lainnya</option></select></div>
+          <div class="col-md-4"><label class="flbl">Nama Pelapor</label><input type="text" class="pi" id="f-pelapor" placeholder="Nama lengkap pelapor"></div>
+          <div class="col-md-4"><label class="flbl">Nomor Kontak</label><input type="text" class="pi" id="f-kontak" placeholder="No. HP"></div>
+        </div>
+      </div>
+      <div class="fsec"><div class="fsect"><i class="bi bi-fire"></i>Detail Kejadian</div>
+        <div class="row g-3">
+          <div class="col-md-4"><label class="flbl">Jenis Kejadian</label><select class="pi" id="f-jenis"><option value="">-- Pilih --</option><option>Kebakaran</option><option>Penyelamatan</option><option>Bencana Alam</option><option>Kecelakaan</option><option>Hazmat</option><option>Lainnya</option></select></div>
+          <div class="col-md-4"><label class="flbl">Objek yang Terbakar</label><input type="text" class="pi" id="f-objek" placeholder="Rumah tinggal, gudang..."></div>
+          <div class="col-md-4"><label class="flbl">Dugaan Penyebab</label><input type="text" class="pi" id="f-penyebab" placeholder="Korsleting, kompor gas..."></div>
+        </div>
+      </div>
+      <div class="fsec"><div class="fsect"><i class="bi bi-people"></i>Dampak &amp; Korban</div>
+        <div class="row g-3">
+          <div class="col-md-4"><label class="flbl">Korban Meninggal</label><input type="number" class="pi" id="f-meninggal" value="0" min="0"></div>
+          <div class="col-md-4"><label class="flbl">Korban Luka</label><input type="number" class="pi" id="f-luka" value="0" min="0"></div>
+          <div class="col-md-4"><label class="flbl">Jumlah Terdampak (Jiwa)</label><input type="number" class="pi" id="f-terdampak" value="0" min="0"></div>
+        </div>
+      </div>
+      <div class="fsec"><div class="fsect"><i class="bi bi-truck-front"></i>Penanganan &amp; Sumber Daya</div>
+        <div class="row g-3">
+          <div class="col-md-4"><label class="flbl">Unit Damkarmat</label><input type="text" class="pi" id="f-unit" placeholder="Nama unit/pos damkar"></div>
+          <div class="col-md-2"><label class="flbl">Jml Armada</label><input type="number" class="pi" id="f-armada" value="0" min="0"></div>
+          <div class="col-md-3"><label class="flbl">Sumber Air</label><input type="text" class="pi" id="f-air" placeholder="Hidran, embung, dll"></div>
+          <div class="col-md-3"><label class="flbl">Status Penanganan</label><select class="pi" id="f-status"><option value="Dalam Penanganan">Dalam Penanganan</option><option value="Selesai">Selesai</option><option value="Dibatalkan">Dibatalkan</option></select></div>
+          <div class="col-md-3"><label class="flbl">Waktu Selesai</label><input type="time" class="pi" id="f-selesai"></div>
+          <div class="col-md-4"><label class="flbl">Perkiraan Kerugian (Rp)</label><input type="number" class="pi" id="f-kerugian" value="0" min="0"></div>
+        </div>
+      </div>
+      <div class="fsec"><div class="fsect"><i class="bi bi-image"></i>Dokumentasi &amp; Keterangan</div>
+        <div class="row g-3">
+          <div class="col-md-6"><label class="flbl">Upload Dokumentasi</label><input type="file" class="pi" id="f-dokumentasi" accept="image/*,.pdf"><div class="dinfo" id="existing-doc-info"></div></div>
+          <div class="col-md-6"><label class="flbl">Keterangan Tambahan</label><textarea class="pi" id="f-keterangan" rows="3" placeholder="Catatan lain..."></textarea></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.5rem">
+        <button type="button" class="brst" onclick="resetForm()">Reset</button>
+        <button type="submit" class="bsub"><span id="submit-btn-text">Simpan Data</span></button>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="sh">
+  <div class="sth"><span class="std"></span>Daftar Data Kejadian SILATKAR DIY</div>
+  <div style="display:flex;gap:6px;align-items:center;">
+    <button onclick="downloadSilakarData()" style="background:transparent;border:1px solid var(--pbr);color:var(--pm);border-radius:6px;padding:5px 12px;font-size:.78rem;cursor:pointer;" title="Unduh hasil pencarian"><i class="bi bi-download me-1"></i>Unduh</button>
+    <button onclick="fetchSilakar()" style="background:transparent;border:1px solid var(--pbr);color:var(--pm);border-radius:6px;padding:5px 12px;font-size:.78rem;cursor:pointer;"><i class="bi bi-arrow-clockwise me-1"></i>Refresh</button>
+  </div>
+</div>
+<div class="fwrap">
+  <div class="row g-2 align-items-end">
+    <div class="col-md-2"><label>Cari Data/File</label><input type="text" class="finput" id="filter-search" placeholder="File / pelapor / alamat..."></div>
+    <div class="col-md-2"><label>Jenis Kejadian</label><input type="text" class="finput" id="filter-jenis" placeholder="Penyelamatan, tawon..." list="jenis-kejadian-options"><datalist id="jenis-kejadian-options"><option value="Penyelamatan"><option value="Kebakaran"><option value="Evakuasi"><option value="Pohon Tumbang"><option value="Sarang Tawon"><option value="Kebakaran Lahan"><option value="Kebakaran Bangunan"><option value="Non Kebakaran"></datalist></div>
+    <div class="col-md-2"><label>Dari Tanggal</label><input type="date" class="finput" id="filter-start"></div>
+    <div class="col-md-2"><label>Sampai Tanggal</label><input type="date" class="finput" id="filter-end"></div>
+    <div class="col-md-2"><label>Kabupaten/Kota</label><select class="finput" id="filter-kabupaten"><option value="">Semua</option><option>Kota Yogyakarta</option><option>Kabupaten Sleman</option><option>Kabupaten Bantul</option><option>Kabupaten Kulon Progo</option><option>Kabupaten Gunungkidul</option></select></div>
+    <div class="col-md-2"><label>Status</label><select class="finput" id="filter-status"><option value="">Semua</option><option>Dalam Penanganan</option><option>Selesai</option><option>Dibatalkan</option></select></div>
+    <div class="col-md-1"><label>&nbsp;</label><button class="fbtn" onclick="fetchSilakar()"><i class="bi bi-search"></i></button></div>
+  </div>
+</div>
+<div class="twrap">
+  <div class="table-responsive">
+    <table class="ptbl">
+      <thead><tr>
+        <th>ID</th><th>Tanggal</th><th>Kab/Kota</th><th>Kapanewon</th>
+        <th>Jenis</th><th>Objek Terbakar</th><th>Penyebab</th>
+        <th style="text-align:center">Meninggal</th><th style="text-align:center">Luka</th>
+        <th style="text-align:center">Terdampak</th><th>Status</th><th>Kerugian (Rp)</th><th>Aksi</th>
+      </tr></thead>
+      <tbody id="silakar-tbody"><tr><td colspan="13"><div class="empty-st"><i class="bi bi-hourglass-split"></i>Memuat data...</div></td></tr></tbody>
+    </table>
+  </div>
+  <div class="cinfo" id="silakar-count-info"></div>
+</div>
+</div>
+<div class="mback" id="detail-modal">
+  <div class="mbox">
+    <div class="mhead"><h5><i class="bi bi-fire" style="color:#ef4444;margin-right:8px"></i>Detail Kejadian SILATKAR</h5><button class="mcls" onclick="document.getElementById('detail-modal').classList.remove('show')"><i class="bi bi-x-lg"></i></button></div>
+    <div class="mbody" id="detail-modal-body"></div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="js/silakar.js?v=20260903_unduh"></script>
+<script>
+  function updateClock(){var n=new Date();document.getElementById('nav-clock').textContent=n.toLocaleDateString('id-ID',{weekday:'short',day:'2-digit',month:'short',year:'numeric'})+' '+n.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
+  updateClock();setInterval(updateClock,1000);
+</script>
+</body>
+</html>

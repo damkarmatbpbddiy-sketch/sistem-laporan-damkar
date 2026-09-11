@@ -1,0 +1,1620 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Admin - Silatkar</title>
+  
+  <!-- Early Auth Guard Check -->
+  <script src="js/app.js"></script>
+  <script>
+    if (!isLoggedIn()) {
+      window.location.href = 'login.html';
+    }
+  </script>
+
+  <!-- Google Fonts & Bootstrap 5 & Bootstrap Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  
+  <!-- Chart.js & SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/style.css?v=20260831_2030">
+
+  <!-- STYLE ANIMASI MARKER BERKEDIP OTOMATIS (BLINKING MAP MARKER) -->
+  <style id="style-report-marker-blinking">
+    @keyframes report-pulsing-wave {
+      0% {
+        transform: scale(0.6);
+        opacity: 1;
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.9);
+      }
+      50% {
+        transform: scale(1.6);
+        opacity: 0.85;
+        box-shadow: 0 0 18px 8px rgba(239, 68, 68, 0.6);
+      }
+      100% {
+        transform: scale(2.6);
+        opacity: 0;
+        box-shadow: 0 0 28px 14px rgba(239, 68, 68, 0);
+      }
+    }
+
+    @keyframes report-flash-color {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 14px var(--marker-color, #ef4444);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.3);
+        box-shadow: 0 0 24px 8px var(--marker-color, #ef4444);
+        opacity: 0.35;
+      }
+    }
+
+    .report-blinking-marker-wrapper {
+      position: relative;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .report-blinking-marker-wrapper::before {
+      content: '';
+      position: absolute;
+      top: -6px;
+      left: -6px;
+      right: -6px;
+      bottom: -6px;
+      border-radius: 50%;
+      background: var(--marker-color, #ef4444);
+      animation: report-pulsing-wave 1.4s infinite cubic-bezier(0, 0.2, 0.8, 1);
+      pointer-events: none;
+    }
+
+    .report-blinking-marker-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background-color: var(--marker-color, #ef4444);
+      border: 2.5px solid #ffffff;
+      box-shadow: 0 0 12px var(--marker-color, #ef4444), 0 2px 6px rgba(0, 0, 0, 0.4);
+      animation: report-flash-color 0.8s infinite ease-in-out;
+      position: relative;
+      z-index: 2;
+    }
+
+    .map-marker-icon {
+      animation: report-flash-color 0.8s infinite ease-in-out !important;
+      box-shadow: 0 0 15px #dc2626 !important;
+      border-radius: 50% !important;
+    }
+  </style>
+</head>
+<body class="bg-light">
+
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg navbar-damkar sticky-top">
+    <div class="container-fluid px-lg-5">
+      <a class="navbar-brand navbar-brand-custom" href="admin.html">
+        <div class="brand-icon-wrap">
+          <img src="assets/images/LOGO-DAMKAR.png"
+            alt="Logo Damkar"
+            class="logo-damkar">
+          </div>
+        <div>
+          <div class="brand-title">DASHBOARD ADMIN SILATKAR</div>
+          <div class="brand-subtitle">Panel Pengelolaan Laporan Darurat</div>
+        </div>
+      </a>
+      <button class="navbar-toggler navbar-dark" type="button" data-bs-toggle="collapse" data-bs-target="#adminNavbar">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="adminNavbar">
+        <ul class="navbar-nav ms-auto align-items-center gap-2 mt-3 mt-lg-0">
+          <li class="nav-item">
+            <a class="nav-link nav-link-custom" href="index.html" target="_blank">
+              <i class="bi bi-globe"></i> Lihat Website Beranda
+            </a>
+          </li>
+          <li class="nav-item">
+            <button onclick="logoutAdmin()" class="btn btn-outline-danger btn-sm px-3 ms-2 fw-semibold">
+              <i class="bi bi-box-arrow-right"></i> Logout Admin
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+    <main class="py-4">
+    <div class="container-fluid px-lg-5">
+
+      <!-- NAVIGASI TAB UTAMA DASHBOARD ADMIN -->
+      <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden bg-white">
+        <div class="card-body p-2 d-flex flex-wrap align-items-center justify-content-between gap-2">
+          <ul class="nav nav-pills gap-2 border-0" id="admin-main-nav-tabs">
+            <li class="nav-item">
+              <button class="nav-link active fw-bold px-3 px-md-4 py-2 text-nowrap rounded-3 border" id="tab-btn-laporan" onclick="switchAdminTab('laporan')">
+                <i class="bi bi-clipboard-data-fill me-2 fs-6 text-danger"></i>📋 Kelola Laporan Kebakaran
+              </button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link fw-bold px-3 px-md-4 py-2 text-nowrap rounded-3 border" id="tab-btn-arsip" onclick="switchAdminTab('arsip')">
+                <i class="bi bi-bar-chart-line-fill me-2 fs-6 text-danger"></i>📊 Kelola & Grafik Statistik Arsip Data Operasional
+              </button>
+            </li>
+            <li class="nav-item">
+              <a href="silakar.html" class="nav-link fw-bold px-3 px-md-4 py-2 text-nowrap rounded-3 border text-decoration-none" style="border-color: #c0392b !important; color: #c0392b;">
+                <i class="bi bi-fire me-2 fs-6"></i>🔥 SILATKAR DIY
+              </a>
+            </li>
+          </ul>
+          <button onclick="fetchAdminData()" class="btn btn-outline-secondary btn-sm px-3 rounded-pill fw-semibold me-2">
+            <i class="bi bi-arrow-clockwise me-1"></i> Refresh Data
+          </button>
+        </div>
+      </div>
+
+      <!-- VIEW 1: TAB KELOLA LAPORAN KEBAKARAN -->
+      <div id="view-laporan-kebakaran">
+        <!-- WELCOME HEADER -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+          <div>
+            <h3 class="fw-black text-dark mb-1">Pengelolaan Laporan Kebakaran</h3>
+            <p class="text-muted mb-0">Monitor, analisis, dan tindak lanjuti pengaduan darurat dari masyarakat.</p>
+          </div>
+        </div>
+
+        <!-- CARD STATISTIK LAPORAN -->
+        <div class="row g-3 mb-4">
+          <div class="col-xl-3 col-md-6">
+            <div class="stat-card total">
+              <div class="stat-value" id="card-stat-total">0</div>
+              <div class="stat-label">Total Laporan</div>
+              <i class="bi bi-folder-fill stat-icon"></i>
+            </div>
+          </div>
+          <div class="col-xl-3 col-md-6">
+            <div class="stat-card menunggu">
+              <div class="stat-value" id="card-stat-menunggu">0</div>
+              <div class="stat-label">Laporan Menunggu</div>
+              <i class="bi bi-hourglass-split stat-icon"></i>
+            </div>
+          </div>
+          <div class="col-xl-3 col-md-6">
+            <div class="stat-card diproses">
+              <div class="stat-value" id="card-stat-diproses">0</div>
+              <div class="stat-label">Sedang Diproses</div>
+              <i class="bi bi-gear-wide-connected stat-icon"></i>
+            </div>
+          </div>
+          <div class="col-xl-3 col-md-6">
+            <div class="stat-card selesai">
+              <div class="stat-value" id="card-stat-selesai">0</div>
+              <div class="stat-label">Laporan Selesai</div>
+              <i class="bi bi-check-circle-fill stat-icon"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- BREADCRUMB INTERAKTIF & ZONE PANEL (HIDDEN) -->
+        <div class="card card-custom mb-4" style="display: none;">
+          <div class="card-header-damkar d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-0 fw-bold"><i class="bi bi-map-fill me-2"></i> Peta Interaktif Zona & Kabupaten</h5>
+              <p class="mb-0 small text-white-50">Klik zone untuk melihat detail lengkap, peta, dan statistik</p>
+            </div>
+          </div>
+          <div class="card-body p-3 p-md-4">
+            <div id="breadcrumb-container" class="mb-4"></div>
+            <div class="row g-4">
+              <div class="col-lg-8">
+                <div id="zone-grid" class="zone-grid"></div>
+              </div>
+              <div class="col-lg-4">
+                <div id="zone-detail-panel" class="h-100"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GRAFIK CHART.JS SECTION LAPORAN -->
+        <div class="row g-4 mb-4">
+          <div class="col-lg-5">
+            <div class="card card-custom h-100 p-3 p-md-4">
+              <h6 class="fw-bold text-dark mb-3"><i class="bi bi-pie-chart-fill text-danger me-2"></i> Grafik Distribusi Status Laporan</h6>
+              <div style="position: relative; height: 260px; width: 100%;">
+                <canvas id="chart-status"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-7">
+            <div class="card card-custom h-100 p-3 p-md-4">
+              <h6 class="fw-bold text-dark mb-3"><i class="bi bi-bar-chart-line-fill text-danger me-2"></i> Grafik Tren Laporan Kejadian</h6>
+              <div style="position: relative; height: 260px; width: 100%;">
+                <canvas id="chart-timeline"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+          <div class="col-lg-6">
+            <div class="card card-custom h-100 p-3 p-md-4">
+              <h6 class="fw-bold text-dark mb-3"><i class="bi bi-calendar2-range-fill text-danger me-2"></i> Grafik Per Bulan</h6>
+              <div style="position: relative; height: 260px; width: 100%;">
+                <canvas id="chart-monthly"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="card card-custom h-100 p-3 p-md-4">
+              <h6 class="fw-bold text-dark mb-3"><i class="bi bi-pin-map-fill text-danger me-2"></i> Grafik Per Kecamatan</h6>
+              <div style="position: relative; height: 260px; width: 100%;">
+                <canvas id="chart-district"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+          <div class="col-lg-6">
+            <div class="card card-custom h-100 p-3 p-md-4">
+              <h6 class="fw-bold text-dark mb-3"><i class="bi bi-geo-alt-fill text-danger me-2"></i> Grafik Per Kabupaten</h6>
+              <div style="position: relative; height: 260px; width: 100%;">
+                <canvas id="chart-county"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="card card-custom h-100 p-3 p-md-4">
+              <h6 class="fw-bold text-dark mb-3"><i class="bi bi-fire text-danger me-2"></i> Grafik Jenis Kebakaran</h6>
+              <div style="position: relative; height: 260px; width: 100%;">
+                <canvas id="chart-fire-type"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MASTER DATA MANAGEMENT SECTION -->
+        <div class="card card-custom mb-4">
+          <div class="card-header-damkar d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-0 fw-bold"><i class="bi bi-gear-fill me-2"></i> Kelola Data Master Operasional</h5>
+            </div>
+          </div>
+          <div class="card-body p-3 p-md-4">
+            <div class="row g-4">
+              <div class="col-lg-6">
+                <div class="border rounded-3 p-3 h-100">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-geo-alt-fill text-danger me-2"></i>Kabupaten</h6>
+                    <button class="btn btn-sm btn-danger" onclick="openMasterModal('kabupaten')">+ Tambah</button>
+                  </div>
+                  <div id="master-kabupaten-list" class="small"></div>
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="border rounded-3 p-3 h-100">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-pin-map-fill text-danger me-2"></i>Kecamatan</h6>
+                    <button class="btn btn-sm btn-danger" onclick="openMasterModal('kecamatan')">+ Tambah</button>
+                  </div>
+                  <div id="master-kecamatan-list" class="small"></div>
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="border rounded-3 p-3 h-100">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-house-fill text-danger me-2"></i>Pos Damkar</h6>
+                    <button class="btn btn-sm btn-danger" onclick="openMasterModal('pos-damkar')">+ Tambah</button>
+                  </div>
+                  <div id="master-pos-list" class="small"></div>
+                </div>
+              </div>
+              <div class="col-lg-6">
+                <div class="border rounded-3 p-3 h-100">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-person-badge-fill text-danger me-2"></i>Petugas</h6>
+                    <button class="btn btn-sm btn-danger" onclick="openMasterModal('petugas')">+ Tambah</button>
+                  </div>
+                  <div id="master-petugas-list" class="small"></div>
+                </div>
+              </div>
+              <div class="col-lg-12">
+                <div class="border rounded-3 p-3 h-100">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-phone-fill text-danger me-2"></i>Perangkat Operasional</h6>
+                    <button class="btn btn-sm btn-danger" onclick="openMasterModal('perangkat')">+ Tambah</button>
+                  </div>
+                  <div id="master-perangkat-list" class="small"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LIVE MAP SECTION -->
+        <div class="card card-custom mb-4">
+          <div class="card-header-damkar d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+              <h5 class="mb-0 fw-bold"><i class="bi bi-geo-alt-fill me-2"></i> Peta Live & Spasial Kebakaran DIY</h5>
+              <p class="mb-0 small text-white-50">Gunakan panel di sebelah kiri untuk menyalakan/mematikan layer peta secara interaktif.</p>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <div class="input-group input-group-sm" style="width: 250px;">
+                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                <input type="text" id="map-search-input" class="form-control border-start-0" placeholder="Cari alamat atau lokasi...">
+                <button class="btn btn-light" type="button" id="btn-map-search">Cari</button>
+              </div>
+            </div>
+          </div>
+          <div class="card-body p-3 p-md-4">
+            <div class="row g-3">
+              <div class="col-lg-3 col-md-4">
+                <div class="admin-map-sidebar p-3 rounded-3 bg-dark text-white h-100 d-flex flex-column border border-dark-subtle">
+                  <div class="admin-map-sidebar-header mb-3 pb-2 border-bottom border-secondary">
+                    <div class="d-flex align-items-center gap-2">
+                      <i class="bi bi-layers-half text-danger fs-5"></i>
+                      <h6 class="mb-0 fw-bold text-uppercase tracking-wider">PILIH TAMPILAN PETA</h6>
+                    </div>
+                    <small class="text-muted d-block mt-1">Navbar Tampilan Layer Peta</small>
+                  </div>
+
+                  <div id="admin-map-layer-panel" class="flex-grow-1 overflow-y-auto mb-3 pe-1" style="max-height: 480px;">
+                    
+                    <div class="mb-3">
+                      <label class="form-label small fw-bold text-uppercase text-secondary mb-1">Basemap</label>
+                      <select id="map-basemap-select" class="form-select form-select-sm bg-dark text-white border-secondary">
+                        <option value="jalan">Peta Jalan (OSM)</option>
+                        <option value="satelit">Peta Satelit (Esri)</option>
+                        <option value="terang">Peta Terang (CartoDB)</option>
+                        <option value="gelap">Peta Gelap (CartoDB)</option>
+                      </select>
+                    </div>
+
+                    <div class="mb-3">
+                      <label class="form-label small fw-bold text-uppercase text-secondary mb-1" for="map-mode-selector">Mode Peta</label>
+                      <select id="map-mode-selector" class="form-select form-select-sm bg-dark text-white border-secondary">
+                        <option value="jangkauan" selected>Jangkauan Pelayanan Pos Damkar</option>
+                        <option value="srs">🏛️ Satuan Ruang Strategis (SRS)</option>
+                        <option value="risiko">Tingkat Risiko Kebakaran</option>
+                        <option value="risiko-cagar">Risiko + Cagar Budaya</option>
+                        <option value="skenario">Skenario Pengembangan</option>
+                      </select>
+                    </div>
+
+                    <div class="mb-3">
+                      <div class="small fw-bold text-uppercase text-secondary mb-2">Administrasi</div>
+                      <div class="form-check mb-1">
+                        <input class="form-check-input map-layer-cb" type="checkbox" id="cb-provinsi" data-layer="provinsi" checked>
+<div class="form-check mb-1">
+    <input class="form-check-input map-layer-cb" type="checkbox" id="cb-province-diy" data-layer="province-diy" checked>
+    <label class="form-check-label small" for="cb-province-diy">Provinsi DIY</label>
+</div>
+                        <label class="form-check-label small" for="cb-provinsi">Batas Provinsi</label>
+                      </div>
+                      <div class="form-check mb-1">
+                        <input class="form-check-input map-layer-cb" type="checkbox" id="cb-kabupaten" data-layer="kabupaten" checked>
+                        <label class="form-check-label small" for="cb-kabupaten">Batas Kabupaten</label>
+                      </div>
+                      <div class="form-check mb-1">
+                        <input class="form-check-input map-layer-cb" type="checkbox" id="cb-kecamatan" data-layer="kecamatan">
+                        <label class="form-check-label small" for="cb-kecamatan">Batas Kecamatan</label>
+                      </div>
+                      <div class="form-check mb-1">
+                        <input class="form-check-input map-layer-cb" type="checkbox" id="cb-desa" data-layer="desa">
+                        <label class="form-check-label small" for="cb-desa">Batas Desa/Kelurahan</label>
+                      </div>
+                    </div>
+
+                    <div class="mb-3">
+                      <div class="small fw-bold text-uppercase text-secondary mb-2">Risiko & Jalan</div>
+                      <div class="form-check mb-1">
+                        <input class="form-check-input map-layer-cb" type="checkbox" id="cb-risiko" data-layer="risiko">
+                        <label class="form-check-label small" for="cb-risiko">Tingkat Risiko Kebakaran</label>
+                      </div>
+                      <div class="form-check mb-1 mt-2">
+                        <input class="form-check-input map-layer-cb" type="checkbox" id="cb-skenario" data-layer="skenario">
+                        <label class="form-check-label small text-warning" for="cb-skenario"><i class="bi bi-bezier2"></i> Mode Skenario</label>
+                      </div>
+                      <!-- Kita gabung dengan basemap atau akan render geojson jika ada -->
+                      <div class="form-check mb-1 mt-2">
+                        <input class="form-check-input map-layer-cb" type="checkbox" id="cb-jalan" data-layer="jalan" checked>
+                        <label class="form-check-label small" for="cb-jalan">Jaringan Jalan</label>
+                      </div>
+                    </div>
+
+                    <div class="mb-3">
+                      <div class="small fw-bold text-uppercase text-secondary mb-2">Damkar & Jangkauan</div>
+                      <div class="form-check mb-1">
+                        <input class="form-check-input map-layer-cb" type="checkbox" id="cb-pos-eksisting" data-layer="pos-eksisting" checked>
+                        <label class="form-check-label small" for="cb-pos-eksisting">Pos Pemadam Eksisting</label>
+                      </div>
+                      <div class="form-check mb-1">
+                        <input class="form-check-input map-layer-cb" type="checkbox" id="cb-jangkauan-eksisting" data-layer="jangkauan-eksisting">
+                        <label class="form-check-label small" for="cb-jangkauan-eksisting">Jangkauan Eksisting</label>
+                      </div>
+                      <div class="form-check mb-1">
+                        <input class="form-check-input map-layer-cb" type="checkbox" id="cb-pos-rencana" data-layer="pos-rencana">
+                        <label class="form-check-label small" for="cb-pos-rencana">Pos Rencana</label>
+                      </div>
+                      <div class="form-check mb-1">
+                        <input class="form-check-input map-layer-cb" type="checkbox" id="cb-jangkauan-rencana" data-layer="jangkauan-rencana">
+                        <label class="form-check-label small" for="cb-jangkauan-rencana">Jangkauan Rencana</label>
+                      </div>
+                    </div>
+
+                    <div class="mb-3">
+                      <div class="small fw-bold text-uppercase text-secondary mb-2">Insiden & Laporan</div>
+                      <div class="form-check mb-1">
+                        <input class="form-check-input map-layer-cb" type="checkbox" id="cb-laporan-aktif" data-layer="laporan-aktif" checked>
+                        <label class="form-check-label small" for="cb-laporan-aktif">Laporan Aktif / Kejadian</label>
+                      </div>
+                      <div class="form-check mb-1">
+                        <input class="form-check-input map-layer-cb" type="checkbox" id="cb-laporan-selesai" data-layer="laporan-selesai">
+                        <label class="form-check-label small" for="cb-laporan-selesai">Laporan Selesai</label>
+                      </div>
+                      <div class="form-check mb-1 mt-2">
+                        <input class="form-check-input" type="checkbox" id="cb-auto-focus" checked>
+                        <label class="form-check-label small text-info" for="cb-auto-focus">Auto Focus Insiden Baru</label>
+                      </div>
+                    </div>
+
+                    <div class="mb-3">
+                      <div class="small fw-bold text-uppercase text-secondary mb-2">Objek Khusus</div>
+                      <div class="form-check mb-1">
+                        <input class="form-check-input map-layer-cb" type="checkbox" id="cb-cagar-budaya" data-layer="cagar-budaya">
+                        <label class="form-check-label small" for="cb-cagar-budaya">Cagar Budaya DIY</label>
+                      </div>
+                      <div class="form-check mb-1">
+                        <input class="form-check-input map-layer-cb" type="checkbox" id="cb-area-srs" data-layer="area-srs">
+                        <label class="form-check-label small" for="cb-area-srs">Area SRS</label>
+                      </div>
+                      <div class="form-check mb-1">
+                        <input class="form-check-input map-layer-cb" type="checkbox" id="cb-biro-sekolah" data-layer="biro-sekolah">
+                        <label class="form-check-label small" for="cb-biro-sekolah">Biro, Organisasi & Sekolah</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-lg-9 col-md-8">
+                <div id="admin-live-map" class="rounded-3 border overflow-hidden shadow-sm" style="height: 580px; width: 100%;"></div>
+                <div id="map-theme-legend-container" class="mt-3"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GOOGLE CAMERA SECTION -->
+        <div class="card card-custom mb-4">
+          <div class="card-header-damkar d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-0 fw-bold"><i class="bi bi-camera-video-fill me-2"></i> Kamera Google Terhubung</h5>
+              <p class="mb-0 small text-white-50">Klik marker laporan atau tombol kamera untuk melihat tampilan lokasi di Google Maps.</p>
+            </div>
+            <button type="button" id="btn-reset-google-camera" class="btn btn-outline-light btn-sm">Reset Tampilan</button>
+          </div>
+          <div class="card-body p-3 p-md-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 gap-3 flex-wrap">
+              <div>
+                <h6 class="fw-bold mb-0" id="google-camera-title">Kamera Google Lokasi Default</h6>
+                <small class="text-muted">Pilih laporan untuk memperbarui tampilan.</small>
+              </div>
+              <span class="badge bg-info-subtle text-info border border-info-subtle" id="google-camera-coords">-</span>
+            </div>
+            <div class="ratio ratio-16x9">
+              <iframe id="google-camera-frame" src="https://www.google.com/maps?q=-7.7978,110.3688&layer=c&cbll=-7.7978,110.3688&cbp=11,0,0,0,0&output=embed" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+          </div>
+        </div>
+
+        <!-- KELOLA LAPORAN & SEARCH / FILTER BAR -->
+        <div class="card card-custom">
+          <div class="card-header-damkar d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-table fs-5"></i>
+              <h5 class="mb-0 fw-bold">Daftar Kelola Laporan Kebakaran</h5>
+            </div>
+            <button type="button" id="btn-download-laporan" class="btn btn-sm btn-light border" title="Unduh hasil pencarian">
+              <i class="bi bi-download me-1"></i> Unduh Hasil
+            </button>
+          </div>
+
+          <div class="card-body p-3 p-md-4">
+            <div class="p-3 bg-light rounded-3 border mb-4">
+              <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                  <label for="filter-search" class="form-label small fw-bold text-muted mb-1">Cari Judul / Pelapor</label>
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" id="filter-search" class="form-control" placeholder="Kata kunci...">
+                  </div>
+                </div>
+                <div class="col-md-2">
+                  <label for="filter-status" class="form-label small fw-bold text-muted mb-1">Status</label>
+                  <select id="filter-status" class="form-select form-select-sm">
+                    <option value="Semua">-- Semua --</option>
+                    <option value="Menunggu">Menunggu</option>
+                    <option value="Diproses">Diproses</option>
+                    <option value="Selesai">Selesai</option>
+                  </select>
+                </div>
+                <div class="col-md-2">
+                  <label for="filter-kabupaten" class="form-label small fw-bold text-muted mb-1">Kabupaten</label>
+                  <input type="text" id="filter-kabupaten" class="form-control form-control-sm" placeholder="Kabupaten...">
+                </div>
+                <div class="col-md-2">
+                  <label for="filter-kecamatan" class="form-label small fw-bold text-muted mb-1">Kecamatan</label>
+                  <input type="text" id="filter-kecamatan" class="form-control form-control-sm" placeholder="Kecamatan...">
+                </div>
+                <div class="col-md-2">
+                  <label for="filter-jenis" class="form-label small fw-bold text-muted mb-1">Jenis Kebakaran</label>
+                  <input type="text" id="filter-jenis" class="form-control form-control-sm" placeholder="Jenis...">
+                </div>
+                <div class="col-md-1 col-6">
+                  <label for="filter-start-date" class="form-label small fw-bold text-muted mb-1">Tgl Mulai</label>
+                  <input type="date" id="filter-start-date" class="form-control form-control-sm">
+                </div>
+                <div class="col-md-1 col-6">
+                  <label for="filter-end-date" class="form-label small fw-bold text-muted mb-1">Tgl Selesai</label>
+                  <input type="date" id="filter-end-date" class="form-control form-control-sm">
+                </div>
+                <div class="col-md-1 col-6">
+                  <button type="button" id="btn-reset-filter" class="btn btn-outline-secondary btn-sm w-100">
+                    Reset
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-hover align-middle border">
+                <thead class="table-dark">
+                  <tr>
+                    <th style="width: 50px;">No</th>
+                    <th>Judul Kejadian</th>
+                    <th>Nama Pelapor</th>
+                    <th>Lokasi Alamat (Google Maps)</th>
+                    <th>Tanggal Laporan</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-center" style="width: 160px;">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="table-laporan-body">
+                  <tr>
+                    <td colspan="7" class="text-center py-4 text-muted">
+                      <span class="spinner-border spinner-border-sm me-2"></span> Memuat data laporan...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      <!-- END VIEW 1: TAB KELOLA LAPORAN KEBAKARAN -->
+
+      <!-- VIEW 2: TAB KELOLA & GRAFIK STATISTIK ARSIP DATA OPERASIONAL (STANDALONE VIEW) -->
+      <div id="view-arsip-operasional" class="d-none">
+        
+        <!-- DEDICATED HEADER FOR STATISTIK & GRAFIK KEJADIAN (PAMOR MODEL) -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+          <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <span class="badge bg-danger text-white px-2 py-1 rounded-pill small fw-bold"><i class="bi bi-shield-shaded me-1"></i>Pusat Data Emergency Operation</span>
+              <span class="text-muted small fw-semibold">Silatkar Damkar DIY</span>
+            </div>
+            <h3 class="fw-black text-dark mb-1"><i class="bi bi-bar-chart-steps text-danger me-2"></i>Statistik & Grafik Kejadian Operasional</h3>
+            <p class="text-muted mb-0">Dapatkan informasi terbaru dan visualisasi data seputar penanggulangan bencana, kebakaran, dan keadaan darurat operasional DIY.</p>
+          </div>
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <button class="btn btn-outline-danger btn-sm fw-bold px-3 shadow-sm rounded-pill bg-white" onclick="openBatchFolderModal()">
+              <i class="bi bi-folder-plus text-danger me-1"></i> 📁 Kelola & Buat Folder
+            </button>
+            <button class="btn btn-danger btn-sm fw-bold px-3 shadow-sm rounded-pill" onclick="openModalUploadArsip()">
+              <i class="bi bi-cloud-arrow-up-fill me-1"></i> + Upload File Arsip Baru
+            </button>
+          </div>
+        </div>
+
+        <!-- PAMOR SUB-TAB NAVIGATION BAR -->
+        <div class="card card-custom mb-4 border-0 shadow-sm">
+          <div class="card-body p-2 bg-white rounded-3 border">
+            <ul class="nav nav-pills nav-fill gap-2" id="arsip-pamor-subtabs">
+              <li class="nav-item">
+                <button class="nav-link active fw-bold py-2 px-3 rounded-pill text-nowrap" id="subtab-pamor-statistik" onclick="switchArsipPamorSubtab('statistik')">
+                  <i class="bi bi-bar-chart-line-fill me-2 text-danger"></i>📊 Statistik Kejadian
+                </button>
+              </li>
+              <li class="nav-item">
+                <button class="nav-link fw-bold py-2 px-3 rounded-pill text-nowrap text-secondary" id="subtab-pamor-grafik" onclick="switchArsipPamorSubtab('grafik')">
+                  <i class="bi bi-pie-chart-fill me-2 text-primary"></i>📈 Grafik Kejadian
+                </button>
+              </li>
+              <li class="nav-item">
+                <button class="nav-link fw-bold py-2 px-3 rounded-pill text-nowrap text-secondary" id="subtab-pamor-berkas" onclick="switchArsipPamorSubtab('berkas')">
+                  <i class="bi bi-folder2-open me-2 text-warning"></i>📁 Kelola Berkas & Folder Arsip
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- FILTER TOOLBAR (Berlaku untuk semua visualisasi PAMOR) -->
+        <div class="card card-custom mb-4" id="section-arsip-filters">
+          <div class="card-body p-3 bg-light rounded-3 border">
+            <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-funnel-fill text-danger"></i>
+                <h6 class="mb-0 fw-bold text-dark">Filter Analisis Data Operasional</h6>
+              </div>
+              <div class="btn-group btn-group-sm border rounded-pill overflow-hidden shadow-sm bg-white" role="group" id="arsip-sumber-data-tabs">
+                <button type="button" class="btn btn-sm btn-danger fw-bold px-3 active" data-sumber="isi"><i class="bi bi-cpu-fill me-1"></i> Isi Berkas Operasional</button>
+                <button type="button" class="btn btn-sm btn-outline-danger fw-bold px-3" data-sumber="upload"><i class="bi bi-calendar-event me-1"></i> Tanggal Unggah Berkas</button>
+              </div>
+            </div>
+
+            <div class="row g-2 align-items-center">
+              <div class="col-md-3">
+                <label for="stat-filter-divisi" class="form-label small fw-bold text-muted mb-1">Divisi / Kategori</label>
+                <select id="stat-filter-divisi" class="form-select form-select-sm">
+                  <option value="Semua">-- Semua Divisi --</option>
+                  <option value="Laporan Kebakaran">Laporan Kebakaran</option>
+                  <option value="Peta & Spasial">Peta & Spasial</option>
+                  <option value="SOP & Regulasi">SOP & Regulasi</option>
+                  <option value="Data Non-Kebakaran">Data Non-Kebakaran</option>
+                  <option value="Lainnya">Lainnya</option>
+                </select>
+              </div>
+              <div class="col-md-3" id="container-stat-filter-tahun">
+                <label for="stat-filter-tahun" class="form-label small fw-bold text-muted mb-1">Pilih Tahun</label>
+                <select id="stat-filter-tahun" class="form-select form-select-sm"></select>
+              </div>
+              <div class="col-md-3" id="container-stat-filter-bulan">
+                <label for="stat-filter-bulan" class="form-label small fw-bold text-muted mb-1">Pilih Bulan</label>
+                <select id="stat-filter-bulan" class="form-select form-select-sm">
+                  <option value="Semua">-- Semua Bulan (Jan-Des) --</option>
+                  <option value="1">Januari</option>
+                  <option value="2">Februari</option>
+                  <option value="3">Maret</option>
+                  <option value="4">April</option>
+                  <option value="5">Mei</option>
+                  <option value="6">Juni</option>
+                  <option value="7">Juli</option>
+                  <option value="8">Agustus</option>
+                  <option value="9">September</option>
+                  <option value="10">Oktober</option>
+                  <option value="11">November</option>
+                  <option value="12">Desember</option>
+                </select>
+              </div>
+              <div class="col-md-3 d-flex align-items-end">
+                <button type="button" class="btn btn-danger btn-sm w-100 fw-bold shadow-sm" onclick="fetchArsipStatistik()">
+                  <i class="bi bi-arrow-clockwise me-1"></i> Segarkan Data
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- VIEW 1: STATISTIK KEJADIAN (PAMOR HALAMAN 1) -->
+        <!-- ========================================================================= -->
+        <div id="pamor-view-statistik">
+
+          <!-- 3 KARTU KPI UTAMA (TOTAL ADUAN, KORBAN JIWA, DATA KEJADIAN) -->
+          <div class="row g-3 mb-4">
+            <!-- KARTU 1: TOTAL ADUAN -->
+            <div class="col-lg-4 col-md-12">
+              <div class="card card-custom h-100 shadow-sm border p-3 bg-white">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                  <div class="p-3 bg-danger text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                    <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+                  </div>
+                  <div>
+                    <span class="badge bg-danger-subtle text-danger fw-bold text-uppercase" style="font-size: 0.75rem;">TOTAL ADUAN</span>
+                    <div class="small text-muted">Laporan Masuk</div>
+                  </div>
+                </div>
+                <div class="d-flex align-items-baseline gap-2 mb-3">
+                  <h1 class="fw-black text-dark display-5 mb-0" id="pamor-stat-total-aduan">215</h1>
+                  <span class="text-muted fw-semibold">Laporan</span>
+                </div>
+                <hr class="my-2">
+                <div class="d-flex justify-content-between align-items-center small">
+                  <span class="text-muted"><i class="bi bi-clock-history me-1"></i>Update: <b id="pamor-stat-last-update">Real-time</b></span>
+                  <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1"><i class="bi bi-broadcast me-1"></i>Real-time Aktif</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- KARTU 2: KORBAN JIWA -->
+            <div class="col-lg-4 col-md-6">
+              <div class="card card-custom h-100 shadow-sm border p-3 bg-white">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                  <div class="p-3 bg-warning text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                    <i class="bi bi-people-fill fs-4"></i>
+                  </div>
+                  <div>
+                    <span class="badge bg-warning-subtle text-warning-emphasis fw-bold text-uppercase" style="font-size: 0.75rem;">KORBAN JIWA</span>
+                    <div class="small text-muted">Total Korban</div>
+                  </div>
+                </div>
+                <div class="row g-2 text-start small">
+                  <div class="col-6 d-flex justify-content-between align-items-center border-bottom pb-1">
+                    <span class="text-muted">Meninggal</span>
+                    <span class="fw-bold text-danger" id="pamor-korban-meninggal">0</span>
+                  </div>
+                  <div class="col-6 d-flex justify-content-between align-items-center border-bottom pb-1">
+                    <span class="text-muted">Hilang</span>
+                    <span class="fw-bold text-dark" id="pamor-korban-hilang">1</span>
+                  </div>
+                  <div class="col-6 d-flex justify-content-between align-items-center border-bottom pb-1">
+                    <span class="text-muted">Luka Berat</span>
+                    <span class="fw-bold text-danger" id="pamor-korban-luka-berat">0</span>
+                  </div>
+                  <div class="col-6 d-flex justify-content-between align-items-center border-bottom pb-1">
+                    <span class="text-muted">Luka Sedang</span>
+                    <span class="fw-bold text-warning-emphasis" id="pamor-korban-luka-sedang">10</span>
+                  </div>
+                  <div class="col-6 d-flex justify-content-between align-items-center border-bottom pb-1">
+                    <span class="text-muted">Luka Ringan</span>
+                    <span class="fw-bold text-success" id="pamor-korban-luka-ringan">0</span>
+                  </div>
+                  <div class="col-6 d-flex justify-content-between align-items-center border-bottom pb-1">
+                    <span class="text-muted">Selamat</span>
+                    <span class="fw-bold text-primary" id="pamor-korban-selamat">33</span>
+                  </div>
+                  <div class="col-12 d-flex justify-content-between align-items-center pt-1">
+                    <span class="text-muted">Mengungsi</span>
+                    <span class="fw-bold text-info" id="pamor-korban-mengungsi">9</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- KARTU 3: DATA KEJADIAN & STATUS PENANGANAN -->
+            <div class="col-lg-4 col-md-6">
+              <div class="card card-custom h-100 shadow-sm border p-3 bg-white">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                  <div class="p-3 bg-primary text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                    <i class="bi bi-clipboard2-check-fill fs-4"></i>
+                  </div>
+                  <div>
+                    <span class="badge bg-primary-subtle text-primary fw-bold text-uppercase" style="font-size: 0.75rem;">DATA KEJADIAN</span>
+                    <div class="small text-muted">Status Penanganan</div>
+                  </div>
+                </div>
+                <div class="d-flex flex-column gap-2 mt-2">
+                  <div class="d-flex justify-content-between align-items-center p-2 rounded bg-light border">
+                    <span class="small fw-semibold text-dark"><span class="legend-dot me-2" style="background:#ff4d4f; width:10px; height:10px; display:inline-block; border-radius:50%;"></span> Belum ditangani</span>
+                    <span class="badge bg-danger text-white fw-bold" id="pamor-penanganan-belum">0</span>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center p-2 rounded bg-light border">
+                    <span class="small fw-semibold text-dark"><span class="legend-dot me-2" style="background:#fa8c16; width:10px; height:10px; display:inline-block; border-radius:50%;"></span> Dalam Proses</span>
+                    <span class="badge bg-warning text-dark fw-bold" id="pamor-penanganan-proses">105</span>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center p-2 rounded bg-light border">
+                    <span class="small fw-semibold text-dark"><span class="legend-dot me-2" style="background:#52c41a; width:10px; height:10px; display:inline-block; border-radius:50%;"></span> Selesai</span>
+                    <span class="badge bg-success text-white fw-bold" id="pamor-penanganan-selesai">19</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BARIS 2: 2 GRAFIK UTAMA (STATUS PENANGANAN PER BULAN & TREN KORBAN BULANAN) -->
+          <div class="row g-3 mb-4">
+            <!-- GRAFIK 1: STATUS PENANGANAN PER BULAN -->
+            <div class="col-lg-6">
+              <div class="card card-custom h-100 shadow-sm border p-3 bg-white">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <h6 class="fw-bold text-dark mb-0">Status Penanganan Kejadian</h6>
+                  <span class="badge bg-light text-secondary border">Jan - Des</span>
+                </div>
+                <p class="text-muted small mb-3">Status Penanganan Kejadian per Bulan</p>
+                <div style="position: relative; height: 300px; width: 100%;">
+                  <canvas id="chart-pamor-status-penanganan"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- GRAFIK 2: TREN KORBAN BULANAN -->
+            <div class="col-lg-6">
+              <div class="card card-custom h-100 shadow-sm border p-3 bg-white">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <h6 class="fw-bold text-dark mb-0">Tren Korban Bulanan</h6>
+                  <span class="badge bg-light text-secondary border">Area Chart</span>
+                </div>
+                <p class="text-muted small mb-3">Data Korban per Bulan</p>
+                <div style="position: relative; height: 300px; width: 100%;">
+                  <canvas id="chart-pamor-tren-korban"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BARIS 3: DONUT CHART DISTRIBUSI JENIS KEJADIAN -->
+          <div class="card card-custom shadow-sm border p-3 bg-white mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <h6 class="fw-bold text-dark mb-0">Distribusi Jenis Kejadian</h6>
+              <span class="badge bg-light text-secondary border" id="pamor-donut-total-badge">Total: 124</span>
+            </div>
+            <p class="text-muted small mb-3">Distribusi Jenis Kejadian Operasional</p>
+            <div style="position: relative; height: 340px; width: 100%;">
+              <canvas id="chart-pamor-distribusi-jenis"></canvas>
+            </div>
+          </div>
+
+          <!-- BARIS 4: 2 KARTU TABEL RINGKASAN DATA -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <div class="card card-custom shadow-sm border p-3 bg-white h-100">
+                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-check2-circle text-primary me-2"></i>Status Penanganan Kejadian</h6>
+                <div class="table-responsive">
+                  <table class="table table-sm table-borderless align-middle mb-0">
+                    <tbody>
+                      <tr class="border-bottom">
+                        <td><span class="legend-dot me-2" style="background:#ff4d4f; width:9px; height:9px; display:inline-block; border-radius:50%;"></span>Belum Ditangani</td>
+                        <td class="text-end fw-bold text-danger" id="table-stat-belum">0</td>
+                      </tr>
+                      <tr class="border-bottom">
+                        <td><span class="legend-dot me-2" style="background:#fa8c16; width:9px; height:9px; display:inline-block; border-radius:50%;"></span>Dalam Proses</td>
+                        <td class="text-end fw-bold text-warning-emphasis" id="table-stat-proses">1977</td>
+                      </tr>
+                      <tr class="border-bottom">
+                        <td><span class="legend-dot me-2" style="background:#13c2c2; width:9px; height:9px; display:inline-block; border-radius:50%;"></span>Perlu Penanganan Lanjut</td>
+                        <td class="text-end fw-bold text-info" id="table-stat-lanjut">0</td>
+                      </tr>
+                      <tr>
+                        <td><span class="legend-dot me-2" style="background:#52c41a; width:9px; height:9px; display:inline-block; border-radius:50%;"></span>Selesai</td>
+                        <td class="text-end fw-bold text-success" id="table-stat-selesai">347</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="card card-custom shadow-sm border p-3 bg-white h-100">
+                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-heart-pulse-fill text-danger me-2"></i>Ringkasan Korban</h6>
+                <div class="table-responsive">
+                  <table class="table table-sm table-borderless align-middle mb-0">
+                    <tbody>
+                      <tr class="border-bottom">
+                        <td><i class="bi bi-circle-fill text-danger me-2" style="font-size:0.6rem;"></i>Meninggal</td>
+                        <td class="text-end fw-bold text-danger" id="table-korban-meninggal">10</td>
+                      </tr>
+                      <tr class="border-bottom">
+                        <td><i class="bi bi-circle-fill text-dark me-2" style="font-size:0.6rem;"></i>Hilang</td>
+                        <td class="text-end fw-bold text-dark" id="table-korban-hilang">2</td>
+                      </tr>
+                      <tr class="border-bottom">
+                        <td><i class="bi bi-circle-fill text-warning me-2" style="font-size:0.6rem;"></i>Luka Berat</td>
+                        <td class="text-end fw-bold text-warning-emphasis" id="table-korban-berat">0</td>
+                      </tr>
+                      <tr>
+                        <td><i class="bi bi-circle-fill text-info me-2" style="font-size:0.6rem;"></i>Mengungsi</td>
+                        <td class="text-end fw-bold text-info" id="table-korban-mengungsi">4</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- VIEW 2: GRAFIK KEJADIAN (PAMOR HALAMAN 2) -->
+        <!-- ========================================================================= -->
+        <div id="pamor-view-grafik" class="d-none">
+
+          <!-- TOP 2 METRIC CARDS (TOTAL JENIS KEJADIAN & TOTAL DAMPAK KEJADIAN) -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <div class="card card-custom shadow-sm border p-3 bg-white">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <small class="text-muted fw-bold d-block text-uppercase">Total Jenis Kejadian</small>
+                    <h2 class="fw-black text-primary mb-0 mt-1" id="pamor-grafik-total-jenis">0</h2>
+                  </div>
+                  <div class="p-3 bg-primary-subtle text-primary rounded-3">
+                    <i class="bi bi-shield-fill-check fs-2"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="card card-custom shadow-sm border p-3 bg-white">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <small class="text-muted fw-bold d-block text-uppercase">Total Dampak Kejadian</small>
+                    <h2 class="fw-black text-danger mb-0 mt-1" id="pamor-grafik-total-dampak">0</h2>
+                  </div>
+                  <div class="p-3 bg-danger-subtle text-danger rounded-3">
+                    <i class="bi bi-exclamation-triangle-fill fs-2"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BARIS 1: TOP 10 JENIS KEJADIAN & DISTRIBUSI TOP 8 -->
+          <div class="row g-3 mb-4">
+            <!-- TOP 10 JENIS KEJADIAN (HORIZONTAL BAR CHART) -->
+            <div class="col-lg-6">
+              <div class="card card-custom h-100 shadow-sm border p-3 bg-white">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <h6 class="fw-bold text-dark mb-0"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Top 10 Jenis Kejadian</h6>
+                  <span class="badge bg-light text-secondary border">Horizontal Bar</span>
+                </div>
+                <p class="text-muted small mb-3">Total Jenis Kejadian: <b id="pamor-top10-total-sub">0</b></p>
+                <div style="position: relative; height: 350px; width: 100%;">
+                  <canvas id="chart-pamor-top10-jenis"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- DISTRIBUSI TOP 8 (PIE CHART) -->
+            <div class="col-lg-6">
+              <div class="card card-custom h-100 shadow-sm border p-3 bg-white">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <h6 class="fw-bold text-dark mb-0"><i class="bi bi-pie-chart-fill text-danger me-2"></i>Distribusi Jenis Kejadian (Top 8)</h6>
+                  <span class="badge bg-light text-secondary border">Pie Chart</span>
+                </div>
+                <p class="text-muted small mb-3">Proporsi 8 Jenis Kejadian Teratas</p>
+                <div style="position: relative; height: 350px; width: 100%;">
+                  <canvas id="chart-pamor-distribusi-top8"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BARIS 2: TOP 15 DAMPAK KEJADIAN (FULL WIDTH HORIZONTAL BAR) -->
+          <div class="card card-custom shadow-sm border p-3 bg-white mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <h6 class="fw-bold text-dark mb-0"><i class="bi bi-exclamation-diamond-fill text-warning me-2"></i>Top 15 Dampak Kejadian</h6>
+              <span class="badge bg-light text-secondary border">15 Kategori Dampak</span>
+            </div>
+            <p class="text-muted small mb-3">Total Dampak Kejadian: <b id="pamor-top15-dampak-sub">0</b></p>
+            <div style="position: relative; height: 460px; width: 100%;">
+              <canvas id="chart-pamor-top15-dampak"></canvas>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- VIEW 3: KELOLA BERKAS & PENJELAJAH FOLDER ARSIP (ORIGINAL FILE MANAGER) -->
+        <!-- ========================================================================= -->
+        <div id="pamor-view-berkas" class="d-none">
+
+          <!-- SEKSI KELOLA & PENJELAJAH FOLDER ARSIP (VISUAL FOLDER GRID) -->
+          <div class="card card-custom mb-4" id="section-arsip-data">
+            <div class="card-header-damkar d-flex flex-wrap justify-content-between align-items-center gap-2">
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-folder-fill fs-5 text-warning"></i>
+                <div>
+                  <h5 class="mb-0 fw-bold">Penjelajah & Penyimpanan Berkas Arsip</h5>
+                  <p class="mb-0 small text-white-50">Kelola folder, berkas spasial, dokumen SOP, dan arsip data operasional</p>
+                </div>
+              </div>
+              <button class="btn btn-light btn-sm fw-bold px-3 text-danger shadow-sm" onclick="openModalUploadArsip()">
+                <i class="bi bi-cloud-arrow-up-fill me-1"></i> + Upload File Arsip Baru
+              </button>
+            </div>
+
+            <div class="card-body p-3 p-md-4">
+              <!-- SEKSI KELOLA & PENJELAJAH FOLDER ARSIP (VISUAL FOLDER GRID) -->
+              <div class="p-3 bg-light rounded-3 border mb-4" id="section-folder-explorer">
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-folder-fill text-warning fs-5"></i>
+                    <h6 class="fw-bold mb-0 text-dark">FOLDER PENYIMPANAN DATA ARSIP</h6>
+                    <span class="badge bg-secondary-subtle text-dark border" id="arsip-folder-count-badge">0 Folder</span>
+                  </div>
+                  <button type="button" class="btn btn-danger btn-sm fw-bold shadow-sm rounded-pill" onclick="promptCreateNewFolder()">
+                    <i class="bi bi-folder-plus me-1"></i> + Buat Folder Baru
+                  </button>
+                </div>
+
+                <!-- GRID KARTU FOLDER VISUAL -->
+                <div id="arsip-folder-grid" class="row g-2">
+                  <!-- Folder Cards populated dynamically by JS -->
+                </div>
+              </div>
+
+            <!-- SEKSI KELOLA & PENJELAJAH FOLDER ARSIP (VISUAL FOLDER GRID) -->
+            <div class="p-3 bg-light rounded-3 border mb-4" id="section-folder-explorer">
+              <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                  <i class="bi bi-folder-fill text-warning fs-5"></i>
+                  <h6 class="fw-bold mb-0 text-dark">FOLDER PENYIMPANAN DATA ARSIP</h6>
+                  <span class="badge bg-secondary-subtle text-dark border" id="arsip-folder-count-badge">0 Folder</span>
+                </div>
+                <button type="button" class="btn btn-danger btn-sm fw-bold shadow-sm rounded-pill" onclick="promptCreateNewFolder()">
+                  <i class="bi bi-folder-plus me-1"></i> + Buat Folder Baru
+                </button>
+              </div>
+
+              <!-- GRID KARTU FOLDER VISUAL -->
+              <div id="arsip-folder-grid" class="row g-2">
+                <!-- Folder Cards populated dynamically by JS -->
+              </div>
+            </div>
+
+            <!-- SEARCH & FILTER BAR ARSIP DAFTAR -->
+            <div class="p-3 bg-light rounded-3 border mb-4">
+              <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-table text-danger me-2"></i>Daftar Berkas Arsip Data</h6>
+                <span id="arsip-active-filter-badge" class="badge bg-danger-subtle text-danger border border-danger-subtle d-none">
+                  <i class="bi bi-funnel-fill me-1"></i> <span id="arsip-active-filter-text">-</span>
+                  <button type="button" class="btn-close ms-2 btn-sm" style="font-size: 0.65rem;" onclick="clearArsipChartFilter()"></button>
+                </span>
+              </div>
+
+              <!-- BATCH ACTION BAR (Aksi Penandaan & Folder) -->
+              <div id="arsip-batch-action-bar" class="p-2 bg-danger-subtle border border-danger-subtle rounded-3 mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2 d-none">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-danger text-white fs-6"><span id="arsip-selected-count">0</span> Berkas Terpilih</span>
+                  <small class="text-dark fw-semibold">Tandai berkas ini untuk disimpan ke dalam folder.</small>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <button type="button" class="btn btn-outline-danger btn-sm fw-bold shadow-sm" onclick="deleteSelectedArsipFiles()">
+                    <i class="bi bi-trash3-fill me-1"></i> Hapus Terpilih
+                  </button>
+                  <button type="button" class="btn btn-danger btn-sm fw-bold shadow-sm" onclick="openBatchFolderModal()">
+                    <i class="bi bi-folder-plus me-1"></i> Pindahkan / Simpan ke Folder
+                  </button>
+                  <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearArsipSelections()">
+                    Batal Pilihan
+                  </button>
+                </div>
+              </div>
+
+              <div class="row g-3 align-items-end">
+                <div class="col-md-5">
+                  <label for="filter-arsip-search" class="form-label small fw-bold text-muted mb-1">Cari Judul / File Arsip</label>
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" id="filter-arsip-search" class="form-control" placeholder="Kata kunci arsip...">
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <label for="filter-arsip-kategori" class="form-label small fw-bold text-muted mb-1">Filter Divisi / Kategori</label>
+                  <select id="filter-arsip-kategori" class="form-select form-select-sm">
+                    <option value="Semua">-- Semua Divisi --</option>
+                    <option value="Laporan Kebakaran">Laporan Kebakaran</option>
+                    <option value="Peta & Spasial">Peta & Spasial</option>
+                    <option value="SOP & Regulasi">SOP & Regulasi</option>
+                    <option value="Data Non-Kebakaran">Data Non-Kebakaran</option>
+                    <option value="Lainnya">Lainnya</option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <label for="filter-arsip-folder" class="form-label small fw-bold text-muted mb-1">Filter Folder Penyimpanan</label>
+                  <select id="filter-arsip-folder" class="form-select form-select-sm">
+                    <option value="Semua">-- Semua Folder --</option>
+                    <option value="Umum">Folder Umum</option>
+                  </select>
+                </div>
+                <div class="col-md-1">
+                  <button type="button" id="btn-reset-filter-arsip" class="btn btn-outline-secondary btn-sm w-100">
+                    Reset
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- TABEL ARSIP DATA -->
+            <div class="table-responsive">
+              <table class="table table-hover align-middle border">
+                <thead class="table-dark">
+                  <tr>
+                    <th style="width: 40px;" class="text-center">
+                      <input type="checkbox" id="arsip-select-all" class="form-check-input" onchange="toggleSelectAllArsip(this)" title="Pilih Semua Berkas">
+                    </th>
+                    <th style="width: 50px;">No</th>
+                    <th>Judul Arsip Data</th>
+                    <th>Divisi & Folder</th>
+                    <th>Detail File & Ukuran</th>
+                    <th>Bulan & Tahun Upload</th>
+                    <th>Deskripsi</th>
+                    <th class="text-center" style="width: 170px;">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="table-arsip-body">
+                  <tr>
+                    <td colspan="8" class="text-center py-4 text-muted">
+                      <span class="spinner-border spinner-border-sm me-2"></span> Memuat data arsip...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      <!-- END VIEW 2: TAB KELOLA & GRAFIK STATISTIK ARSIP DATA OPERASIONAL -->
+
+    </div>
+  </main>
+<!-- MODAL EDIT STATUS LAPORAN -->
+  <div class="modal fade" id="modalEditStatus" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-dark text-white border-bottom border-danger">
+          <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square text-danger me-2"></i> Ubah Status Laporan</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <input type="hidden" id="edit-laporan-id">
+          
+          <div class="mb-3">
+            <label class="form-label fw-bold small text-muted">Judul Kejadian</label>
+            <input type="text" id="edit-judul-text" class="form-control bg-light" readonly>
+          </div>
+
+          <div class="mb-3">
+            <label for="edit-status-select" class="form-label fw-bold">Pilih Status Baru <span class="text-danger">*</span></label>
+            <select id="edit-status-select" class="form-select form-select-lg">
+              <option value="Menunggu">Menunggu</option>
+              <option value="Diproses">Diproses</option>
+              <option value="Selesai">Selesai</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="edit-admin-response" class="form-label fw-bold">Balasan Admin</label>
+            <textarea id="edit-admin-response" rows="4" class="form-control" placeholder="Tuliskan arahan atau konfirmasi untuk pelapor..."></textarea>
+            <small class="text-muted">Isi pesan ini untuk memberitahu pelapor bahwa laporan sedang ditindaklanjuti.</small>
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="button" id="btn-save-edit-status" class="btn btn-danger fw-bold px-4">
+            <i class="bi bi-check-circle-fill me-1"></i> Simpan Perubahan
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MASTER DATA MODAL -->
+  <div class="modal fade" id="modalMasterData" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-dark text-white border-bottom border-danger">
+          <h5 class="modal-title fw-bold" id="master-modal-title"><i class="bi bi-pencil-square text-danger me-2"></i>Kelola Data</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <input type="hidden" id="master-type">
+          <input type="hidden" id="master-id">
+          <div id="master-form-fields"></div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="button" id="btn-save-master" class="btn btn-danger fw-bold px-4">Simpan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL UPLOAD ARSIP DATA -->
+  <div class="modal fade" id="modalUploadArsip" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-dark text-white border-bottom border-danger">
+          <h5 class="modal-title fw-bold"><i class="bi bi-cloud-arrow-up-fill text-danger me-2"></i> Upload File Arsip Data</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <form id="form-upload-arsip" enctype="multipart/form-data">
+          <div class="modal-body p-4">
+            
+            <div class="mb-3">
+              <label for="arsip-judul" class="form-label fw-bold small text-muted">Judul Arsip Data <span class="text-danger">*</span></label>
+              <input type="text" id="arsip-judul" name="judul_arsip" class="form-control" placeholder="Contoh: Laporan Kejadian Kebakaran Tahun 2026" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="arsip-kategori" class="form-label fw-bold small text-muted">Kategori Arsip <span class="text-danger">*</span></label>
+              <select id="arsip-kategori" name="kategori" class="form-select" required>
+                <option value="Laporan Kebakaran">Laporan Kebakaran</option>
+                <option value="Peta & Spasial">Peta & Spasial</option>
+                <option value="SOP & Regulasi">SOP & Regulasi</option>
+                <option value="Data Non-Kebakaran">Data Non-Kebakaran</option>
+                <option value="Lainnya" selected>Lainnya</option>
+              </select>
+            </div>
+
+            <!-- FOLDER PENYIMPANAN BERKAS -->
+            <div class="mb-3">
+              <label for="arsip-nama-folder" class="form-label fw-bold small text-muted"><i class="bi bi-folder-fill text-warning me-1"></i> Folder Penyimpanan Berkas</label>
+              <div class="row g-2">
+                <div class="col-md-6">
+                  <select id="arsip-nama-folder" name="nama_folder" class="form-select form-select-sm">
+                    <option value="Umum">Folder Umum</option>
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <input type="text" id="arsip-nama-folder-custom" name="nama_folder_custom" class="form-control form-control-sm" placeholder="Atau ketik folder baru...">
+                </div>
+              </div>
+              <small class="text-muted"><i class="bi bi-info-circle me-1"></i> Pilih folder yang sudah ada atau buat folder baru untuk menyimpan berkas ini.</small>
+            </div>
+
+            <!-- PILIHAN TANGGAL BERKAS / UPLOAD BERBASIS KALENDER VISUAL -->
+            <div class="p-3 bg-light rounded-3 border mb-3">
+              <label for="arsip-tanggal-upload" class="form-label fw-bold small text-dark mb-1">
+                <i class="bi bi-calendar-date-fill text-danger me-1"></i> Pilih Tanggal, Bulan, & Tahun Berkas / Upload (Kalender)
+              </label>
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-white text-danger border-end-0"><i class="bi bi-calendar3"></i></span>
+                <input type="date" id="arsip-tanggal-upload" name="tanggal_upload" class="form-control border-start-0 ps-0">
+              </div>
+              <small class="text-muted d-block mt-1"><i class="bi bi-info-circle me-1"></i> Klik pada ikon kalender untuk memilih tanggal, bulan, dan tahun secara langsung. Kosongkan jika ingin menggunakan tanggal hari ini.</small>
+            </div>
+
+            <div class="mb-3">
+              <label for="arsip-deskripsi" class="form-label fw-bold small text-muted">Deskripsi / Catatan Singkat</label>
+              <textarea id="arsip-deskripsi" name="deskripsi" rows="3" class="form-control" placeholder="Tuliskan keterangan mengenai dokumen atau data arsip ini..."></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label for="arsip-file-input" class="form-label fw-bold small text-muted">Pilih File Arsip <span class="text-danger">*</span></label>
+              <div class="border border-2 border-dashed rounded-3 p-4 text-center bg-light" id="arsip-dropzone" style="border-style: dashed !important; cursor: pointer;">
+                <i class="bi bi-file-earmark-arrow-up text-danger display-5 d-block mb-2"></i>
+                <h6 class="fw-bold mb-1">Klik atau Tarik File ke Sini</h6>
+                <p class="small text-muted mb-2">Format didukung: PDF, DOC, DOCX, XLS, XLSX, CSV, QMD, ZIP, RAR, GeoJSON, MPK, Gambar (PNG/JPG)</p>
+                <span class="badge bg-secondary mb-3">Maksimal Ukuran File: 50 MB</span>
+                <input type="file" id="arsip-file-input" name="file" class="d-none" required>
+                <div id="arsip-file-info" class="mt-2 text-primary fw-semibold d-none">
+                  <i class="bi bi-paperclip me-1"></i> <span id="arsip-file-name">-</span> (<span id="arsip-file-size">0 KB</span>)
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <div class="modal-footer bg-light">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" id="btn-submit-upload-arsip" class="btn btn-danger fw-bold px-4">
+              <i class="bi bi-cloud-upload-fill me-1"></i> Unggah Arsip
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PRATINJAU BERKAS ARSIP LANGSUNG (IN-APP DIRECT VIEWER) -->
+  <div class="modal fade" id="modalPreviewArsip" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header bg-dark text-white border-bottom border-danger">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-file-earmark-spreadsheet-fill text-danger fs-4" id="preview-arsip-icon"></i>
+            <div>
+              <h5 class="modal-title fw-bold mb-0" id="preview-arsip-title">Pratinjau Berkas Arsip</h5>
+              <small class="text-white-50 d-block" id="preview-arsip-subtitle">Melihat isi berkas secara langsung di aplikasi</small>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <a href="#" id="preview-btn-download" class="btn btn-sm btn-danger fw-bold shadow-sm" download title="Unduh Berkas Ini">
+              <i class="bi bi-download me-1"></i> Unduh File
+            </a>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+        </div>
+        <div class="modal-body p-3 p-md-4" id="preview-arsip-body" style="min-height: 480px; background-color: #f8fafc;">
+          <!-- Dynamic Content: Excel Spreadsheet Table, PDF Embed, High-Res Image, or GeoJSON Map -->
+        </div>
+        <div class="modal-footer bg-light d-flex justify-content-between align-items-center">
+          <small class="text-muted" id="preview-arsip-footer-info"><i class="bi bi-shield-check text-danger me-1"></i> Damkar In-App File Viewer</small>
+          <button type="button" class="btn btn-secondary px-4 fw-semibold" data-bs-dismiss="modal">Tutup</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL KELOLA & PINDAHKAN BERKAS KE FOLDER (WINDOWS 11 FILE EXPLORER STYLE) -->
+  <div class="modal fade explorer-modal" id="modalBatchFolder" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content">
+        <!-- MODAL HEADER: WINDOWS 11 EXPLORER HEADER -->
+        <div class="modal-header bg-dark text-white border-bottom border-danger py-3">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-folder-fill text-warning fs-4"></i>
+            <div>
+              <h5 class="modal-title fw-bold mb-0">Kelola & Penjelajah Folder Arsip</h5>
+              <small class="text-white-50">Sistem Penjelajah Folder Berkas Operasional Damkar (Windows 11 Style)</small>
+            </div>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body explorer-modal-body p-3 p-md-4" style="background-color: #f8fafc;">
+          
+          <!-- TOOLBAR UTAMA (WINDOWS 11 TOOLBAR STYLE) -->
+          <div class="explorer-toolbar p-2 bg-white rounded-3 border mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2 shadow-sm">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <button type="button" id="explorer-back-button" class="btn btn-light btn-sm fw-bold border text-dark px-3 py-2 shadow-sm d-flex align-items-center gap-2" onclick="goBackExplorerFolder()" title="Kembali ke folder sebelumnya" style="display: none;">
+                <i class="bi bi-arrow-left-circle-fill text-secondary fs-6"></i>
+                <span>Kembali</span>
+              </button>
+
+              <!-- BUTTON + NEW DROPDOWN (Persis Gambar Windows 11 Toolbar) -->
+              <div class="dropdown">
+                <button class="btn btn-light btn-sm fw-bold border text-dark dropdown-toggle px-3 py-2 shadow-sm d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown">
+                  <i class="bi bi-plus-circle-fill text-primary fs-6"></i>
+                  <span>New</span>
+                </button>
+                <ul class="dropdown-menu shadow border-0 mt-1">
+                  <li>
+                    <a class="dropdown-item fw-semibold py-2" href="#" onclick="promptCreateNewFolder(); return false;">
+                      <i class="bi bi-folder-plus text-warning me-2 fs-6"></i> Buat Folder Baru
+                    </a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item fw-semibold py-2" href="#" onclick="triggerDirectDrivePicker(event); return false;">
+                      <i class="bi bi-file-earmark-arrow-up-fill text-danger me-2 fs-6"></i> Upload File  / Drive
+                    </a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item fw-semibold py-2" href="#" onclick="triggerDirectDriveFolderPicker(event); return false;">
+                      <i class="bi bi-folder-symlink-fill text-primary me-2 fs-6"></i> Upload Folder / Drive
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              <button type="button" class="btn btn-danger btn-sm fw-bold px-3 py-2 shadow-sm d-flex align-items-center gap-2" onclick="triggerDirectDrivePicker(event)" title="Ambil file atau data dari laptop">
+                <i class="bi bi-file-earmark-arrow-up-fill"></i>
+                <span>Upload File/Data</span>
+              </button>
+              <button type="button" class="btn btn-primary btn-sm fw-bold px-3 py-2 shadow-sm d-flex align-items-center gap-2" onclick="triggerDirectDriveFolderPicker(event)" title="Ambil folder dari laptop">
+                <i class="bi bi-folder-symlink-fill"></i>
+                <span>Upload Folder</span>
+              </button>
+
+              <div class="vr mx-1 d-none d-md-block" style="height: 24px;"></div>
+
+              <!-- IKON AKSI WINDOWS TOOLBAR (Cut, Copy, Rename, Delete, Move) -->
+              <div class="d-flex align-items-center gap-1">
+                <button type="button" class="btn btn-sm btn-light border text-dark px-2 py-1 fw-semibold" onclick="promptCreateNewFolder()" title="Buat Folder Baru">
+                  <i class="bi bi-folder-plus text-warning me-1"></i> + Folder Baru
+                </button>
+                <button type="button" class="btn btn-sm btn-light border text-muted px-2 py-1" onclick="fetchArsipData()" title="Refresh Penjelajah">
+                  <i class="bi bi-arrow-clockwise text-success me-1"></i> Refresh
+                </button>
+              </div>
+            </div>
+
+            <!-- SEARCH INSIDE EXPLORER -->
+            <div class="input-group input-group-sm" style="max-width: 250px;">
+              <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+              <input type="text" id="explorer-search-input" class="form-control border-start-0" placeholder="Cari berkas..." oninput="filterExplorerFiles(this.value)">
+            </div>
+          </div>
+
+          <!-- BREADCRUMB ADDRESS BAR (WINDOWS 11 ADDRESS BAR STYLE) -->
+          <div class="explorer-address-bar p-2 bg-white rounded-3 border mb-3 d-flex align-items-center justify-content-between gap-2 shadow-sm">
+            <div class="d-flex align-items-center gap-2 flex-grow-1 overflow-hidden">
+              <span class="text-muted small fw-semibold flex-shrink-0"><i class="bi bi-display me-1"></i> Laptop Damkar:</span>
+              <nav aria-label="breadcrumb" class="mb-0 flex-grow-1 text-truncate">
+                <ol class="breadcrumb mb-0 small fw-bold" id="explorer-breadcrumb-list">
+                  <li class="breadcrumb-item"><a href="#" onclick="selectExplorerFolder('Semua'); return false;" class="text-danger">📁 Damkar Arsip Data</a></li>
+                  <li class="breadcrumb-item active" id="explorer-breadcrumb-active" aria-current="page">Semua Berkas</li>
+                </ol>
+              </nav>
+            </div>
+            <span class="badge bg-danger-subtle text-danger border border-danger-subtle flex-shrink-0" id="explorer-file-count-badge">0 Berkas</span>
+          </div>
+
+          <!-- GRID KARTU FOLDER VISUAL (PERSIS GAMBAR REFERENSI 1) -->
+          <div class="explorer-folder-panel p-3 bg-white rounded-3 border mb-4 shadow-sm">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-folder-fill text-warning fs-5"></i>
+                <h6 class="fw-bold mb-0 text-dark">FOLDER PENYIMPANAN DATA ARSIP</h6>
+                <span class="badge bg-secondary-subtle text-dark border" id="modal-folder-count-badge">0 Folder</span>
+              </div>
+              <small class="text-muted"><i class="bi bi-mouse me-1"></i> Klik kartu folder untuk membuka isi filenya</small>
+            </div>
+
+            <!-- GRID KARTU FOLDER -->
+            <div id="modal-folder-explorer-list" class="explorer-folder-grid row g-2">
+              <!-- Dynamic folder cards rendered by JS (Semua Berkas, folder non kebakaran, Umum, etc.) -->
+            </div>
+          </div>
+
+          <!-- DAFTAR BERKAS DETAILS VIEW (WINDOWS FILE DETAILS VIEW) -->
+          <div class="explorer-file-panel p-3 bg-white rounded-3 border shadow-sm">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+              <h6 class="fw-bold mb-0 text-dark">
+                <i class="bi bi-file-earmark-text-fill text-danger me-2"></i>Daftar Berkas di Folder: <span id="explorer-folder-title-display" class="text-danger">Semua Berkas</span>
+              </h6>
+              <span class="text-muted small"><i class="bi bi-sort-down text-danger me-1"></i> Tersusun Sekuensial Berdasarkan Tahun & Bulan</span>
+            </div>
+
+            <!-- BATCH ACTION BAR INSIDE MODAL -->
+            <div id="explorer-batch-action-bar" class="p-2 bg-danger-subtle border border-danger-subtle rounded-3 mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2 d-none">
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-danger text-white fs-6"><span id="explorer-selected-count">0</span> Berkas Terpilih</span>
+                <small class="text-dark fw-semibold">Pilih folder target untuk memindahkan berkas terpilih.</small>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-outline-danger btn-sm fw-bold shadow-sm" onclick="deleteSelectedExplorerFiles()">
+                  <i class="bi bi-trash3-fill me-1"></i> Hapus Terpilih
+                </button>
+                <select id="explorer-batch-target-folder" class="form-select form-select-sm" style="width: auto;">
+                  <option value="Umum">Folder Umum</option>
+                </select>
+                <button type="button" class="btn btn-danger btn-sm fw-bold shadow-sm" onclick="submitExplorerBatchMove()">
+                  <i class="bi bi-check-circle-fill me-1"></i> Pindahkan
+                </button>
+              </div>
+            </div>
+
+            <div class="explorer-file-table table-responsive">
+              <table class="table table-hover align-middle border mb-0">
+                <thead class="table-dark">
+                  <tr>
+                    <th style="width: 40px;" class="text-center">
+                      <input type="checkbox" id="explorer-select-all" class="form-check-input" onchange="toggleSelectAllExplorer(this)" title="Pilih Semua Berkas">
+                    </th>
+                    <th style="width: 40px;">No</th>
+                    <th>Nama Berkas Arsip</th>
+                    <th>Folder</th>
+                    <th>Format & Ukuran</th>
+                    <th>Bulan & Tahun Upload</th>
+                    <th class="text-center" style="width: 160px;">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="explorer-table-body">
+                  <tr>
+                    <td colspan="7" class="text-center py-4 text-muted">
+                      <span class="spinner-border spinner-border-sm me-2"></span> Memuat berkas folder...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer bg-light d-flex justify-content-between align-items-center">
+          <small class="text-muted"><i class="bi bi-shield-check text-danger me-1"></i> Windows 11 Style Damkar File Explorer System</small>
+          <button type="button" class="btn btn-secondary px-4 fw-semibold" data-bs-dismiss="modal">Tutup Explorer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL BUAT FOLDER BARU INSTAN -->
+  <div class="modal fade" id="modalCreateNewFolder" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-dark text-white border-bottom border-danger">
+          <h5 class="modal-title fw-bold"><i class="bi bi-folder-plus text-warning me-2"></i> Buat Folder Baru</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label for="input-new-folder-name" class="form-label fw-bold small text-dark">Nama Folder Penyimpanan <span class="text-danger">*</span></label>
+            <input type="text" id="input-new-folder-name" class="form-control" placeholder="Contoh: Folder Laporan Kebakaran 2026">
+            <small class="text-muted d-block mt-1"><i class="bi bi-info-circle me-1"></i> Folder baru akan otomatis tersedia untuk menyimpan dan mengelompokkan berkas data.</small>
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-danger fw-bold px-4" onclick="submitCreateNewFolder()">
+            <i class="bi bi-check-circle-fill me-1"></i> Buat Folder
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HIDDEN FILE & FOLDER INPUTS UNTUK DIRECT DRIVE/LAPTOP PICKER -->
+  <input type="file" id="direct-drive-file-input" style="display:none;" onchange="handleDirectDriveUpload(this)" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.qmd,.zip,.rar,.7z,.json,.geojson,.mpk,.shp,.png,.jpg,.jpeg,.webp">
+  <input type="file" id="direct-drive-folder-input" style="display:none;" webkitdirectory directory multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.qmd,.zip,.rar,.7z,.json,.geojson,.mpk,.shp,.png,.jpg,.jpeg,.webp" onchange="handleDirectDriveFolderUpload(this)">
+
+  <!-- MODAL UPLOAD FILE ARSIP DARI DRIVE / LAPTOP -->
+  <div class="modal fade" id="modalUploadArsip" tabindex="-1" aria-labelledby="modalUploadArsipLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 border-0 shadow">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title fw-bold" id="modalUploadArsipLabel">
+            <i class="bi bi-cloud-arrow-up-fill me-2"></i> Upload File Arsip Baru dari Drive / Laptop
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="form-upload-arsip-drive" onsubmit="submitUploadArsip(event)">
+          <div class="modal-body p-4">
+            <div class="mb-3">
+              <label for="upload-arsip-file" class="form-label fw-bold text-dark small">Pilih File dari Drive / Laptop <span class="text-danger">*</span></label>
+              <input type="file" id="upload-arsip-file" class="form-control form-control-sm" required onchange="autoFillUploadTitle(this)">
+              <small class="text-muted">Format didukung: PDF, Excel (.xlsx/.xls/.csv), Word (.docx), GeoJSON, Shapefile, ZIP, Gambar, dll (Maks 50MB).</small>
+            </div>
+
+            <div class="mb-3">
+              <label for="upload-arsip-judul" class="form-label fw-bold text-dark small">Judul Berkas Arsip <span class="text-danger">*</span></label>
+              <input type="text" id="upload-arsip-judul" class="form-control form-control-sm" placeholder="Contoh: Rekap Laporan Damkar 2026..." required>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label for="upload-arsip-folder" class="form-label fw-bold text-dark small">Target Folder Penyimpanan</label>
+                <select id="upload-arsip-folder" class="form-select form-select-sm">
+                  <!-- Dynamic folder options -->
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="upload-arsip-kategori" class="form-label fw-bold text-dark small">Divisi / Kategori</label>
+                <select id="upload-arsip-kategori" class="form-select form-select-sm">
+                  <option value="Laporan Kebakaran">Laporan Kebakaran</option>
+                  <option value="Peta & Spasial">Peta & Spasial</option>
+                  <option value="SOP & Regulasi">SOP & Regulasi</option>
+                  <option value="Data Non-Kebakaran">Data Non-Kebakaran</option>
+                  <option value="Lainnya">Lainnya</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mb-2">
+              <label for="upload-arsip-deskripsi" class="form-label fw-bold text-dark small">Deskripsi Berkas (Opsional)</label>
+              <textarea id="upload-arsip-deskripsi" class="form-control form-control-sm" rows="2" placeholder="Catatan atau keterangan ringkas berkas..."></textarea>
+            </div>
+          </div>
+          <div class="modal-footer bg-light">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-danger fw-bold px-4" id="btn-submit-upload-arsip">
+              <i class="bi bi-cloud-upload-fill me-1"></i> Upload Sekarang
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="py-3 text-center small text-muted border-top bg-white mt-5">
+    &copy; 2026 Silatkar - Sistem Laporan Kebakaran Damkar. All Rights Reserved.
+  </footer>
+
+  <!-- Scripts -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://unpkg.com/shpjs@6.1.0/dist/shp.js"></script>
+
+  <script src="js/admin.js?v=20260904_srs"></script>
+  <script src="js/map-layer-panel.js?v=20260910_restore_risk_colors"></script>
+  <script src="js/breadcrumb-map.js?v=20260831_2220"></script>
+
+</body>
+</html>

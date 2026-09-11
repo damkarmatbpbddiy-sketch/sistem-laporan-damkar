@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detail Laporan - Silatkar</title>
+  
+  <!-- Google Fonts & Bootstrap 5 & Bootstrap Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  
+  <!-- Leaflet CSS & JS for OpenStreetMap -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- SweetAlert2 CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-light">
+
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg navbar-damkar sticky-top">
+    <div class="container">
+      <a class="navbar-brand navbar-brand-custom" href="index.html">
+        <div class="brand-icon-wrap">
+          <i class="bi bi-fire"></i>
+        </div>
+        <div>
+          <div class="brand-title">SILATKAR</div>
+          <div class="brand-subtitle">Sistem Informasi & Laporan Kebakaran</div>
+        </div>
+      </a>
+      <button class="navbar-toggler navbar-dark" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto align-items-center gap-1 mt-3 mt-lg-0">
+          <li class="nav-item">
+            <a class="nav-link nav-link-custom" href="index.html">
+              <i class="bi bi-house-door-fill"></i> Beranda
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link nav-link-custom btn-report-nav ms-lg-2 ms-0" href="laporan.html">
+              <i class="bi bi-exclamation-triangle-fill"></i> Laporkan Kejadian
+            </a>
+          </li>
+          <div id="auth-nav-container" class="d-flex align-items-center">
+            <li class="nav-item ms-lg-2">
+              <a class="nav-link nav-link-custom" href="login.html">
+                <i class="bi bi-shield-lock-fill"></i> Login Admin
+              </a>
+            </li>
+          </div>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main class="py-5">
+    <div class="container">
+      
+      <!-- NAV BACK BUTTON -->
+      <div class="mb-4 d-flex justify-content-between align-items-center">
+        <button onclick="history.back()" class="btn btn-outline-secondary btn-sm px-3 rounded-pill">
+          <i class="bi bi-arrow-left"></i> Kembali
+        </button>
+        <div id="admin-action-bar" class="d-none">
+          <!-- Dynamically filled with status changer dropdown if admin -->
+        </div>
+      </div>
+
+      <!-- MAIN DETAIL CARD -->
+      <div class="card card-custom">
+        <div class="card-header-damkar d-flex flex-wrap justify-content-between align-items-center gap-2">
+          <div>
+            <span class="badge bg-danger text-white me-2">ID #<span id="detail-id">-</span></span>
+            <span id="detail-status-badge"></span>
+          </div>
+          <div class="text-white-50 small">
+            <i class="bi bi-clock-history me-1"></i> <span id="detail-created-at">-</span>
+          </div>
+        </div>
+
+        <div class="card-body p-4 p-md-5">
+          
+          <div class="row g-4">
+            
+            <!-- LEFT COLUMN: FOTO & QUICK DETAILS -->
+            <div class="col-lg-5">
+              <div class="mb-4">
+                <label class="form-label fw-bold small text-muted text-uppercase mb-2">Foto Kejadian Kebakaran</label>
+                <div class="rounded-3 overflow-hidden border shadow-sm bg-dark text-center position-relative" style="min-height: 250px;">
+                  <img id="detail-foto" src="" alt="Foto Kejadian" class="img-fluid w-100 d-none" style="max-height: 380px; object-fit: cover;">
+                  <div id="detail-foto-placeholder" class="p-5 text-white-50">
+                    <i class="bi bi-image fs-1 d-block mb-2"></i> Foto tidak diunggah
+                  </div>
+                </div>
+              </div>
+
+              <!-- INFORMASI PELAPOR CARD -->
+              <div class="p-3 bg-light rounded-3 border">
+                <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                  <i class="bi bi-person-lines-fill text-danger me-2"></i> Informasi Pelapor
+                </h6>
+                <div class="mb-2">
+                  <small class="text-muted d-block">Nama Pelapor</small>
+                  <strong class="text-dark fs-6" id="detail-nama-pelapor">-</strong>
+                </div>
+                <div class="mb-2">
+                  <small class="text-muted d-block">Nomor HP / WhatsApp</small>
+                  <div class="d-flex align-items-center gap-2">
+                    <strong class="text-dark" id="detail-nomor-hp">-</strong>
+                    <a id="btn-whatsapp" href="#" target="_blank" class="btn btn-sm btn-success py-0 px-2 text-white fw-semibold d-none">
+                      <i class="bi bi-whatsapp"></i> Chat WA
+                    </a>
+                  </div>
+                </div>
+
+              <div class="mb-2">
+                <small class="text-muted d-block">Balasan Admin</small>
+                <div class="p-3 rounded-3 bg-white border text-dark" id="detail-admin-response">-</div>
+              <div class="mb-4">
+                <h6 class="fw-bold text-muted text-uppercase small mb-2"><i class="bi bi-card-text text-danger me-1"></i> Deskripsi Kronologi Kejadian</h6>
+                <div class="p-3 rounded-3 bg-light border text-dark leading-relaxed" id="detail-deskripsi">
+                  -
+                </div>
+              </div>
+
+              <!-- Lokasi Alamat & Coordinates -->
+              <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h6 class="fw-bold text-muted text-uppercase small mb-0"><i class="bi bi-geo-alt-fill text-danger me-1"></i> Lokasi Kejadian Presisi</h6>
+                  <a id="btn-gmaps-detail" href="#" target="_blank" class="btn btn-danger btn-sm rounded-pill fw-bold px-3 shadow-sm">
+                    <i class="bi bi-map-fill me-1"></i> Buka di Google Maps <i class="bi bi-box-arrow-up-right ms-1"></i>
+                  </a>
+                </div>
+                <div class="p-3 rounded-3 bg-light border mb-3">
+                  <p class="fw-semibold text-dark mb-2" id="detail-alamat">-</p>
+                  <div class="d-flex gap-3 small text-muted">
+                    <div><strong>Lat:</strong> <span id="detail-latitude">-</span></div>
+                    <div><strong>Lng:</strong> <span id="detail-longitude">-</span></div>
+                  </div>
+                </div>
+
+                <!-- Leaflet.js OpenStreetMap Container -->
+                <div id="map-container"></div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer-damkar">
+    <div class="container text-center small text-white-50">
+      &copy; 2026 Silatkar - Sistem Laporan Kebakaran Damkar. All Rights Reserved.
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="js/app.js"></script>
+  <script src="js/detail.js"></script>
+</body>
+</html>

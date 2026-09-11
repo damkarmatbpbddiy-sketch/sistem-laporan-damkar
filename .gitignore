@@ -1,0 +1,51 @@
+# Node modules (Sangat berat, jangan diupload)
+node_modules/
+backend/node_modules/
+frontend/backend/node_modules/
+
+# Environment files (Rahasia)
+.env
+backend/.env
+
+# Temporary files
+*.log
+*.stackdump
+grep.exe.stackdump
+
+# Uploaded files
+backend/uploads/
+frontend/backend/uploads/
+frontend/Shapefile & mpk/
+
+# Large GIS source/output files not required by the web application
+Shapefile & mpk/Peta Risiko Kebakaran Lahan Pertanian_Nael.mpk
+Shapefile & mpk/Data Peta WMK Cagar Budaya/PETA CAGAR BUDAYA 800dpi.pdf
+Shapefile & mpk/Data Peta WMK Cagar Budaya/PETA CAGAR BUDAYA, 22 Mei 2025.pdf
+Shapefile & mpk/Data Peta WMK Cagar Budaya/PETA CAGAR BUDAYA.pdf
+Shapefile & mpk/Data Peta WMK Cagar Budaya/PETA CAGAR BUDAYA.png
+# Duplicate project folders
+frontend/backend/
+frontend/frontend/
+
+# Accidental empty/temporary files
+main
+frontend/null
+
+
+
+# Duplicate root GeoJSON files
+AREA SRS.geojson
+BUFFER POS DAMKAR EKSISTING.geojson
+BUFFER POS DAMKAR RENCANA.geojson
+TINGKAT RISIKO.geojson
+TITIK BIRO ORGANISASI PEMERINTAH DAN SEKOLAH.geojson
+TITIK CAGAR BUDAYA.geojson
+TITIK POS DAMKAR EKSISTING.geojson
+TITIK POS DAMKAR RENCANA.geojson
+
+# Unused duplicate frontend public folder
+frontend/public/
+
+# Unused lockfiles without package.json
+package-lock.json
+frontend/package-lock.json
