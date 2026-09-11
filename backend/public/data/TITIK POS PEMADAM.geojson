@@ -1,0 +1,19 @@
+{
+"type": "FeatureCollection",
+"name": "TITIK POS PEMADAM",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::32749" } },
+"features": [
+{ "type": "Feature", "properties": { "Id": 0 }, "geometry": { "type": "Point", "coordinates": [ 436392.949647550529335, 9154145.3908716365695 ] } },
+{ "type": "Feature", "properties": { "Id": 0 }, "geometry": { "type": "Point", "coordinates": [ 414547.259079866984393, 9147002.238783489912748 ] } },
+{ "type": "Feature", "properties": { "Id": 0 }, "geometry": { "type": "Point", "coordinates": [ 401973.286865241243504, 9129671.196263721212745 ] } },
+{ "type": "Feature", "properties": { "Id": 0 }, "geometry": { "type": "Point", "coordinates": [ 427018.684497330104932, 9125231.163589833304286 ] } },
+{ "type": "Feature", "properties": { "Id": 0 }, "geometry": { "type": "Point", "coordinates": [ 417165.256236741610337, 9135872.779130153357983 ] } },
+{ "type": "Feature", "properties": { "Id": 0 }, "geometry": { "type": "Point", "coordinates": [ 432349.864799999224488, 9137983.200999999418855 ] } },
+{ "type": "Feature", "properties": { "Id": 0 }, "geometry": { "type": "Point", "coordinates": [ 443388.534905478183646, 9140476.908652486279607 ] } },
+{ "type": "Feature", "properties": { "Id": 0 }, "geometry": { "type": "Point", "coordinates": [ 467465.769129177962895, 9128337.118637079373002 ] } },
+{ "type": "Feature", "properties": { "Id": 0 }, "geometry": { "type": "Point", "coordinates": [ 435995.047400000679772, 9115801.825899999588728 ] } },
+{ "type": "Feature", "properties": { "Id": 0 }, "geometry": { "type": "Point", "coordinates": [ 466388.010858462948818, 9102377.827262876555324 ] } },
+{ "type": "Feature", "properties": { "Id": 0 }, "geometry": { "type": "Point", "coordinates": [ 454565.71485609334195, 9113107.976712187752128 ] } },
+{ "type": "Feature", "properties": { "Id": 0 }, "geometry": { "type": "Point", "coordinates": [ 428607.799212924495805, 9148660.966327639296651 ] } }
+]
+}

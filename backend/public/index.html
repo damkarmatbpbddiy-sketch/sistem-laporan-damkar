@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Silatkar - Beranda Sistem Informasi & Laporan Kebakaran</title>
+
+  <meta name="description"
+        content="Layanan Pelaporan Darurat Kebakaran dan Penyelamatan Pemadam Kebakaran - Silatkar">
+
+  <!-- Google Fonts & Bootstrap 5 & Bootstrap Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet">
+
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <!-- Leaflet -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+  <!-- SweetAlert2 CSS -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/style.css?v=20260831_2030">
+</head>
+
+<body>
+
+  <!-- =========================================================
+       NAVBAR
+       ========================================================= -->
+
+  <nav class="navbar navbar-expand-lg navbar-damkar sticky-top">
+
+    <div class="brand-icon-wrap">
+
+      <img
+        src="assets/images/LOGO-DAMKAR.png"
+        alt="Logo Damkar"
+        class="logo-damkar">
+
+    </div>
+
+    <div>
+
+      <div class="brand-title">
+        SILATKAR
+      </div>
+
+      <div class="brand-subtitle">
+        Sistem Informasi & Laporan Kebakaran
+      </div>
+
+    </div>
+
+
+    <button
+      class="navbar-toggler navbar-dark"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarNav">
+
+      <span class="navbar-toggler-icon"></span>
+
+    </button>
+
+
+    <div
+      class="collapse navbar-collapse"
+      id="navbarNav">
+
+      <ul
+        class="navbar-nav ms-auto align-items-center gap-1 mt-3 mt-lg-0">
+
+
+        <li class="nav-item">
+          <a class="nav-link nav-link-custom active" href="index.html">
+            <i class="bi bi-house-door-fill"></i> Beranda
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link nav-link-custom text-danger fw-bold" href="silakar.html">
+            <i class="bi bi-fire"></i> SILATKAR DIY
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link nav-link-custom btn-report-nav ms-lg-2 ms-0" href="laporan.html">
+            <i class="bi bi-exclamation-triangle-fill"></i> Laporkan Kejadian
+          </a>
+        </li>
+
+        <div id="auth-nav-container" class="d-flex align-items-center">
+          <li class="nav-item ms-lg-2">
+            <a class="nav-link nav-link-custom" href="login.html">
+              <i class="bi bi-shield-lock-fill"></i> Login Admin
+            </a>
+          </li>
+        </div>
+
+      </ul>
+
+    </div>
+
+  </nav>
+
+
+
+  <!-- =========================================================
+       MAIN
+       ========================================================= -->
+
+  <main>
+
+
+    <!-- =======================================================
+         LAPORAN KAMERA BERANDA
+         ======================================================= -->
+
+    <section
+      id="home-camera-report"
+      class="py-5">
+
+      <div class="container">
+
+        <div
+          class="text-center mx-auto mb-4"
+          style="max-width:760px;">
+
+          <span
+            class="badge bg-danger text-white px-3 py-2 rounded-pill fw-bold mb-2">
+
+            <i class="bi bi-camera-reels-fill"></i>
+
+            Laporan Cepat Beranda
+
+          </span>
+
+
+          <h2 class="fw-black text-dark display-6">
+
+            Laporkan dengan Kamera dari Beranda
+
+          </h2>
+
+
+          <p class="text-muted">
+
+            Buka kamera, ambil foto, dan laporan akan dikirim otomatis bersama lokasi Anda.
+
+          </p>
+
+        </div>
+
+
+        <div class="row justify-content-center">
+
+          <div class="col-lg-8">
+
+            <div class="card card-custom">
+
+              <div class="card-body">
+
+                <form id="form-laporan-home">
+
+
+                  <input
+                    type="hidden"
+                    id="home-judul_kejadian"
+                    name="judul_kejadian"
+                    value="Laporan Kebakaran Instan">
+
+
+                  <input
+                    type="hidden"
+                    id="home-nama_pelapor"
+                    name="nama_pelapor"
+                    value="Pelapor Anonim">
+
+
+                  <input
+                    type="hidden"
+                    id="home-nomor_hp"
+                    name="nomor_hp"
+                    value="-">
+
+
+                  <input
+                    type="hidden"
+                    id="home-alamat"
+                    name="alamat">
+
+
+                  <input
+                    type="hidden"
+                    id="home-latitude"
+                    name="latitude">
+
+
+                  <input
+                    type="hidden"
+                    id="home-longitude"
+                    name="longitude">
+
+
+                  <input
+                    type="hidden"
+                    id="home-jenis_kejadian"
+                    name="jenis_kejadian"
+                    value="Kebakaran Cepat">
+
+
+                  <input
+                    type="hidden"
+                    id="home-deskripsi"
+                    name="deskripsi">
+
+
+                  <input
+                    type="file"
+                    class="d-none"
+                    id="home-foto"
+                    name="foto"
+                    accept="image/*"
+                    required>
+
+
+                  <div class="text-center mb-3">
+
+                    <button
+                      type="button"
+                      id="btn-open-camera-home"
+                      class="btn btn-danger btn-lg rounded-pill fw-bold">
+
+                      <i class="bi bi-camera-fill me-1"></i>
+
+                      Buka Kamera
+
+                    </button>
+
+                  </div>
+
+
+                  <div
+                    id="home-geo-status"
+                    class="alert alert-info py-2 px-3 small d-none mb-3">
+
+                    <i class="bi bi-info-circle-fill me-1"></i>
+
+                    <span id="home-geo-status-text">
+                      Menunggu kamera dan lokasi...
+                    </span>
+
+                  </div>
+
+
+                  <div
+                    id="home-camera-pane"
+                    class="camera-preview d-none mb-3 position-relative">
+
+
+                    <div class="camera-topbar">
+
+                      <h5>
+                        Mode Kamera Cepat
+                      </h5>
+
+                      <div class="camera-status">
+                        Ambil foto untuk mengirim laporan
+                      </div>
+
+                    </div>
+
+
+                    <video
+                      id="home-camera-video"
+                      autoplay
+                      playsinline
+                      muted>
+                    </video>
+
+
+                    <div
+                      class="camera-overlay d-flex justify-content-center align-items-end p-3 gap-2">
+
+                      <button
+                        type="button"
+                        id="btn-capture-photo-home"
+                        class="btn btn-danger btn-lg rounded-pill fw-bold">
+
+                        <i class="bi bi-camera2-fill me-1"></i>
+
+                        Tangkap & Kirim
+
+                      </button>
+
+
+                      <button
+                        type="button"
+                        id="btn-close-camera-home"
+                        class="btn btn-outline-light btn-lg rounded-pill fw-bold">
+
+                        <i class="bi bi-x-circle me-1"></i>
+
+                        Tutup Kamera
+
+                      </button>
+
+                    </div>
+
+
+                    <canvas
+                      id="home-camera-canvas"
+                      class="d-none">
+                    </canvas>
+
+                  </div>
+
+
+                  <div class="mt-3">
+
+                    <div
+                      class="image-preview-box"
+                      id="home-preview-container">
+
+                      <div
+                        class="text-center text-muted p-4"
+                        id="home-preview-placeholder">
+
+                        <i class="bi bi-image fs-1 text-secondary"></i>
+
+                        <p class="mb-0 small">
+                          Preview foto akan muncul setelah diambil.
+                        </p>
+
+                      </div>
+
+
+                      <img
+                        id="home-image-preview"
+                        class="d-none w-100"
+                        alt="Preview Foto Kejadian">
+
+                    </div>
+
+                  </div>
+
+
+                  <button
+                    type="submit"
+                    id="btn-submit-laporan-home"
+                    class="d-none">
+                  </button>
+
+
+                </form>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- =======================================================
+         PETA INTERAKTIF BERANDA
+         ======================================================= -->
+
+    <section
+      id="peta-section"
+      class="py-5 bg-light border-top">
+
+      <div class="container-fluid px-lg-5">
+
+
+        <div
+          class="text-center mx-auto mb-4"
+          style="max-width:760px;">
+
+          <span
+            class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill fw-bold text-uppercase mb-2">
+
+            Peta Interaktif Spasial
+
+          </span>
+
+
+          <h2 class="fw-extrabold display-6 text-dark">
+
+            Visualisasi Wilayah, Risiko, dan Pos Damkar DIY
+
+          </h2>
+
+
+          <p class="text-muted">
+
+            Pilih tema peta di navbar sebelah kiri untuk mengeksplorasi layer wilayah DIY, risiko kebakaran, sumbu filosofis, dan pos damkar.
+
+          </p>
+
+        </div>
+
+
+
+        <div class="row g-4">
+
+          <div class="col-12">
+
+            <div class="card card-custom overflow-hidden shadow-sm">
+
+
+              <!-- HEADER PETA -->
+
+              <div
+                class="card-header-damkar d-flex justify-content-between align-items-center flex-wrap gap-2">
+
+                <div>
+
+                  <h5 class="mb-1 fw-bold">
+
+                    <i class="bi bi-geo-alt-fill me-2"></i>
+
+                    Peta Interaktif Spasial DIY
+
+                  </h5>
+
+
+                  <p class="mb-0 small text-white-50">
+
+                    Klik opsi di navbar sebelah kiri untuk mengganti tema visual & layer peta
+
+                  </p>
+
+                </div>
+
+
+                <div class="d-flex gap-2 flex-wrap">
+
+                  <!-- KHUSUS BERANDA -->
+
+                  <span
+                    class="badge bg-light text-dark"
+                    id="map-beranda-status">
+
+                    Peta Dasar DIY
+
+                  </span>
+
+                </div>
+
+              </div>
+
+
+
+              <!-- ISI PETA -->
+
+              <div class="card-body p-3 p-md-4">
+
+                <div class="row g-3">
+
+
+                  <!-- =================================================
+                       SIDEBAR PETA BERANDA
+                       ================================================= -->
+
+                  <div class="col-lg-3 col-md-4">
+
+                    <div
+                      class="admin-map-sidebar p-3 rounded-3 bg-dark text-white h-100 d-flex flex-column border border-dark-subtle">
+
+
+                      <div
+                        class="admin-map-sidebar-header mb-3 pb-2 border-bottom border-secondary">
+
+                        <div
+                          class="d-flex align-items-center gap-2">
+
+                          <i
+                            class="bi bi-layers-half text-danger fs-5">
+                          </i>
+
+
+                          <h6
+                            class="mb-0 fw-bold text-uppercase tracking-wider">
+
+                            PILIH TAMPILAN PETA
+
+                          </h6>
+
+                        </div>
+
+
+                        <small
+                          class="text-muted d-block mt-1">
+
+                          Navbar Tampilan Layer Peta
+
+                        </small>
+
+                      </div>
+
+
+
+                      <!-- =================================================
+                           TOMBOL PETA BERANDA
+                           ================================================= -->
+
+                      <div
+                        id="map-beranda-theme-buttons"
+                        class="admin-map-nav flex-grow-1 overflow-y-auto mb-3 pe-1"
+                        role="tablist"
+                        style="max-height:330px;">
+
+
+                        <button
+                          type="button"
+                          class="admin-map-nav-item"
+                          data-map-theme="live-damkar"
+                          role="tab">
+
+                          <i class="bi bi-fire me-2 text-danger"></i>
+
+                          <span>
+                            Peta Live Damkar & Jangkauan
+                          </span>
+
+                        </button>
+
+
+                        <button
+                          type="button"
+                          class="admin-map-nav-item"
+                          data-map-theme="dasar"
+                          role="tab">
+
+                          <i class="bi bi-map-fill me-2 text-danger"></i>
+
+                          <span>
+                            Peta Dasar DIY
+                          </span>
+
+                        </button>
+
+
+                        <button
+                          type="button"
+                          class="admin-map-nav-item"
+                          data-map-theme="kebakaran"
+                          role="tab">
+
+                          <i class="bi bi-fire me-2 text-danger"></i>
+
+                          <span>
+                            Kejadian Kebakaran
+                          </span>
+
+                        </button>
+
+
+                        <button
+                          type="button"
+                          class="admin-map-nav-item"
+                          data-map-theme="non-kebakaran"
+                          role="tab">
+
+                          <i
+                            class="bi bi-exclamation-diamond-fill me-2 text-warning">
+                          </i>
+
+                          <span>
+                            Kejadian Non-Kebakaran
+                          </span>
+
+                        </button>
+
+
+                        <button
+                          type="button"
+                          class="admin-map-nav-item"
+                          data-map-theme="pertanian"
+                          role="tab">
+
+                          <i
+                            class="bi bi-tree-fill me-2 text-success"
+                            style="opacity:.65">
+                          </i>
+
+                          <span>
+                            Risiko Kebakaran Pertanian
+                          </span>
+
+                        </button>
+
+
+                        <button
+                          type="button"
+                          class="admin-map-nav-item active"
+                          data-map-theme="wmk"
+                          role="tab">
+
+                          <i
+                            class="bi bi-shield-fill-check me-2 text-info">
+                          </i>
+
+                          <span>
+                            WMK & Pos Damkar
+                          </span>
+
+                        </button>
+
+
+                        <button
+                          type="button"
+                          class="admin-map-nav-item"
+                          data-map-theme="tangki-air"
+                          role="tab">
+
+                          <i
+                            class="bi bi-droplet-fill me-2 text-primary">
+                          </i>
+
+                          <span>
+                            Jangkauan Tangki Air
+                          </span>
+
+                        </button>
+
+
+                        <button
+                          type="button"
+                          class="admin-map-nav-item"
+                          data-map-theme="wmk-cagar"
+                          role="tab">
+
+                          <i
+                            class="bi bi-bank2 me-2 text-warning">
+                          </i>
+
+                          <span>
+                            WMK Cagar Budaya
+                          </span>
+
+                        </button>
+
+
+                        <button
+                          type="button"
+                          class="admin-map-nav-item"
+                          data-map-theme="filosofis"
+                          role="tab">
+
+                          <i
+                            class="bi bi-signpost-2-fill me-2 text-danger">
+                          </i>
+
+                          <span>
+                            Sumbu Filosofis DIY
+                          </span>
+
+                        </button>
+
+
+                        <button
+                          type="button"
+                          class="admin-map-nav-item"
+                          data-map-theme="srs"
+                          role="tab">
+
+                          <i
+                            class="bi bi-grid-3x3-gap-fill me-2 text-secondary">
+                          </i>
+
+                          <span>
+                            SRS Strategis
+                          </span>
+
+                        </button>
+
+
+                        <button
+                          type="button"
+                          class="admin-map-nav-item"
+                          data-map-theme="batas-kabupaten"
+                          role="tab">
+
+                          <i
+                            class="bi bi-kanban-fill me-2 text-info">
+                          </i>
+
+                          <span>
+                            Batas Kabupaten
+                          </span>
+
+                        </button>
+
+
+                        <button
+                          type="button"
+                          class="admin-map-nav-item"
+                          data-map-theme="batas-kecamatan"
+                          role="tab">
+
+                          <i
+                            class="bi bi-layout-text-window-reverse me-2 text-primary">
+                          </i>
+
+                          <span>
+                            Batas Kecamatan
+                          </span>
+
+                        </button>
+
+
+                        <button
+                          type="button"
+                          class="admin-map-nav-item"
+                          data-map-theme="desa"
+                          role="tab">
+
+                          <i
+                            class="bi bi-geo-alt-fill me-2 text-warning">
+                          </i>
+
+                          <span>
+                            Titik Desa
+                          </span>
+
+                        </button>
+
+
+                        <!-- POS DAMKAR BERANDA -->
+
+                        <button
+                          type="button"
+                          class="admin-map-nav-item"
+                          data-map-theme="pos-damkar"
+                          role="tab">
+
+                          <i
+                            class="bi bi-fire me-2 text-danger">
+                          </i>
+
+                          <span>
+                            Pos Damkar
+                          </span>
+
+                        </button>
+
+
+                      </div>
+
+
+
+                      <!-- =================================================
+                           LAYER TAMBAHAN (OVERLAY)
+                           ================================================= -->
+
+                      <div
+                        class="admin-map-overlays-wrapper pt-2 border-top border-secondary mb-2">
+
+                        <div
+                          class="d-flex justify-content-between align-items-center mb-2">
+
+                          <span
+                            class="small fw-bold text-uppercase text-light">
+
+                            <i
+                              class="bi bi-plus-circle-fill text-info me-1">
+                            </i>
+
+                            Layer Tambahan
+
+                          </span>
+
+                        </div>
+
+                        <div class="d-flex flex-column gap-2 small text-light ps-1">
+
+                          <div class="form-check form-switch mb-1">
+
+                            <input
+                              class="form-check-input map-overlay-cb"
+                              type="checkbox"
+                              id="cb-overlay-jalan"
+                              data-overlay="jalan">
+
+                            <label
+                              class="form-check-label text-white-50"
+                              for="cb-overlay-jalan">
+
+                              Jaringan Jalan
+
+                            </label>
+
+                          </div>
+
+                          <div class="form-check form-switch mb-1">
+
+                            <input
+                              class="form-check-input map-overlay-cb"
+                              type="checkbox"
+                              id="cb-overlay-kecamatan"
+                              data-overlay="kecamatan">
+
+                            <label
+                              class="form-check-label text-white-50"
+                              for="cb-overlay-kecamatan">
+
+                              Batas Kecamatan
+
+                            </label>
+
+                          </div>
+
+                          <div class="form-check form-switch">
+
+                            <input
+                              class="form-check-input map-overlay-cb"
+                              type="checkbox"
+                              id="cb-overlay-srs"
+                              data-overlay="srs">
+
+                            <label
+                              class="form-check-label text-white-50"
+                              for="cb-overlay-srs">
+
+                              Satuan Ruang Strategis (SRS)
+
+                            </label>
+
+                          </div>
+
+                        </div>
+
+                      </div>
+
+
+
+                      <!-- =================================================
+                           LEGENDA
+                           ================================================= -->
+
+                      <div
+                        class="admin-map-legend-wrapper pt-2 border-top border-secondary">
+
+                        <div
+                          class="d-flex justify-content-between align-items-center mb-2">
+
+                          <span
+                            class="small fw-bold text-uppercase text-light">
+
+                            <i
+                              class="bi bi-info-circle-fill text-danger me-1">
+                            </i>
+
+                            Legenda Peta
+
+                          </span>
+
+                        </div>
+
+
+                        <div
+                          id="map-theme-legend"
+                          class="admin-map-legend-box p-2 bg-secondary bg-opacity-25 rounded border border-secondary small text-light"
+                          style="max-height:180px;overflow-y:auto;">
+
+                          <!-- Diisi oleh map-beranda.js -->
+
+                        </div>
+
+                      </div>
+
+
+                    </div>
+
+                  </div>
+
+
+
+                  <!-- =================================================
+                       CONTAINER PETA BERANDA
+                       ================================================= -->
+
+                  <div class="col-lg-9 col-md-8">
+
+                    <div
+                      id="main-live-map"
+                      class="rounded-3 border overflow-hidden shadow-sm"
+                      style="
+                        height:580px;
+                        width:100%;
+                      ">
+                    </div>
+
+                  </div>
+
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+
+  <!-- =========================================================
+       FOOTER
+       ========================================================= -->
+
+  <footer class="footer-damkar">
+
+    <div class="container">
+
+      <div class="row g-4 mb-4">
+
+
+        <div class="col-lg-5">
+
+          <div
+            class="d-flex align-items-center gap-2 mb-3">
+
+            <div class="brand-icon-wrap">
+
+              <i class="bi bi-fire"></i>
+
+            </div>
+
+            <h5 class="brand-title">
+              SILATKAR
+            </h5>
+
+          </div>
+
+
+          <p class="small text-white-50 pe-lg-4">
+
+            Silatkar - Sistem Informasi Pelaporan Kebakaran dan Penyelamatan Darurat Pemadam Kebakaran. Hadir untuk memberikan layanan tanggap darurat yang cepat, efisien, dan transparan bagi seluruh masyarakat.
+
+          </p>
+
+        </div>
+
+
+        <div class="col-lg-3 col-6">
+
+          <h6 class="footer-title">
+            Menu Navigasi
+          </h6>
+
+
+          <ul class="list-unstyled small">
+
+            <li class="mb-2">
+
+              <a
+                href="index.html"
+                class="text-white-50 text-decoration-none">
+
+                <i class="bi bi-chevron-right"></i>
+
+                Beranda
+
+              </a>
+
+            </li>
+
+
+            <li class="mb-2">
+
+              <a
+                href="laporan.html"
+                class="text-white-50 text-decoration-none">
+
+                <i class="bi bi-chevron-right"></i>
+
+                Form Laporan
+
+              </a>
+
+            </li>
+
+
+            <li class="mb-2">
+
+              <a
+                href="login.html"
+                class="text-white-50 text-decoration-none">
+
+                <i class="bi bi-chevron-right"></i>
+
+                Portal Admin
+
+              </a>
+
+            </li>
+
+          </ul>
+
+        </div>
+
+
+        <div class="col-lg-4 col-6">
+
+          <h6 class="footer-title">
+            Kontak Darurat
+          </h6>
+
+
+          <p class="small text-white-50 mb-1">
+
+            <i
+              class="bi bi-telephone-fill text-danger me-2">
+            </i>
+
+            Call Center: 113 / (021) 113
+
+          </p>
+
+
+          <p class="small text-white-50 mb-1">
+
+            <i
+              class="bi bi-envelope-fill text-danger me-2">
+            </i>
+
+            Email: info@damkar.go.id
+
+          </p>
+
+
+          <p class="small text-white-50">
+
+            <i
+              class="bi bi-geo-alt-fill text-danger me-2">
+            </i>
+
+            Markas Komando Damkar Siaga
+
+          </p>
+
+        </div>
+
+
+      </div>
+
+
+      <hr class="border-secondary">
+
+
+      <div
+        class="text-center small text-white-50 py-2">
+
+        &copy; 2026 Silatkar - Sistem Laporan Kebakaran Damkar.
+        All Rights Reserved.
+
+      </div>
+
+    </div>
+
+  </footer>
+
+
+
+  <!-- =========================================================
+       SCRIPT BERANDA
+       ========================================================= -->
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+  </script>
+
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/sweetalert2@11">
+  </script>
+
+
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+  </script>
+
+
+  <script src="js/app.js"></script>
+
+
+  <script src="https://unpkg.com/shpjs@6.1.0/dist/shp.js"></script>
+  <script src="js/map-beranda.js?v=20260831_2045"></script>
+
+
+</body>
+</html>

@@ -72,16 +72,22 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Resolve frontend path adaptively to support monorepo / Railway deployments
 const candidateFrontendPaths = [
+  path.resolve(__dirname, 'public'),
   path.resolve(__dirname, '../frontend'),
   path.resolve(__dirname, '../../frontend'),
+  path.resolve(process.cwd(), 'backend/public'),
+  path.resolve(process.cwd(), 'public'),
   path.resolve(process.cwd(), 'frontend'),
   path.resolve(process.cwd(), '../frontend')
 ];
-const frontendPath = candidateFrontendPaths.find((p) => fs.existsSync(p)) || path.resolve(__dirname, '../frontend');
+const frontendPath = candidateFrontendPaths.find((p) => fs.existsSync(p)) || path.resolve(__dirname, 'public');
 
 // Serve Frontend Statically
 app.use(express.static(frontendPath));
 app.use('/data', express.static(path.join(frontendPath, 'data')));
+app.use('/css', express.static(path.join(frontendPath, 'css')));
+app.use('/js', express.static(path.join(frontendPath, 'js')));
+app.use('/assets', express.static(path.join(frontendPath, 'assets')));
 
 // Explicit page routes for clean navigation
 app.get('/admin', (req, res) => {
