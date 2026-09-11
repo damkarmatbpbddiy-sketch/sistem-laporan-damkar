@@ -1,0 +1,10 @@
+{
+  "name": "sistem-laporan-damkar",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install-deps": "cd backend && npm install",
+    "postinstall": "npm run install-deps",
+    "start": "node backend/server.js"
+  }
+}
