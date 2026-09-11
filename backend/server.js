@@ -14,51 +14,8 @@ const PORT = process.env.PORT || 5000;
 
 const fs = require('fs');
 
-// Middlewares
-const defaultAllowedOrigins = [
-  'http://localhost:5000',
-  'http://127.0.0.1:5000',
-  'http://localhost:3000',
-  'http://127.0.0.1:3000',
-  'http://localhost:5500',
-  'http://127.0.0.1:5500',
-  'http://localhost:4173',
-  'http://127.0.0.1:4173',
-  'http://localhost:8080',
-  'http://127.0.0.1:8080',
-  'null'
-];
-
-const allowedOrigins = [...new Set([
-  ...defaultAllowedOrigins,
-  ...(process.env.CORS_ORIGINS || '')
-    .split(',')
-    .map((origin) => origin.trim())
-    .filter(Boolean)
-])];
-
-const isLocalDevOrigin = (origin) => {
-  if (!origin) return true;
-  if (origin === 'null') return true;
-  if (allowedOrigins.includes(origin)) return true;
-
-  try {
-    const url = new URL(origin);
-    const hostname = url.hostname.toLowerCase();
-    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0';
-  } catch (error) {
-    return false;
-  }
-};
-
 app.use(cors({
-  origin: (origin, callback) => {
-    if (isLocalDevOrigin(origin)) {
-      return callback(null, true);
-    }
-
-    return callback(new Error('Origin tidak diizinkan oleh kebijakan CORS.'));
-  },
+  origin: true,
   credentials: true
 }));
 app.use(express.json());
