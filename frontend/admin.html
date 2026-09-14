@@ -1363,51 +1363,15 @@
                 <span>Kembali</span>
               </button>
 
-              <!-- BUTTON + NEW DROPDOWN (Persis Gambar Windows 11 Toolbar) -->
-              <div class="dropdown">
-                <button class="btn btn-light btn-sm fw-bold border text-dark dropdown-toggle px-3 py-2 shadow-sm d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown">
-                  <i class="bi bi-plus-circle-fill text-primary fs-6"></i>
-                  <span>New</span>
-                </button>
-                <ul class="dropdown-menu shadow border-0 mt-1">
-                  <li>
-                    <a class="dropdown-item fw-semibold py-2" href="#" onclick="promptCreateNewFolder(); return false;">
-                      <i class="bi bi-folder-plus text-warning me-2 fs-6"></i> Buat Folder Baru
-                    </a>
-                  </li>
-                  <li>
-                    <a class="dropdown-item fw-semibold py-2" href="#" onclick="triggerDirectDrivePicker(event); return false;">
-                      <i class="bi bi-file-earmark-arrow-up-fill text-danger me-2 fs-6"></i> Upload File  / Drive
-                    </a>
-                  </li>
-                  <li>
-                    <a class="dropdown-item fw-semibold py-2" href="#" onclick="triggerDirectDriveFolderPicker(event); return false;">
-                      <i class="bi bi-folder-symlink-fill text-primary me-2 fs-6"></i> Upload Folder / Drive
-                    </a>
-                  </li>
-                </ul>
-              </div>
-
-              <button type="button" class="btn btn-danger btn-sm fw-bold px-3 py-2 shadow-sm d-flex align-items-center gap-2" onclick="triggerDirectDrivePicker(event)" title="Ambil file atau data dari laptop">
-                <i class="bi bi-file-earmark-arrow-up-fill"></i>
-                <span>Upload File/Data</span>
-              </button>
-              <button type="button" class="btn btn-primary btn-sm fw-bold px-3 py-2 shadow-sm d-flex align-items-center gap-2" onclick="triggerDirectDriveFolderPicker(event)" title="Ambil folder dari laptop">
-                <i class="bi bi-folder-symlink-fill"></i>
-                <span>Upload Folder</span>
+              <button type="button" class="btn btn-danger btn-sm fw-bold px-3 py-2 shadow-sm d-flex align-items-center gap-2" onclick="promptCreateNewFolder()" title="Buat Folder Penyimpanan Baru">
+                <i class="bi bi-folder-plus text-white fs-6"></i>
+                <span>+ Folder Baru</span>
               </button>
 
-              <div class="vr mx-1 d-none d-md-block" style="height: 24px;"></div>
-
-              <!-- IKON AKSI WINDOWS TOOLBAR (Cut, Copy, Rename, Delete, Move) -->
-              <div class="d-flex align-items-center gap-1">
-                <button type="button" class="btn btn-sm btn-light border text-dark px-2 py-1 fw-semibold" onclick="promptCreateNewFolder()" title="Buat Folder Baru">
-                  <i class="bi bi-folder-plus text-warning me-1"></i> + Folder Baru
-                </button>
-                <button type="button" class="btn btn-sm btn-light border text-muted px-2 py-1" onclick="fetchArsipData()" title="Refresh Penjelajah">
-                  <i class="bi bi-arrow-clockwise text-success me-1"></i> Refresh
-                </button>
-              </div>
+              <button type="button" class="btn btn-light btn-sm border text-muted px-3 py-2 shadow-sm d-flex align-items-center gap-2" onclick="fetchArsipData()" title="Refresh Penjelajah">
+                <i class="bi bi-arrow-clockwise text-success fs-6"></i>
+                <span>Refresh</span>
+              </button>
             </div>
 
             <!-- SEARCH INSIDE EXPLORER -->
@@ -1451,9 +1415,22 @@
           <!-- DAFTAR BERKAS DETAILS VIEW (WINDOWS FILE DETAILS VIEW) -->
           <div class="explorer-file-panel p-3 bg-white rounded-3 border shadow-sm">
             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-              <h6 class="fw-bold mb-0 text-dark">
-                <i class="bi bi-file-earmark-text-fill text-danger me-2"></i>Daftar Berkas di Folder: <span id="explorer-folder-title-display" class="text-danger">Semua Berkas</span>
-              </h6>
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <h6 class="fw-bold mb-0 text-dark">
+                  <i class="bi bi-file-earmark-text-fill text-danger me-2"></i>Daftar Berkas di Folder: <span id="explorer-folder-title-display" class="text-danger">Semua Berkas</span>
+                </h6>
+                <!-- Tombol Upload Khusus Di Dalam Folder Aktif -->
+                <div id="explorer-folder-upload-actions" class="d-none d-inline-flex align-items-center gap-2 ms-md-2">
+                  <button type="button" class="btn btn-danger btn-sm fw-bold px-3 py-1 shadow-sm d-flex align-items-center gap-1" onclick="triggerDirectDrivePicker(event)" title="Ambil file atau berkas dari laptop untuk disimpan ke folder ini">
+                    <i class="bi bi-file-earmark-arrow-up-fill"></i>
+                    <span>Upload File</span>
+                  </button>
+                  <button type="button" class="btn btn-primary btn-sm fw-bold px-3 py-1 shadow-sm d-flex align-items-center gap-1" onclick="triggerDirectDriveFolderPicker(event)" title="Ambil folder dari laptop untuk disimpan ke folder ini">
+                    <i class="bi bi-folder-symlink-fill"></i>
+                    <span>Upload Folder</span>
+                  </button>
+                </div>
+              </div>
               <span class="text-muted small"><i class="bi bi-sort-down text-danger me-1"></i> Tersusun Sekuensial Berdasarkan Tahun & Bulan</span>
             </div>
 

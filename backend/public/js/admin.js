@@ -2999,6 +2999,15 @@ function filterByFolderCard(folderName) {
 
 function triggerDirectDrivePicker(event) {
   if (event) event.preventDefault();
+  if (!explorerActiveFolder || explorerActiveFolder === 'Semua') {
+    Swal.fire({
+      icon: 'info',
+      title: 'Pilih Folder Terlebih Dahulu',
+      text: 'Silakan klik dan buka salah satu folder tujuan sebelum mengunggah file berkas.',
+      confirmButtonColor: '#dc3545'
+    });
+    return;
+  }
   const input = document.getElementById('direct-drive-file-input');
   if (input) {
     input.value = '';
@@ -3008,11 +3017,50 @@ function triggerDirectDrivePicker(event) {
 
 function triggerDirectDriveFolderPicker(event) {
   if (event) event.preventDefault();
+  if (!explorerActiveFolder || explorerActiveFolder === 'Semua') {
+    Swal.fire({
+      icon: 'info',
+      title: 'Pilih Folder Terlebih Dahulu',
+      text: 'Silakan klik dan buka salah satu folder tujuan sebelum mengunggah folder.',
+      confirmButtonColor: '#0d6efd'
+    });
+    return;
+  }
   const input = document.getElementById('direct-drive-folder-input');
   if (input) {
     input.value = '';
     input.click();
   }
+}
+
+function openFolderAndUploadFile(event, folderName) {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+  selectExplorerFolder(folderName);
+  setTimeout(() => {
+    const input = document.getElementById('direct-drive-file-input');
+    if (input) {
+      input.value = '';
+      input.click();
+    }
+  }, 100);
+}
+
+function openFolderAndUploadSubfolder(event, folderName) {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  }
+  selectExplorerFolder(folderName);
+  setTimeout(() => {
+    const input = document.getElementById('direct-drive-folder-input');
+    if (input) {
+      input.value = '';
+      input.click();
+    }
+  }, 100);
 }
 
 async function handleDirectDriveUpload(fileInput) {
@@ -3402,6 +3450,14 @@ function openModalManageFolders() {
 }
 
 function openBatchFolderModal() {
+  const uploadActions = document.getElementById('explorer-folder-upload-actions');
+  if (uploadActions) {
+    if (explorerActiveFolder && explorerActiveFolder !== 'Semua') {
+      uploadActions.classList.remove('d-none');
+    } else {
+      uploadActions.classList.add('d-none');
+    }
+  }
   renderExplorerFolderGrid();
   renderExplorerFilesTable();
 
@@ -3486,6 +3542,15 @@ function selectExplorerFolder(folderName) {
   const listFolderSelect = document.getElementById('filter-arsip-folder');
   if (listFolderSelect) listFolderSelect.value = folderName;
 
+  const uploadActions = document.getElementById('explorer-folder-upload-actions');
+  if (uploadActions) {
+    if (folderName && folderName !== 'Semua') {
+      uploadActions.classList.remove('d-none');
+    } else {
+      uploadActions.classList.add('d-none');
+    }
+  }
+
   updateExplorerBackButton();
   renderExplorerBreadcrumb();
   renderExplorerFolderGrid();
@@ -3560,6 +3625,9 @@ function renderExplorerFolderGrid() {
                     <i class="bi bi-three-dots-vertical fs-6"></i>
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end shadow border-0 text-start" style="font-size: 0.85rem;">
+                    <li><a class="dropdown-item py-2 fw-semibold" href="#" onclick="openFolderAndUploadFile(event, '${escapeHtml(normalizedPath)}'); return false;"><i class="bi bi-file-earmark-arrow-up-fill text-danger me-2"></i> Upload File ke Folder Ini</a></li>
+                    <li><a class="dropdown-item py-2 fw-semibold" href="#" onclick="openFolderAndUploadSubfolder(event, '${escapeHtml(normalizedPath)}'); return false;"><i class="bi bi-folder-symlink-fill text-primary me-2"></i> Upload Folder ke Sini</a></li>
+                    <li><hr class="dropdown-divider my-1"></li>
                     ${!isSystemFolder ? `<li><a class="dropdown-item py-2 fw-semibold" href="#" onclick="renameFolderPrompt(event, '${escapeHtml(displayName)}'); return false;"><i class="bi bi-pencil-square text-warning me-2"></i> Ubah Nama Folder</a></li>` : ''}
                     <li><a class="dropdown-item py-2 fw-semibold" href="#" onclick="downloadFolderFiles(event, '${escapeHtml(displayName)}'); return false;"><i class="bi bi-download text-primary me-2"></i> Download Berkas Folder</a></li>
                     ${!isSystemFolder ? `<li><hr class="dropdown-divider my-1"></li><li><a class="dropdown-item py-2 fw-semibold text-danger" href="#" onclick="deleteFolderConfirm(event, '${escapeHtml(displayName)}'); return false;"><i class="bi bi-trash-fill text-danger me-2"></i> Hapus Folder</a></li>` : ''}
@@ -3616,14 +3684,36 @@ function renderExplorerFilesTable() {
   if (countBadge) countBadge.textContent = `${filtered.length} Berkas`;
 
   if (filtered.length === 0) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="7" class="text-center py-4 text-muted">
-          <i class="bi bi-folder-x fs-3 d-block mb-1 text-warning"></i>
-          Belum ada berkas arsip di dalam folder "${escapeHtml(explorerActiveFolder)}".
-        </td>
-      </tr>
-    `;
+    if (explorerActiveFolder !== 'Semua') {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="text-center py-5">
+            <div class="py-2">
+              <i class="bi bi-folder2-open text-warning display-4 d-block mb-2"></i>
+              <h6 class="fw-bold text-dark mb-1">Folder "${escapeHtml(explorerActiveFolder)}" Masih Kosong</h6>
+              <p class="small text-muted mb-3">Silakan unggah berkas file atau folder langsung ke dalam folder ini.</p>
+              <div class="d-inline-flex gap-2">
+                <button type="button" class="btn btn-danger btn-sm fw-bold px-3 py-2 shadow-sm" onclick="triggerDirectDrivePicker(event)">
+                  <i class="bi bi-file-earmark-arrow-up-fill me-1"></i> Upload File ke Folder Ini
+                </button>
+                <button type="button" class="btn btn-primary btn-sm fw-bold px-3 py-2 shadow-sm" onclick="triggerDirectDriveFolderPicker(event)">
+                  <i class="bi bi-folder-symlink-fill me-1"></i> Upload Folder ke Sini
+                </button>
+              </div>
+            </div>
+          </td>
+        </tr>
+      `;
+    } else {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="text-center py-4 text-muted">
+            <i class="bi bi-folder-x fs-3 d-block mb-1 text-warning"></i>
+            Belum ada berkas arsip tersimpan.
+          </td>
+        </tr>
+      `;
+    }
     return;
   }
 
