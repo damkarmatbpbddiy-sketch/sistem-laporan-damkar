@@ -90,71 +90,111 @@
 
         <div class="card-body p-4 p-md-5">
           
-          <div class="row g-4">
+          <!-- TOP ROW: FOTO DI KIRI, KETERANGAN LENGKAP DI SAMPING KANAN -->
+          <div class="row g-4 mb-4">
             
-            <!-- LEFT COLUMN: FOTO & QUICK DETAILS -->
-            <div class="col-lg-5">
-              <div class="mb-4">
-                <label class="form-label fw-bold small text-muted text-uppercase mb-2">Foto Kejadian Kebakaran</label>
-                <div class="rounded-3 overflow-hidden border shadow-sm bg-dark text-center position-relative" style="min-height: 250px;">
-                  <img id="detail-foto" src="" alt="Foto Kejadian" class="img-fluid w-100 d-none" style="max-height: 380px; object-fit: cover;">
-                  <div id="detail-foto-placeholder" class="p-5 text-white-50">
+            <!-- KOLOM KIRI: FOTO KEJADIAN -->
+            <div class="col-lg-5 col-md-12">
+              <div class="card border shadow-sm h-100">
+                <div class="card-header bg-light py-2 px-3">
+                  <label class="form-label fw-bold small text-muted text-uppercase mb-0">
+                    <i class="bi bi-camera-fill text-danger me-1"></i> Foto Kejadian Kebakaran
+                  </label>
+                </div>
+                <div class="card-body p-2 d-flex align-items-center justify-content-center bg-dark rounded-bottom overflow-hidden position-relative" style="min-height: 280px; max-height: 480px;">
+                  <img id="detail-foto" src="" alt="Foto Kejadian" class="img-fluid w-100 rounded d-none" style="max-height: 460px; object-fit: contain;">
+                  <div id="detail-foto-placeholder" class="p-5 text-white-50 text-center">
                     <i class="bi bi-image fs-1 d-block mb-2"></i> Foto tidak diunggah
                   </div>
                 </div>
               </div>
+            </div>
 
-              <!-- INFORMASI PELAPOR CARD -->
-              <div class="p-3 bg-light rounded-3 border">
-                <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
-                  <i class="bi bi-person-lines-fill text-danger me-2"></i> Informasi Pelapor
-                </h6>
-                <div class="mb-2">
-                  <small class="text-muted d-block">Nama Pelapor</small>
-                  <strong class="text-dark fs-6" id="detail-nama-pelapor">-</strong>
-                </div>
-                <div class="mb-2">
-                  <small class="text-muted d-block">Nomor HP / WhatsApp</small>
-                  <div class="d-flex align-items-center gap-2">
-                    <strong class="text-dark" id="detail-nomor-hp">-</strong>
-                    <a id="btn-whatsapp" href="#" target="_blank" class="btn btn-sm btn-success py-0 px-2 text-white fw-semibold d-none">
-                      <i class="bi bi-whatsapp"></i> Chat WA
-                    </a>
+            <!-- KOLOM KANAN: SEMUA TEKS KETERANGAN LAPORAN -->
+            <div class="col-lg-7 col-md-12">
+              <div class="d-flex flex-column gap-3 h-100">
+                
+                <!-- INFORMASI PELAPOR CARD -->
+                <div class="p-3 bg-light rounded-3 border">
+                  <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                    <i class="bi bi-person-lines-fill text-danger me-2"></i> Informasi Pelapor
+                  </h6>
+                  <div class="row g-2">
+                    <div class="col-sm-6">
+                      <small class="text-muted d-block">Nama Pelapor</small>
+                      <strong class="text-dark fs-6" id="detail-nama-pelapor">-</strong>
+                    </div>
+                    <div class="col-sm-6">
+                      <small class="text-muted d-block">Nomor HP / WhatsApp</small>
+                      <div class="d-flex align-items-center gap-2">
+                        <strong class="text-dark" id="detail-nomor-hp">-</strong>
+                        <a id="btn-whatsapp" href="#" target="_blank" class="btn btn-sm btn-success py-0 px-2 text-white fw-semibold d-none">
+                          <i class="bi bi-whatsapp"></i> Chat WA
+                        </a>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-              <div class="mb-2">
-                <small class="text-muted d-block">Balasan Admin</small>
-                <div class="p-3 rounded-3 bg-white border text-dark" id="detail-admin-response">-</div>
-              <div class="mb-4">
-                <h6 class="fw-bold text-muted text-uppercase small mb-2"><i class="bi bi-card-text text-danger me-1"></i> Deskripsi Kronologi Kejadian</h6>
-                <div class="p-3 rounded-3 bg-light border text-dark leading-relaxed" id="detail-deskripsi">
-                  -
+                <!-- DESKRIPSI KRONOLOGI KEJADIAN -->
+                <div class="p-3 bg-light rounded-3 border flex-grow-1">
+                  <h6 class="fw-bold text-muted text-uppercase small mb-2">
+                    <i class="bi bi-card-text text-danger me-1"></i> Deskripsi Kronologi Kejadian
+                  </h6>
+                  <div class="p-3 rounded-3 bg-white border text-dark leading-relaxed" id="detail-deskripsi" style="white-space: pre-line; min-height: 80px;">
+                    -
+                  </div>
                 </div>
-              </div>
 
-              <!-- Lokasi Alamat & Coordinates -->
-              <div class="mb-4">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <h6 class="fw-bold text-muted text-uppercase small mb-0"><i class="bi bi-geo-alt-fill text-danger me-1"></i> Lokasi Kejadian Presisi</h6>
+                <!-- BALASAN ADMIN / TINDAKAN PETUGAS -->
+                <div class="p-3 bg-light rounded-3 border">
+                  <h6 class="fw-bold text-muted text-uppercase small mb-2">
+                    <i class="bi bi-shield-check text-success me-1"></i> Balasan Admin / Respon Petugas
+                  </h6>
+                  <div class="p-3 rounded-3 bg-white border text-dark" id="detail-admin-response">
+                    -
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+          <!-- BOTTOM ROW: LOKASI PRESI & MAPS DI BAWAH PENUH -->
+          <div class="row g-4">
+            <div class="col-12">
+              <div class="p-3 bg-light rounded-3 border shadow-sm">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3 pb-2 border-bottom">
+                  <div>
+                    <h6 class="fw-bold text-dark text-uppercase small mb-1">
+                      <i class="bi bi-geo-alt-fill text-danger me-1"></i> Lokasi Kejadian Presisi
+                    </h6>
+                    <span class="text-muted small">Titik koordinat dan peta interaktif kejadian</span>
+                  </div>
                   <a id="btn-gmaps-detail" href="#" target="_blank" class="btn btn-danger btn-sm rounded-pill fw-bold px-3 shadow-sm">
                     <i class="bi bi-map-fill me-1"></i> Buka di Google Maps <i class="bi bi-box-arrow-up-right ms-1"></i>
                   </a>
                 </div>
-                <div class="p-3 rounded-3 bg-light border mb-3">
-                  <p class="fw-semibold text-dark mb-2" id="detail-alamat">-</p>
-                  <div class="d-flex gap-3 small text-muted">
-                    <div><strong>Lat:</strong> <span id="detail-latitude">-</span></div>
-                    <div><strong>Lng:</strong> <span id="detail-longitude">-</span></div>
+
+                <div class="row g-3 mb-3">
+                  <div class="col-md-8">
+                    <small class="text-muted d-block fw-semibold mb-1">Alamat Lengkap Kejadian:</small>
+                    <div class="p-2.5 bg-white rounded border fw-semibold text-dark" id="detail-alamat">-</div>
+                  </div>
+                  <div class="col-md-4">
+                    <small class="text-muted d-block fw-semibold mb-1">Koordinat GPS:</small>
+                    <div class="p-2.5 bg-white rounded border d-flex gap-3 text-dark small fw-bold">
+                      <div><span class="text-muted fw-normal">Lat:</span> <span id="detail-latitude">-</span></div>
+                      <div><span class="text-muted fw-normal">Lng:</span> <span id="detail-longitude">-</span></div>
+                    </div>
                   </div>
                 </div>
 
-                <!-- Leaflet.js OpenStreetMap Container -->
-                <div id="map-container"></div>
+                <!-- Leaflet.js OpenStreetMap Container Penuh di Bawah -->
+                <div id="map-container" style="height: 400px; width: 100%;"></div>
               </div>
-
             </div>
-
           </div>
 
         </div>
