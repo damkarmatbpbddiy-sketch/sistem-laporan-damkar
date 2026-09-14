@@ -1755,31 +1755,36 @@ document.addEventListener('DOMContentLoaded', async () => {
        ======================================================== */
 
     const SRS_PALETTE = {
-        'candi prambanan': { fill: '#C4B5FD', stroke: '#5B21B6', label: 'SRS Candi Prambanan – Candi Ijo' },
-        'prambanan': { fill: '#C4B5FD', stroke: '#5B21B6', label: 'SRS Candi Prambanan – Candi Ijo' },
-        'merapi': { fill: '#86EFAC', stroke: '#15803D', label: 'SRS Gunung Merapi' },
-        'karaton': { fill: '#FDE047', stroke: '#A16207', label: 'SRS Karaton' },
-        'kraton': { fill: '#FDE047', stroke: '#A16207', label: 'SRS Karaton' },
-        'gunungsewu': { fill: '#7DD3FC', stroke: '#0369A1', label: 'SRS Karst Gunungsewu' },
-        'gunung sewu': { fill: '#7DD3FC', stroke: '#0369A1', label: 'SRS Karst Gunungsewu' },
-        'kerto': { fill: '#FCA5A5', stroke: '#DC2626', label: 'SRS Kerto - Pleret' },
-        'pleret': { fill: '#FCA5A5', stroke: '#DC2626', label: 'SRS Kerto - Pleret' },
-        'kotabaru': { fill: '#5EEAD4', stroke: '#0D9488', label: 'SRS Kotabaru' },
-        'girigondo': { fill: '#93C5FD', stroke: '#2563EB', label: 'SRS Makam Girigondo' },
-        'imogiri': { fill: '#A5B4FC', stroke: '#4338CA', label: 'SRS Makam Raja-Raja Mataram di Imogiri' },
-        'pathok negoro': { fill: '#F0ABFC', stroke: '#C026D3', label: 'SRS Masjid Pathok Negoro' },
-        'pathoknegoro': { fill: '#F0ABFC', stroke: '#C026D3', label: 'SRS Masjid Pathok Negoro' },
-        'kotagede': { fill: '#6EE7B7', stroke: '#059669', label: 'SRS Masjid dan Makam Raja Mataram di Kotagede' },
-        'samas': { fill: '#FCD34D', stroke: '#D97706', label: 'SRS Pantai Samas – Parangtritis' },
-        'parangtritis': { fill: '#FCD34D', stroke: '#D97706', label: 'SRS Pantai Samas – Parangtritis' },
-        'pantai selatan gunungkidul': { fill: '#38BDF8', stroke: '#0369A1', label: 'SRS Pantai Selatan Gunungkidul' },
-        'pantai selatan kulon progo': { fill: '#FDBA74', stroke: '#EA580C', label: 'SRS Pantai Selatan Kulon Progo' },
-        'menoreh': { fill: '#FED7AA', stroke: '#B45309', label: 'SRS Perbukitan Menoreh' },
-        'pakualaman': { fill: '#BEF264', stroke: '#65A30D', label: 'SRS Puro Pakualaman' },
-        'wates': { fill: '#FDA4AF', stroke: '#E11D48', label: 'SRS Pusat Kota Wates' },
-        'sokoliman': { fill: '#D6D3D1', stroke: '#78716C', label: 'SRS Sokoliman' },
-        'sumbu filosofi': { fill: '#FEF08A', stroke: '#EAB308', label: 'SRS Sumbu Filosofi Tugu Pal Putih - Panggung Krapyak' },
-        'tugu': { fill: '#FEF08A', stroke: '#EAB308', label: 'SRS Sumbu Filosofi Tugu Pal Putih - Panggung Krapyak' }
+        'candi prambanan': { fill: '#D7C7EB', stroke: '#8A63D2', label: 'SRS Candi Prambanan – Candi Ijo' },
+        'prambanan': { fill: '#D7C7EB', stroke: '#8A63D2', label: 'SRS Candi Prambanan – Candi Ijo' },
+        'merapi': { fill: '#C8E6A6', stroke: '#6FA832', label: 'SRS Gunung Merapi' },
+        'karaton': { fill: '#F6EAAD', stroke: '#9E9346', label: 'SRS Karaton' },
+        'kraton': { fill: '#F6EAAD', stroke: '#9E9346', label: 'SRS Karaton' },
+        'gunungsewu': { fill: '#AEE5EE', stroke: '#38A3B8', label: 'SRS Karst Gunungsewu' },
+        'gunung sewu': { fill: '#AEE5EE', stroke: '#38A3B8', label: 'SRS Karst Gunungsewu' },
+        'karst': { fill: '#AEE5EE', stroke: '#38A3B8', label: 'SRS Karst Gunungsewu' },
+        'kerto': { fill: '#F3A8A8', stroke: '#D15353', label: 'SRS Kerto - Pleret' },
+        'pleret': { fill: '#F3A8A8', stroke: '#D15353', label: 'SRS Kerto - Pleret' },
+        'kotabaru': { fill: '#A4DFD1', stroke: '#3EA38A', label: 'SRS Kotabaru' },
+        'girigondo': { fill: '#A8BAEE', stroke: '#5777D9', label: 'SRS Makam Girigondo' },
+        'imogiri': { fill: '#9496E8', stroke: '#4A4ED1', label: 'SRS Makam Raja-Raja Mataram di Imogiri' },
+        'pathok negoro': { fill: '#EE6EDE', stroke: '#B823A4', label: 'SRS Masjid Pathok Negoro' },
+        'pathoknegoro': { fill: '#EE6EDE', stroke: '#B823A4', label: 'SRS Masjid Pathok Negoro' },
+        'pathok': { fill: '#EE6EDE', stroke: '#B823A4', label: 'SRS Masjid Pathok Negoro' },
+        'kotagede': { fill: '#78DF94', stroke: '#2BA34D', label: 'SRS Masjid dan Makam Raja Mataram di Kotagede' },
+        'samas': { fill: '#DDD177', stroke: '#A39423', label: 'SRS Pantai Samas – Parangtritis' },
+        'parangtritis': { fill: '#DDD177', stroke: '#A39423', label: 'SRS Pantai Samas – Parangtritis' },
+        'pantai selatan gunungkidul': { fill: '#B8CEE0', stroke: '#527E9F', label: 'SRS Pantai Selatan Gunungkidul' },
+        'gunungkidul': { fill: '#B8CEE0', stroke: '#527E9F', label: 'SRS Pantai Selatan Gunungkidul' },
+        'pantai selatan kulon progo': { fill: '#F3BEB2', stroke: '#D86550', label: 'SRS Pantai Selatan Kulon Progo' },
+        'kulon progo': { fill: '#F3BEB2', stroke: '#D86550', label: 'SRS Pantai Selatan Kulon Progo' },
+        'menoreh': { fill: '#F7D4BF', stroke: '#D98858', label: 'SRS Perbukitan Menoreh' },
+        'pakualaman': { fill: '#A0E878', stroke: '#52B31E', label: 'SRS Puro Pakualaman' },
+        'wates': { fill: '#EA72AD', stroke: '#C42777', label: 'SRS Pusat Kota Wates' },
+        'sokoliman': { fill: '#E4D3BD', stroke: '#A88E6B', label: 'SRS Sokoliman' },
+        'sumbu filosofi': { fill: '#FFEE44', stroke: '#D4B800', label: 'SRS Sumbu Filosofi Tugu Pal Putih - Panggung Krapyak' },
+        'sumbu': { fill: '#FFEE44', stroke: '#D4B800', label: 'SRS Sumbu Filosofi Tugu Pal Putih - Panggung Krapyak' },
+        'tugu': { fill: '#FFEE44', stroke: '#D4B800', label: 'SRS Sumbu Filosofi Tugu Pal Putih - Panggung Krapyak' }
     };
 
     function getSrsStyle(name, feature) {
@@ -1793,26 +1798,26 @@ document.addEventListener('DOMContentLoaded', async () => {
             String(props.nama || '')
         ).toLowerCase();
 
-        if (raw.includes('gunungkidul')) return { color: '#0369A1', weight: 2, opacity: 1, fillColor: '#38BDF8', fillOpacity: 0.85 };
-        if (raw.includes('kulon progo') || raw.includes('kulonprogo') || (raw.includes('pantai') && raw.includes('kulon'))) return { color: '#EA580C', weight: 2, opacity: 1, fillColor: '#FDBA74', fillOpacity: 0.85 };
-        if (raw.includes('samas') || raw.includes('parangtritis')) return { color: '#D97706', weight: 2, opacity: 1, fillColor: '#FCD34D', fillOpacity: 0.85 };
-        if (raw.includes('prambanan') || raw.includes('ijo')) return { color: '#5B21B6', weight: 2, opacity: 1, fillColor: '#C4B5FD', fillOpacity: 0.85 };
-        if (raw.includes('merapi')) return { color: '#15803D', weight: 2, opacity: 1, fillColor: '#86EFAC', fillOpacity: 0.85 };
-        if (raw.includes('karaton') || raw.includes('kraton')) return { color: '#A16207', weight: 2, opacity: 1, fillColor: '#FDE047', fillOpacity: 0.85 };
-        if (raw.includes('gunungsewu') || raw.includes('gunung sewu') || raw.includes('sewu')) return { color: '#0369A1', weight: 2, opacity: 1, fillColor: '#7DD3FC', fillOpacity: 0.85 };
-        if (raw.includes('kerto') || raw.includes('pleret')) return { color: '#DC2626', weight: 2, opacity: 1, fillColor: '#FCA5A5', fillOpacity: 0.85 };
-        if (raw.includes('kotabaru')) return { color: '#0D9488', weight: 2, opacity: 1, fillColor: '#5EEAD4', fillOpacity: 0.85 };
-        if (raw.includes('girigondo')) return { color: '#2563EB', weight: 2, opacity: 1, fillColor: '#93C5FD', fillOpacity: 0.85 };
-        if (raw.includes('imogiri')) return { color: '#4338CA', weight: 2, opacity: 1, fillColor: '#A5B4FC', fillOpacity: 0.85 };
-        if (raw.includes('pathok')) return { color: '#C026D3', weight: 2, opacity: 1, fillColor: '#F0ABFC', fillOpacity: 0.85 };
-        if (raw.includes('kotagede')) return { color: '#059669', weight: 2, opacity: 1, fillColor: '#6EE7B7', fillOpacity: 0.85 };
-        if (raw.includes('menoreh')) return { color: '#B45309', weight: 2, opacity: 1, fillColor: '#FED7AA', fillOpacity: 0.85 };
-        if (raw.includes('pakualaman')) return { color: '#65A30D', weight: 2, opacity: 1, fillColor: '#BEF264', fillOpacity: 0.85 };
-        if (raw.includes('wates')) return { color: '#E11D48', weight: 2, opacity: 1, fillColor: '#FDA4AF', fillOpacity: 0.85 };
-        if (raw.includes('sokoliman')) return { color: '#78716C', weight: 2, opacity: 1, fillColor: '#D6D3D1', fillOpacity: 0.85 };
-        if (raw.includes('sumbu') || raw.includes('filosofi') || raw.includes('tugu') || raw.includes('krapyak')) return { color: '#EAB308', weight: 3, opacity: 1, fillColor: '#FEF08A', fillOpacity: 0.88 };
+        if (raw.includes('gunungkidul')) return { color: '#527E9F', weight: 1.5, opacity: 1, fillColor: '#B8CEE0', fillOpacity: 0.85 };
+        if (raw.includes('kulon progo') || raw.includes('kulonprogo') || (raw.includes('pantai') && raw.includes('kulon'))) return { color: '#D86550', weight: 1.5, opacity: 1, fillColor: '#F3BEB2', fillOpacity: 0.85 };
+        if (raw.includes('samas') || raw.includes('parangtritis')) return { color: '#A39423', weight: 1.5, opacity: 1, fillColor: '#DDD177', fillOpacity: 0.85 };
+        if (raw.includes('prambanan') || raw.includes('ijo')) return { color: '#8A63D2', weight: 1.5, opacity: 1, fillColor: '#D7C7EB', fillOpacity: 0.85 };
+        if (raw.includes('merapi')) return { color: '#6FA832', weight: 1.5, opacity: 1, fillColor: '#C8E6A6', fillOpacity: 0.85 };
+        if (raw.includes('karaton') || raw.includes('kraton')) return { color: '#9E9346', weight: 1.5, opacity: 1, fillColor: '#F6EAAD', fillOpacity: 0.85 };
+        if (raw.includes('gunungsewu') || raw.includes('gunung sewu') || raw.includes('karst')) return { color: '#38A3B8', weight: 1.5, opacity: 1, fillColor: '#AEE5EE', fillOpacity: 0.85 };
+        if (raw.includes('kerto') || raw.includes('pleret')) return { color: '#D15353', weight: 1.5, opacity: 1, fillColor: '#F3A8A8', fillOpacity: 0.85 };
+        if (raw.includes('kotabaru')) return { color: '#3EA38A', weight: 1.5, opacity: 1, fillColor: '#A4DFD1', fillOpacity: 0.85 };
+        if (raw.includes('girigondo')) return { color: '#5777D9', weight: 1.5, opacity: 1, fillColor: '#A8BAEE', fillOpacity: 0.85 };
+        if (raw.includes('imogiri')) return { color: '#4A4ED1', weight: 1.5, opacity: 1, fillColor: '#9496E8', fillOpacity: 0.85 };
+        if (raw.includes('pathok')) return { color: '#B823A4', weight: 1.5, opacity: 1, fillColor: '#EE6EDE', fillOpacity: 0.85 };
+        if (raw.includes('kotagede')) return { color: '#2BA34D', weight: 1.5, opacity: 1, fillColor: '#78DF94', fillOpacity: 0.85 };
+        if (raw.includes('menoreh')) return { color: '#D98858', weight: 1.5, opacity: 1, fillColor: '#F7D4BF', fillOpacity: 0.85 };
+        if (raw.includes('pakualaman')) return { color: '#52B31E', weight: 1.5, opacity: 1, fillColor: '#A0E878', fillOpacity: 0.85 };
+        if (raw.includes('wates')) return { color: '#C42777', weight: 1.5, opacity: 1, fillColor: '#EA72AD', fillOpacity: 0.85 };
+        if (raw.includes('sokoliman')) return { color: '#A88E6B', weight: 1.5, opacity: 1, fillColor: '#E4D3BD', fillOpacity: 0.85 };
+        if (raw.includes('sumbu') || raw.includes('filosofi') || raw.includes('tugu') || raw.includes('krapyak')) return { color: '#D4B800', weight: 2.2, opacity: 1, fillColor: '#FFEE44', fillOpacity: 0.90 };
 
-        return { color: '#A16207', weight: 2, opacity: 1, fillColor: '#FDE047', fillOpacity: 0.85 };
+        return { color: '#9E9346', weight: 1.5, opacity: 1, fillColor: '#F6EAAD', fillOpacity: 0.80 };
     }
 
     async function renderSrsLayer() {
@@ -2736,36 +2741,62 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
         if (theme === 'srs') {
-
             srsLayer.addTo(map);
+            bufferDamkarLayer.addTo(map);
+            damkarLayer.addTo(map);
+            cagarBudayaLayer.addTo(map);
+            kecamatanLayer.addTo(map);
+            desaLayer.addTo(map);
+
             if (cbSrs) cbSrs.checked = true;
 
             setMapStatus(
-                'SRS Strategis'
+                'Peta Jangkauan Pelayanan Pos Damkar DIY (SRS)'
             );
 
             setLegend(`
-                <div class="fw-bold mb-2">SATUAN RUANG STRATEGIS (SRS)</div>
-                <div style="max-height:240px; overflow-y:auto; font-size:11px; line-height:1.4;">
-                    <div class="mb-1"><span style="display:inline-block;width:12px;height:12px;background:#C4B5FD;border:2px solid #5B21B6;border-radius:2px;margin-right:4px;"></span> Candi Prambanan – Candi Ijo</div>
-                    <div class="mb-1"><span style="display:inline-block;width:12px;height:12px;background:#86EFAC;border:2px solid #15803D;border-radius:2px;margin-right:4px;"></span> Gunung Merapi</div>
-                    <div class="mb-1"><span style="display:inline-block;width:12px;height:12px;background:#FDE047;border:2px solid #A16207;border-radius:2px;margin-right:4px;"></span> Karaton</div>
-                    <div class="mb-1"><span style="display:inline-block;width:12px;height:12px;background:#7DD3FC;border:2px solid #0369A1;border-radius:2px;margin-right:4px;"></span> Karst Gunungsewu</div>
-                    <div class="mb-1"><span style="display:inline-block;width:12px;height:12px;background:#FCA5A5;border:2px solid #DC2626;border-radius:2px;margin-right:4px;"></span> Kerto - Pleret</div>
-                    <div class="mb-1"><span style="display:inline-block;width:12px;height:12px;background:#5EEAD4;border:2px solid #0D9488;border-radius:2px;margin-right:4px;"></span> Kotabaru</div>
-                    <div class="mb-1"><span style="display:inline-block;width:12px;height:12px;background:#93C5FD;border:2px solid #2563EB;border-radius:2px;margin-right:4px;"></span> Makam Girigondo</div>
-                    <div class="mb-1"><span style="display:inline-block;width:12px;height:12px;background:#A5B4FC;border:2px solid #4338CA;border-radius:2px;margin-right:4px;"></span> Makam Raja Imogiri</div>
-                    <div class="mb-1"><span style="display:inline-block;width:12px;height:12px;background:#F0ABFC;border:2px solid #C026D3;border-radius:2px;margin-right:4px;"></span> Masjid Pathok Negoro</div>
-                    <div class="mb-1"><span style="display:inline-block;width:12px;height:12px;background:#6EE7B7;border:2px solid #059669;border-radius:2px;margin-right:4px;"></span> Masjid Kotagede</div>
-                    <div class="mb-1"><span style="display:inline-block;width:12px;height:12px;background:#FCD34D;border:2px solid #D97706;border-radius:2px;margin-right:4px;"></span> Pantai Samas – Parangtritis</div>
-                    <div class="mb-1"><span style="display:inline-block;width:12px;height:12px;background:#38BDF8;border:2px solid #0369A1;border-radius:2px;margin-right:4px;"></span> Pantai Sel. Gunungkidul</div>
-                    <div class="mb-1"><span style="display:inline-block;width:12px;height:12px;background:#FDBA74;border:2px solid #EA580C;border-radius:2px;margin-right:4px;"></span> Pantai Sel. Kulon Progo</div>
-                    <div class="mb-1"><span style="display:inline-block;width:12px;height:12px;background:#FED7AA;border:2px solid #B45309;border-radius:2px;margin-right:4px;"></span> Perbukitan Menoreh</div>
-                    <div class="mb-1"><span style="display:inline-block;width:12px;height:12px;background:#BEF264;border:2px solid #65A30D;border-radius:2px;margin-right:4px;"></span> Puro Pakualaman</div>
-                    <div class="mb-1"><span style="display:inline-block;width:12px;height:12px;background:#FDA4AF;border:2px solid #E11D48;border-radius:2px;margin-right:4px;"></span> Pusat Kota Wates</div>
-                    <div class="mb-1"><span style="display:inline-block;width:12px;height:12px;background:#D6D3D1;border:2px solid #78716C;border-radius:2px;margin-right:4px;"></span> Sokoliman</div>
-                    <div class="mb-1"><span style="display:inline-block;width:12px;height:12px;background:#FEF08A;border:2px solid #EAB308;border-radius:2px;margin-right:4px;"></span> Sumbu Filosofi</div>
+                <div class="fw-bold mb-2 text-danger" style="font-size:12.5px;">PETA JANGKAUAN PELAYANAN POS DAMKAR DIY (SRS)</div>
+                <div class="text-muted small mb-2">BPBD DIY 2026 &bull; Skala 1:500.000</div>
+                <hr class="my-1">
+
+                <div class="fw-bold text-secondary text-uppercase mb-1" style="font-size:11px;">Wilayah Manajemen Kebakaran</div>
+                <div class="mb-1"><span style="font-size:14px; margin-right:4px;">🛡️</span> Pos Pemadam Kebakaran Rencana</div>
+                <div class="mb-1"><span style="display:inline-block; width:15px; height:10px; border:2px solid #103B78; background:rgba(147,197,253,0.3); border-radius:2px; margin-right:4px;"></span> Jangkauan Layanan</div>
+                <div class="mb-2"><span style="font-size:14px; margin-right:4px;">🚒</span> Pos Pemadam Kebakaran Tersedia</div>
+
+                <div class="fw-bold text-secondary text-uppercase mb-1" style="font-size:11px;">Kategori Risiko Kebakaran</div>
+                <div class="mb-1"><span class="srs-risk-pattern srs-risk-very-heavy me-1"></span> <b class="text-danger">Sangat Berat</b></div>
+                <div class="mb-2"><span class="srs-risk-pattern srs-risk-heavy me-1"></span> <b class="text-danger">Berat</b></div>
+
+                <div class="fw-bold text-secondary text-uppercase mb-1" style="font-size:11px;">Cagar Budaya</div>
+                <div class="mb-1"><span style="color:#8D6E63">●</span> Bangunan &bull; <span style="color:#9C27B0">●</span> Benda &bull; <span style="color:#2E7D32">●</span> Kawasan &bull; <span style="color:#E65100">●</span> Situs &bull; <span style="color:#00838F">●</span> Struktur</div>
+
+                <div class="fw-bold text-secondary text-uppercase mt-2 mb-1" style="font-size:11px;">Satuan Ruang Strategis (18 Kawasan)</div>
+                <div style="max-height:180px; overflow-y:auto; font-size:10.5px; line-height:1.35; padding-right:4px;">
+                    <div class="mb-1"><span style="display:inline-block;width:11px;height:11px;background:#D7C7EB;border:1px solid #8A63D2;border-radius:2px;margin-right:4px;"></span> SRS Candi Prambanan – Candi Ijo</div>
+                    <div class="mb-1"><span style="display:inline-block;width:11px;height:11px;background:#C8E6A6;border:1px solid #6FA832;border-radius:2px;margin-right:4px;"></span> SRS Gunung Merapi</div>
+                    <div class="mb-1"><span style="display:inline-block;width:11px;height:11px;background:#F6EAAD;border:1px solid #9E9346;border-radius:2px;margin-right:4px;"></span> SRS Karaton</div>
+                    <div class="mb-1"><span style="display:inline-block;width:11px;height:11px;background:#AEE5EE;border:1px solid #38A3B8;border-radius:2px;margin-right:4px;"></span> SRS Karst Gunungsewu</div>
+                    <div class="mb-1"><span style="display:inline-block;width:11px;height:11px;background:#F3A8A8;border:1px solid #D15353;border-radius:2px;margin-right:4px;"></span> SRS Kerto - Pleret</div>
+                    <div class="mb-1"><span style="display:inline-block;width:11px;height:11px;background:#A4DFD1;border:1px solid #3EA38A;border-radius:2px;margin-right:4px;"></span> SRS Kotabaru</div>
+                    <div class="mb-1"><span style="display:inline-block;width:11px;height:11px;background:#A8BAEE;border:1px solid #5777D9;border-radius:2px;margin-right:4px;"></span> SRS Makam Girigondo</div>
+                    <div class="mb-1"><span style="display:inline-block;width:11px;height:11px;background:#9496E8;border:1px solid #4A4ED1;border-radius:2px;margin-right:4px;"></span> SRS Makam Raja-Raja Mataram di Imogiri</div>
+                    <div class="mb-1"><span style="display:inline-block;width:11px;height:11px;background:#EE6EDE;border:1px solid #B823A4;border-radius:2px;margin-right:4px;"></span> SRS Masjid Pathok Negoro</div>
+                    <div class="mb-1"><span style="display:inline-block;width:11px;height:11px;background:#78DF94;border:1px solid #2BA34D;border-radius:2px;margin-right:4px;"></span> SRS Masjid dan Makam Raja Mataram di Kotagede</div>
+                    <div class="mb-1"><span style="display:inline-block;width:11px;height:11px;background:#DDD177;border:1px solid #A39423;border-radius:2px;margin-right:4px;"></span> SRS Pantai Samas – Parangtritis</div>
+                    <div class="mb-1"><span style="display:inline-block;width:11px;height:11px;background:#B8CEE0;border:1px solid #527E9F;border-radius:2px;margin-right:4px;"></span> SRS Pantai Selatan Gunungkidul</div>
+                    <div class="mb-1"><span style="display:inline-block;width:11px;height:11px;background:#F3BEB2;border:1px solid #D86550;border-radius:2px;margin-right:4px;"></span> SRS Pantai Selatan Kulon Progo</div>
+                    <div class="mb-1"><span style="display:inline-block;width:11px;height:11px;background:#F7D4BF;border:1px solid #D98858;border-radius:2px;margin-right:4px;"></span> SRS Perbukitan Menoreh</div>
+                    <div class="mb-1"><span style="display:inline-block;width:11px;height:11px;background:#A0E878;border:1px solid #52B31E;border-radius:2px;margin-right:4px;"></span> SRS Puro Pakualaman</div>
+                    <div class="mb-1"><span style="display:inline-block;width:11px;height:11px;background:#EA72AD;border:1px solid #C42777;border-radius:2px;margin-right:4px;"></span> SRS Pusat Kota Wates</div>
+                    <div class="mb-1"><span style="display:inline-block;width:11px;height:11px;background:#E4D3BD;border:1px solid #A88E6B;border-radius:2px;margin-right:4px;"></span> SRS Sokoliman</div>
+                    <div class="mb-1"><span style="display:inline-block;width:11px;height:11px;background:#FFEE44;border:1px solid #D4B800;border-radius:2px;margin-right:4px;"></span> SRS Sumbu Filosofi Tugu Pal Putih - Panggung Krapyak</div>
                 </div>
+
+                <div class="fw-bold text-secondary text-uppercase mt-2 mb-1" style="font-size:11px;">Batas Administrasi</div>
+                <div class="mb-1"><span style="font-weight:900; color:#111827;">- - -</span> Batas Provinsi</div>
+                <div class="mb-1"><span style="font-weight:900; color:#1e3a8a;">- · - ·</span> Batas Kabupaten</div>
+                <div class="mb-1"><span style="font-weight:900; color:#4b5563;">······</span> Batas Kelurahan/Desa</div>
             `);
 
             return;
