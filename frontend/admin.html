@@ -1353,7 +1353,17 @@
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
 
-        <div class="modal-body explorer-modal-body p-3 p-md-4" style="background-color: #f8fafc;">
+        <div class="modal-body explorer-modal-body p-3 p-md-4 position-relative" style="background-color: #f8fafc; min-height: 520px;">
+          
+          <!-- DRAG & DROP OVERLAY MUNCUL SAAT MENYERET FOLDER/FILE -->
+          <div id="explorer-drag-overlay" class="position-absolute top-0 start-0 w-100 h-100 d-none d-flex flex-column align-items-center justify-content-center text-center p-4" style="background-color: rgba(255, 255, 255, 0.96); z-index: 1050; border: 3px dashed #dc3545; border-radius: 8px; pointer-events: none;">
+            <div class="p-3 bg-danger-subtle rounded-circle mb-3 shadow-sm">
+              <i class="bi bi-cloud-arrow-up-fill text-danger" style="font-size: 3.5rem;"></i>
+            </div>
+            <h4 class="fw-bold text-dark mb-1">Lepaskan Folder atau Berkas di Sini</h4>
+            <p class="text-danger fw-bold fs-6 mb-2" id="explorer-drag-target-label">Akan otomatis diunggah ke folder</p>
+            <small class="text-muted"><i class="bi bi-info-circle me-1"></i> Sistem akan membaca seluruh isi berkas dan subfolder, lalu mengunggahnya secara otomatis ke folder.</small>
+          </div>
           
           <!-- TOOLBAR UTAMA (WINDOWS 11 TOOLBAR STYLE) -->
           <div class="explorer-toolbar p-2 bg-white rounded-3 border mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2 shadow-sm">

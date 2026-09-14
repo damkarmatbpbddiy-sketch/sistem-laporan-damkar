@@ -193,6 +193,23 @@ function switchAdminTab(tabName) {
   }
 }
 
+// Cegah browser membuka link file:/// saat folder atau file diseret ke jendela aplikasi
+window.addEventListener('dragover', function(e) {
+  e.preventDefault();
+  if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+}, false);
+
+window.addEventListener('drop', function(e) {
+  e.preventDefault();
+  if (e.dataTransfer && e.dataTransfer.types && e.dataTransfer.types.includes('Files')) {
+    const modalEl = document.getElementById('modalBatchFolder');
+    if (modalEl && !modalEl.classList.contains('show')) {
+      openBatchFolderModal();
+    }
+    handleDroppedFilesOrFolders(e.dataTransfer);
+  }
+}, false);
+
 document.addEventListener('DOMContentLoaded', () => {
   requireAuth();
 
@@ -203,6 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
   fetchArsipData();
   fetchArsipStatistik();
   initArsipFormAndDropzone();
+  initExplorerDragAndDrop();
   initArsipStatistikControls();
   setInterval(() => {
     if (document.visibilityState === 'visible') {
@@ -3063,6 +3081,307 @@ function openFolderAndUploadSubfolder(event, folderName) {
   }, 100);
 }
 
+/**
+ * Membaca semua file dan struktur folder secara rekursif dari event Drag & Drop
+ */
+async function extractEntriesFromDataTransfer(dataTransfer) {
+  const items = dataTransfer.items;
+  const results = [];
+  let rootDetectedName = '';
+
+  async function readEntry(entry, currentPath = '') {
+    if (entry.isFile) {
+      const file = await new Promise((resolve, reject) => {
+        entry.file(resolve, reject);
+      });
+      const relativePath = currentPath ? `${currentPath}/${entry.name}` : entry.name;
+      results.push({ file, relativePath });
+    } else if (entry.isDirectory) {
+      if (!rootDetectedName && !currentPath) {
+        rootDetectedName = entry.name;
+      }
+      const dirReader = entry.createReader();
+      const readDirBatch = async () => {
+        const entries = await new Promise((resolve, reject) => {
+          dirReader.readEntries(resolve, reject);
+        });
+        if (entries && entries.length > 0) {
+          const dirPath = currentPath ? `${currentPath}/${entry.name}` : entry.name;
+          for (const child of entries) {
+            await readEntry(child, dirPath);
+          }
+          await readDirBatch();
+        }
+      };
+      await readDirBatch();
+    }
+  }
+
+  if (items && items.length > 0) {
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.kind === 'file') {
+        const entry = item.webkitGetAsEntry ? item.webkitGetAsEntry() : null;
+        if (entry) {
+          await readEntry(entry, '');
+        } else {
+          const file = item.getAsFile();
+          if (file) results.push({ file, relativePath: file.name });
+        }
+      }
+    }
+  } else if (dataTransfer.files && dataTransfer.files.length > 0) {
+    for (const file of dataTransfer.files) {
+      results.push({ file, relativePath: file.webkitRelativePath || file.name });
+    }
+  }
+
+  return { results, rootDetectedName };
+}
+
+/**
+ * Menangani proses unggah otomatis saat folder/file diseret (Drag & Drop)
+ */
+async function handleDroppedFilesOrFolders(dataTransfer, explicitTargetFolder = null) {
+  const token = getAuthToken();
+  if (!token) {
+    Swal.fire('Login Diperlukan', 'Silakan login sebagai admin sebelum mengunggah berkas.', 'warning');
+    return;
+  }
+
+  Swal.fire({
+    title: 'Membaca Folder & Berkas...',
+    text: 'Sedang memindai seluruh berkas dan struktur folder yang diseret...',
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
+
+  let extracted;
+  try {
+    extracted = await extractEntriesFromDataTransfer(dataTransfer);
+  } catch (err) {
+    console.error('Gagal membaca drag and drop:', err);
+    Swal.fire('Gagal', 'Terjadi kendala saat membaca folder yang diseret.', 'error');
+    return;
+  }
+
+  const { results: filesWithPaths, rootDetectedName } = extracted;
+
+  if (!filesWithPaths || filesWithPaths.length === 0) {
+    if (rootDetectedName) {
+      try {
+        await fetch(`${API_BASE_URL}/arsip/folders`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ nama_folder: rootDetectedName })
+        });
+        activeSelectedFolder = rootDetectedName;
+        explorerActiveFolder = rootDetectedName;
+        await fetchArsipData();
+        selectExplorerFolder(rootDetectedName);
+        Swal.fire('Folder Dibuat', `Folder "${rootDetectedName}" berhasil dibuat (folder kosong).`, 'success');
+        return;
+      } catch (e) {}
+    }
+    Swal.fire('Informasi', 'Tidak ada berkas yang ditemukan pada item yang diseret.', 'info');
+    return;
+  }
+
+  let baseFolderName = '';
+  if (explicitTargetFolder && explicitTargetFolder !== 'Semua') {
+    baseFolderName = normalizeArchiveFolderPath(explicitTargetFolder);
+  } else if (explorerActiveFolder && explorerActiveFolder !== 'Semua') {
+    baseFolderName = normalizeArchiveFolderPath(explorerActiveFolder);
+  } else if (rootDetectedName) {
+    baseFolderName = rootDetectedName;
+  } else {
+    baseFolderName = 'Umum';
+  }
+
+  Swal.fire({
+    title: `Mengunggah ke Folder "${baseFolderName}"`,
+    html: `Ditemukan <b>${filesWithPaths.length} berkas</b>.<br>Sedang menyiapkan folder dan mengunggah ke sistem...`,
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
+
+  const folderPathsToCreate = new Set([baseFolderName]);
+  filesWithPaths.forEach(item => {
+    const rel = normalizeArchiveFolderPath(item.relativePath || item.file.name);
+    const parts = rel.split('/').filter(Boolean);
+    if (rootDetectedName && parts[0]?.toLowerCase() === rootDetectedName.toLowerCase()) {
+      parts.shift();
+    }
+    if (parts.length > 1) {
+      const sub = parts.slice(0, -1).join('/');
+      folderPathsToCreate.add(`${baseFolderName}/${sub}`);
+    }
+  });
+
+  for (const fPath of folderPathsToCreate) {
+    try {
+      await fetch(`${API_BASE_URL}/arsip/folders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ nama_folder: fPath })
+      });
+    } catch (e) {}
+  }
+
+  let successCount = 0;
+  let failedCount = 0;
+  const headers = { 'Authorization': `Bearer ${token}` };
+
+  for (let i = 0; i < filesWithPaths.length; i++) {
+    const { file, relativePath } = filesWithPaths[i];
+    const rel = normalizeArchiveFolderPath(relativePath || file.name);
+    const parts = rel.split('/').filter(Boolean);
+    if (rootDetectedName && parts[0]?.toLowerCase() === rootDetectedName.toLowerCase()) {
+      parts.shift();
+    }
+    const effectiveFolder = parts.length > 1
+      ? `${baseFolderName}/${parts.slice(0, -1).join('/')}`
+      : baseFolderName;
+
+    const title = file.name.replace(/\.[^/.]+$/, "");
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('judul_arsip', title);
+    formData.append('nama_folder', effectiveFolder);
+    formData.append('kategori', 'Laporan Kebakaran');
+    formData.append('deskripsi', `Diunggah otomatis via Seret & Lepas (Drag & Drop) ke folder ${effectiveFolder}`);
+
+    if (Swal.isVisible()) {
+      Swal.update({
+        html: `Mengunggah berkas <b>${i + 1}</b> dari <b>${filesWithPaths.length}</b>:<br><small class="text-muted text-truncate d-block mt-1">${escapeHtml(file.name)}</small>`
+      });
+    }
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/arsip`, {
+        method: 'POST',
+        headers: headers,
+        body: formData
+      });
+      if (res.ok) {
+        successCount++;
+      } else {
+        failedCount++;
+      }
+    } catch (err) {
+      failedCount++;
+      console.error('Error uploading dropped file:', err);
+    }
+  }
+
+  activeSelectedFolder = baseFolderName;
+  explorerActiveFolder = baseFolderName;
+
+  Swal.fire({
+    icon: successCount > 0 ? 'success' : 'error',
+    title: successCount > 0 ? 'Upload Folder Berhasil!' : 'Upload Gagal',
+    text: `${successCount} berkas berhasil diunggah ke folder "${baseFolderName}"${failedCount > 0 ? ` (${failedCount} gagal)` : ''}. Jumlah berkas otomatis diperbarui!`,
+    timer: 2500,
+    showConfirmButton: false
+  });
+
+  await fetchArsipData();
+  selectExplorerFolder(baseFolderName);
+}
+
+function handleFolderCardDragOver(event, el) {
+  event.preventDefault();
+  event.stopPropagation();
+  if (event.dataTransfer) event.dataTransfer.dropEffect = 'copy';
+  el.classList.add('border-danger', 'border-2', 'bg-danger-subtle');
+}
+
+function handleFolderCardDragLeave(event, el, isActive) {
+  event.preventDefault();
+  event.stopPropagation();
+  if (!isActive) {
+    el.classList.remove('border-danger', 'border-2', 'bg-danger-subtle');
+  }
+}
+
+function handleFolderCardDrop(event, folderName) {
+  event.preventDefault();
+  event.stopPropagation();
+  const overlay = document.getElementById('explorer-drag-overlay');
+  if (overlay) overlay.classList.add('d-none');
+  handleDroppedFilesOrFolders(event.dataTransfer, folderName);
+}
+
+function handleDropInPanel(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  const overlay = document.getElementById('explorer-drag-overlay');
+  if (overlay) overlay.classList.add('d-none');
+  handleDroppedFilesOrFolders(event.dataTransfer);
+}
+
+function initExplorerDragAndDrop() {
+  const modalEl = document.getElementById('modalBatchFolder');
+  const overlay = document.getElementById('explorer-drag-overlay');
+  const targetLabel = document.getElementById('explorer-drag-target-label');
+  if (!modalEl || modalEl.dataset.dragDropInitialized === 'true') return;
+  modalEl.dataset.dragDropInitialized = 'true';
+
+  let dragCounter = 0;
+
+  modalEl.addEventListener('dragenter', function(e) {
+    e.preventDefault();
+    if (e.dataTransfer && e.dataTransfer.types && e.dataTransfer.types.includes('Files')) {
+      dragCounter++;
+      if (overlay) {
+        overlay.classList.remove('d-none');
+        if (targetLabel) {
+          if (explorerActiveFolder && explorerActiveFolder !== 'Semua') {
+            targetLabel.textContent = `Akan otomatis diunggah ke folder aktif: "${explorerActiveFolder}"`;
+          } else {
+            targetLabel.textContent = `Folder baru akan otomatis dibuat sesuai nama folder yang diseret`;
+          }
+        }
+      }
+    }
+  });
+
+  modalEl.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    if (e.dataTransfer) {
+      e.dataTransfer.dropEffect = 'copy';
+    }
+  });
+
+  modalEl.addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    dragCounter--;
+    if (dragCounter <= 0) {
+      dragCounter = 0;
+      if (overlay) overlay.classList.add('d-none');
+    }
+  });
+
+  modalEl.addEventListener('drop', function(e) {
+    e.preventDefault();
+    dragCounter = 0;
+    if (overlay) overlay.classList.add('d-none');
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleDroppedFilesOrFolders(e.dataTransfer);
+    }
+  });
+}
+
 async function handleDirectDriveUpload(fileInput) {
   if (!fileInput || !fileInput.files || fileInput.files.length === 0) return;
 
@@ -3450,6 +3769,7 @@ function openModalManageFolders() {
 }
 
 function openBatchFolderModal() {
+  initExplorerDragAndDrop();
   const uploadActions = document.getElementById('explorer-folder-upload-actions');
   if (uploadActions) {
     if (explorerActiveFolder && explorerActiveFolder !== 'Semua') {
@@ -3610,7 +3930,14 @@ function renderExplorerFolderGrid() {
         const displayName = normalizedPath.includes('/') ? normalizedPath.split('/').pop() : normalizedPath;
         return `
           <div class="col-md-4 col-sm-6">
-            <div class="p-3 border rounded-3 bg-white d-flex align-items-center justify-content-between shadow-sm cursor-pointer ${isActive ? 'border-danger border-2 bg-danger-subtle' : ''}" onclick="selectExplorerFolder('${escapeHtml(normalizedPath)}')" style="transition: all 0.2s ease;">
+            <div class="p-3 border rounded-3 bg-white d-flex align-items-center justify-content-between shadow-sm cursor-pointer ${isActive ? 'border-danger border-2 bg-danger-subtle' : ''}" 
+              onclick="selectExplorerFolder('${escapeHtml(normalizedPath)}')" 
+              ondragover="handleFolderCardDragOver(event, this)" 
+              ondragleave="handleFolderCardDragLeave(event, this, ${isActive})" 
+              ondrop="handleFolderCardDrop(event, '${escapeHtml(normalizedPath)}')"
+              data-folder-path="${escapeHtml(normalizedPath)}"
+              title="Klik untuk membuka folder, atau seret & jatuhkan berkas ke kartu ini"
+              style="transition: all 0.2s ease;">
               <div class="d-flex align-items-center gap-2 text-truncate">
                 <i class="bi bi-folder-fill text-warning fs-3 flex-shrink-0"></i>
                 <div class="text-truncate">
@@ -3688,11 +4015,11 @@ function renderExplorerFilesTable() {
       tbody.innerHTML = `
         <tr>
           <td colspan="7" class="text-center py-5">
-            <div class="py-2">
+            <div class="p-4 mx-auto border border-2 border-dashed rounded-4 bg-white shadow-sm" style="max-width: 560px; border-color: #dee2e6;" ondragover="event.preventDefault();" ondrop="handleDropInPanel(event)">
               <i class="bi bi-folder2-open text-warning display-4 d-block mb-2"></i>
               <h6 class="fw-bold text-dark mb-1">Folder "${escapeHtml(explorerActiveFolder)}" Masih Kosong</h6>
-              <p class="small text-muted mb-3">Silakan unggah berkas file atau folder langsung ke dalam folder ini.</p>
-              <div class="d-inline-flex gap-2">
+              <p class="small text-muted mb-3">Tarik & seret (drag & drop) folder atau berkas dari komputer langsung ke sini, atau klik tombol di bawah:</p>
+              <div class="d-inline-flex gap-2 flex-wrap justify-content-center">
                 <button type="button" class="btn btn-danger btn-sm fw-bold px-3 py-2 shadow-sm" onclick="triggerDirectDrivePicker(event)">
                   <i class="bi bi-file-earmark-arrow-up-fill me-1"></i> Upload File ke Folder Ini
                 </button>
@@ -3707,9 +4034,12 @@ function renderExplorerFilesTable() {
     } else {
       tbody.innerHTML = `
         <tr>
-          <td colspan="7" class="text-center py-4 text-muted">
-            <i class="bi bi-folder-x fs-3 d-block mb-1 text-warning"></i>
-            Belum ada berkas arsip tersimpan.
+          <td colspan="7" class="text-center py-5 text-muted">
+            <div class="p-4 mx-auto border border-2 border-dashed rounded-4 bg-white shadow-sm" style="max-width: 560px; border-color: #dee2e6;" ondragover="event.preventDefault();" ondrop="handleDropInPanel(event)">
+              <i class="bi bi-folder-x fs-1 d-block mb-2 text-warning"></i>
+              <h6 class="fw-bold text-dark mb-1">Belum ada berkas arsip tersimpan</h6>
+              <p class="small text-muted mb-0">Tarik & seret folder dari laptop ke sini untuk membuat folder baru dan mengunggah isinya secara otomatis.</p>
+            </div>
           </td>
         </tr>
       `;
