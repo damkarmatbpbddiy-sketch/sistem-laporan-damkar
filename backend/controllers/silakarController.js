@@ -143,6 +143,73 @@ const getSilakarById = async (req, res) => {
   }
 };
 
+async function syncSilakarToArsip(record) {
+  if (!record || record.status_penanganan !== 'Selesai') return;
+  try {
+    const tag = `[SILAKAR ID: ${record.id}]`;
+    const isFire = (record.jenis_kejadian || '').toLowerCase().includes('kebakaran');
+    const folderName = isFire ? 'Laporan Kebakaran' : 'folder non kebakaran';
+    const kategori = record.jenis_kejadian || (isFire ? 'Laporan Kebakaran' : 'Penyelamatan');
+    const judulArsip = `[SILAKAR] ${record.jenis_kejadian || 'Kejadian'} - ${record.alamat_lokasi || record.kabupaten_kota || 'Lokasi Kejadian'}`;
+    const desc = `${tag} Tanggal: ${record.tanggal_kejadian || '-'} | Pelapor: ${record.nama_pelapor || '-'} | Lokasi: ${record.alamat_lokasi || '-'} | Objek: ${record.objek_terbakar || '-'} | Kerugian: Rp ${record.perkiraan_kerugian || 0} | Ket: ${record.keterangan || '-'}`;
+
+    const reportDate = record.tanggal_kejadian ? new Date(record.tanggal_kejadian) : (record.created_at ? new Date(record.created_at) : new Date());
+    const fileYear = reportDate.getFullYear();
+    const namaFile = record.dokumentasi || `silakar_${record.id}.json`;
+    const namaAsli = record.dokumentasi || `silakar_${record.id}.json`;
+    const tipeFile = record.dokumentasi ? path.extname(record.dokumentasi).replace('.', '').toLowerCase() : 'json';
+    const fileUrl = record.dokumentasi ? `/uploads/${record.dokumentasi}` : `/api/silakar/${record.id}`;
+
+    const parsedPayload = JSON.stringify({
+      source: 'input_manual_silakar',
+      silakar_id: record.id,
+      tanggal_kejadian: record.tanggal_kejadian,
+      waktu_laporan: record.waktu_laporan,
+      waktu_berangkat: record.waktu_berangkat,
+      waktu_tiba: record.waktu_tiba,
+      waktu_selesai: record.waktu_selesai,
+      kabupaten_kota: record.kabupaten_kota,
+      kapanewon: record.kapanewon,
+      kalurahan: record.kalurahan,
+      alamat_lokasi: record.alamat_lokasi,
+      koordinat: record.koordinat,
+      sumber_pengaduan: record.sumber_pengaduan,
+      nama_pelapor: record.nama_pelapor,
+      nomor_kontak: record.nomor_kontak,
+      jenis_kejadian: record.jenis_kejadian,
+      objek_terbakar: record.objek_terbakar,
+      dugaan_penyebab: record.dugaan_penyebab,
+      korban_meninggal: record.korban_meninggal,
+      korban_luka: record.korban_luka,
+      jumlah_terdampak: record.jumlah_terdampak,
+      unit_damkarmat: record.unit_damkarmat,
+      jumlah_armada: record.jumlah_armada,
+      sumber_air: record.sumber_air,
+      status_penanganan: record.status_penanganan,
+      perkiraan_kerugian: record.perkiraan_kerugian,
+      dokumentasi: record.dokumentasi,
+      keterangan: record.keterangan,
+      created_at: record.created_at
+    });
+
+    const check = await db.query("SELECT id FROM arsip_data WHERE deskripsi LIKE $1", [`%${tag}%`]);
+    if (check.rows && check.rows.length > 0) {
+      await db.query(`
+        UPDATE arsip_data 
+        SET judul_arsip = $1, kategori = $2, deskripsi = $3, nama_file = $4, nama_asli = $5, tipe_file = $6, file_url = $7, file_year = $8, parsed_data = $9, nama_folder = $10, updated_at = NOW()
+        WHERE id = $11
+      `, [judulArsip, kategori, desc, namaFile, namaAsli, tipeFile, fileUrl, fileYear, parsedPayload, folderName, check.rows[0].id]);
+    } else {
+      await db.query(`
+        INSERT INTO arsip_data (judul_arsip, kategori, deskripsi, nama_file, nama_asli, tipe_file, ukuran_file, file_url, file_year, record_count, parsed_data, nama_folder, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 1, $10, $11, $12, NOW())
+      `, [judulArsip, kategori, desc, namaFile, namaAsli, tipeFile, 1024, fileUrl, fileYear, parsedPayload, folderName, reportDate]);
+    }
+  } catch (err) {
+    console.warn('⚠️ Gagal sync SILAKAR ke Arsip Data:', err.message);
+  }
+}
+
 const createSilakar = async (req, res) => {
   try {
     await ensureSilakarReady();
@@ -152,7 +219,11 @@ const createSilakar = async (req, res) => {
     const q = 'INSERT INTO kejadian_silakar (tanggal_kejadian, waktu_laporan, waktu_berangkat, waktu_tiba, kabupaten_kota, kapanewon, kalurahan, alamat_lokasi, koordinat, sumber_pengaduan, nama_pelapor, nomor_kontak, jenis_kejadian, objek_terbakar, dugaan_penyebab, korban_meninggal, korban_luka, jumlah_terdampak, unit_damkarmat, jumlah_armada, sumber_air, status_penanganan, waktu_selesai, perkiraan_kerugian, dokumentasi, keterangan) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26) RETURNING *';
     const values = [tanggal_kejadian, waktu_laporan||null, waktu_berangkat||null, waktu_tiba||null, kabupaten_kota||null, kapanewon||null, kalurahan||null, alamat_lokasi||null, koordinat||null, sumber_pengaduan||null, nama_pelapor||null, nomor_kontak||null, jenis_kejadian||null, objek_terbakar||null, dugaan_penyebab||null, parseInt(korban_meninggal)||0, parseInt(korban_luka)||0, parseInt(jumlah_terdampak)||0, unit_damkarmat||null, parseInt(jumlah_armada)||0, sumber_air||null, status_penanganan||'Dalam Penanganan', waktu_selesai||null, parseInt(perkiraan_kerugian)||0, dokumentasi, keterangan||null];
     const result = await db.query(q, values);
-    return res.status(201).json({ success: true, message: 'Data kejadian SILAKAR berhasil disimpan ke database.', data: result.rows[0] });
+    const newRecord = result.rows[0];
+    if (newRecord && newRecord.status_penanganan === 'Selesai') {
+      await syncSilakarToArsip(newRecord);
+    }
+    return res.status(201).json({ success: true, message: 'Data kejadian SILAKAR berhasil disimpan ke database.', data: newRecord });
   } catch (error) {
     console.error('Error createSilakar:', error);
     if (req.file && fss.existsSync(req.file.path)) fss.unlinkSync(req.file.path);
@@ -173,7 +244,11 @@ const updateSilakar = async (req, res) => {
     const uq = 'UPDATE kejadian_silakar SET tanggal_kejadian=$1, waktu_laporan=$2, waktu_berangkat=$3, waktu_tiba=$4, kabupaten_kota=$5, kapanewon=$6, kalurahan=$7, alamat_lokasi=$8, koordinat=$9, sumber_pengaduan=$10, nama_pelapor=$11, nomor_kontak=$12, jenis_kejadian=$13, objek_terbakar=$14, dugaan_penyebab=$15, korban_meninggal=$16, korban_luka=$17, jumlah_terdampak=$18, unit_damkarmat=$19, jumlah_armada=$20, sumber_air=$21, status_penanganan=$22, waktu_selesai=$23, perkiraan_kerugian=$24, dokumentasi=$25, keterangan=$26, updated_at=NOW() WHERE id=$27';
     await db.query(uq, [tanggal_kejadian||current.tanggal_kejadian, waktu_laporan!==undefined?(waktu_laporan||null):current.waktu_laporan, waktu_berangkat!==undefined?(waktu_berangkat||null):current.waktu_berangkat, waktu_tiba!==undefined?(waktu_tiba||null):current.waktu_tiba, kabupaten_kota||current.kabupaten_kota, kapanewon!==undefined?kapanewon:current.kapanewon, kalurahan!==undefined?kalurahan:current.kalurahan, alamat_lokasi||current.alamat_lokasi, koordinat!==undefined?koordinat:current.koordinat, sumber_pengaduan!==undefined?sumber_pengaduan:current.sumber_pengaduan, nama_pelapor!==undefined?nama_pelapor:current.nama_pelapor, nomor_kontak!==undefined?nomor_kontak:current.nomor_kontak, jenis_kejadian||current.jenis_kejadian, objek_terbakar!==undefined?objek_terbakar:current.objek_terbakar, dugaan_penyebab!==undefined?dugaan_penyebab:current.dugaan_penyebab, parseInt(korban_meninggal)>=0?parseInt(korban_meninggal):current.korban_meninggal, parseInt(korban_luka)>=0?parseInt(korban_luka):current.korban_luka, parseInt(jumlah_terdampak)>=0?parseInt(jumlah_terdampak):current.jumlah_terdampak, unit_damkarmat!==undefined?unit_damkarmat:current.unit_damkarmat, parseInt(jumlah_armada)>=0?parseInt(jumlah_armada):current.jumlah_armada, sumber_air!==undefined?sumber_air:current.sumber_air, status_penanganan||current.status_penanganan, waktu_selesai!==undefined?(waktu_selesai||null):current.waktu_selesai, parseInt(perkiraan_kerugian)>=0?parseInt(perkiraan_kerugian):current.perkiraan_kerugian, dokumentasi, keterangan!==undefined?keterangan:current.keterangan, id]);
     const updated = await db.query('SELECT * FROM kejadian_silakar WHERE id = $1', [id]);
-    return res.status(200).json({ success: true, message: 'Data kejadian berhasil diperbarui di database.', data: updated.rows[0] });
+    const updatedRecord = updated.rows[0];
+    if (updatedRecord && updatedRecord.status_penanganan === 'Selesai') {
+      await syncSilakarToArsip(updatedRecord);
+    }
+    return res.status(200).json({ success: true, message: 'Data kejadian berhasil diperbarui di database.', data: updatedRecord });
   } catch (error) {
     console.error('Error updateSilakar:', error);
     return res.status(500).json({ success: false, message: 'Gagal memperbarui data kejadian.' });

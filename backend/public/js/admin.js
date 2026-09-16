@@ -6168,6 +6168,91 @@ function renderMediaPreview(item, containerEl, type, label, icon) {
   icon.className = type === 'video' ? 'bi bi-camera-video-fill text-danger fs-4' : 'bi bi-music-note-beamed text-primary fs-4';
 }
 
+function renderWordDocPreview(item, bodyEl, iconEl) {
+  iconEl.className = 'bi bi-file-earmark-word-fill text-primary fs-4';
+  let parsed = null;
+  if (item.parsed_data) {
+    try { parsed = typeof item.parsed_data === 'string' ? JSON.parse(item.parsed_data) : item.parsed_data; } catch (e) { parsed = null; }
+  }
+  const contentText = parsed?.summary || parsed?.text || parsed?.extracted_text || item.deskripsi || '';
+  if (!contentText || contentText.trim() === '') {
+    return renderUnsupportedPreview(item, bodyEl, 'dokumen Word');
+  }
+  bodyEl.innerHTML = `
+    <div class="bg-white p-4 rounded-3 border shadow-sm">
+      <div class="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-file-earmark-word-fill text-primary fs-2"></i>
+          <div>
+            <h6 class="fw-bold mb-0 text-dark">${escapeHtml(item.judul_arsip || item.nama_asli)}</h6>
+            <small class="text-muted">Kategori: <span class="badge bg-primary-subtle text-primary">${escapeHtml(item.kategori || 'Dokumen Word')}</span> | Folder: <strong>${escapeHtml(item.nama_folder || 'Umum')}</strong></small>
+          </div>
+        </div>
+        <a href="${API_BASE_URL}/arsip/${item.id}/download" class="btn btn-outline-primary btn-sm fw-bold download" download>
+          <i class="bi bi-download me-1"></i>Unduh Original
+        </a>
+      </div>
+      <div class="p-3 bg-light rounded border text-dark font-monospace" style="max-height: 480px; overflow-y: auto; white-space: pre-wrap; line-height: 1.6;">${escapeHtml(contentText)}</div>
+    </div>
+  `;
+}
+
+function renderReportCardPreview(parsed, item, bodyEl, iconEl) {
+  iconEl.className = 'bi bi-shield-check text-success fs-4';
+  const isSilakar = parsed.source === 'input_manual_silakar';
+  const isCamera = parsed.source === 'laporan_kamera';
+  let photoHtml = '';
+  if (parsed.foto || (item.nama_file && item.nama_file.match(/\.(jpg|jpeg|png|webp)$/i))) {
+    const photoUrl = parsed.foto ? `${API_BASE_URL.replace('/api', '')}/uploads/${parsed.foto}` : getPreviewFileUrl(item);
+    photoHtml = `
+      <div class="text-center my-3">
+        <img src="${photoUrl}" class="img-fluid rounded border shadow-sm" style="max-height: 350px; object-fit: contain;" alt="Dokumentasi Kejadian">
+      </div>
+    `;
+  }
+  bodyEl.innerHTML = `
+    <div class="bg-white p-4 rounded-3 border shadow-sm">
+      <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+        <div>
+          <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 fw-bold fs-6 mb-1">
+            <i class="bi bi-check-circle-fill me-1"></i>STATUS: SELESAI
+          </span>
+          <h5 class="fw-bold mb-0 text-dark mt-1">${escapeHtml(item.judul_arsip || parsed.judul_kejadian || 'Laporan Data Arsip')}</h5>
+        </div>
+        <span class="badge bg-secondary-subtle text-secondary border">${isSilakar ? 'SILAKAR Manual' : (isCamera ? 'Laporan Kamera' : 'Sistem Damkar')}</span>
+      </div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <div class="p-3 bg-light rounded border h-100">
+            <h6 class="fw-bold text-danger mb-2"><i class="bi bi-info-circle-fill me-1"></i>Informasi Kejadian</h6>
+            <div class="small mb-1"><strong>Jenis Kejadian:</strong> ${escapeHtml(parsed.jenis_kejadian || item.kategori || '-')}</div>
+            <div class="small mb-1"><strong>Tanggal/Waktu:</strong> ${escapeHtml(parsed.tanggal_kejadian || parsed.created_at || item.created_at || '-')}</div>
+            <div class="small mb-1"><strong>Lokasi/Alamat:</strong> ${escapeHtml(parsed.alamat_lokasi || parsed.alamat || '-')}</div>
+            ${parsed.kabupaten_kota ? `<div class="small mb-1"><strong>Kab/Kota:</strong> ${escapeHtml(parsed.kabupaten_kota)} ${parsed.kapanewon ? '| ' + escapeHtml(parsed.kapanewon) : ''}</div>` : ''}
+            ${parsed.objek_terbakar ? `<div class="small mb-1"><strong>Objek Terbakar:</strong> ${escapeHtml(parsed.objek_terbakar)}</div>` : ''}
+            ${parsed.dugaan_penyebab ? `<div class="small mb-1"><strong>Dugaan Penyebab:</strong> ${escapeHtml(parsed.dugaan_penyebab)}</div>` : ''}
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="p-3 bg-light rounded border h-100">
+            <h6 class="fw-bold text-primary mb-2"><i class="bi bi-person-fill me-1"></i>Pelapor & Penanganan</h6>
+            <div class="small mb-1"><strong>Nama Pelapor:</strong> ${escapeHtml(parsed.nama_pelapor || '-')}</div>
+            <div class="small mb-1"><strong>Kontak/HP:</strong> ${escapeHtml(parsed.nomor_kontak || parsed.nomor_hp || '-')}</div>
+            ${parsed.unit_damkarmat ? `<div class="small mb-1"><strong>Unit Damkar:</strong> ${escapeHtml(parsed.unit_damkarmat)} (${parsed.jumlah_armada || 1} Armada)</div>` : ''}
+            ${parsed.perkiraan_kerugian ? `<div class="small mb-1"><strong>Perkiraan Kerugian:</strong> Rp ${Number(parsed.perkiraan_kerugian).toLocaleString('id-ID')}</div>` : ''}
+            ${parsed.respon_admin ? `<div class="small mb-1 text-success"><strong>Respon Petugas:</strong> ${escapeHtml(parsed.respon_admin)}</div>` : ''}
+          </div>
+        </div>
+      </div>
+      ${photoHtml}
+      <div class="p-3 bg-light rounded border">
+        <h6 class="fw-bold mb-1"><i class="bi bi-file-text-fill text-muted me-1"></i>Ringkasan / Catatan Petugas:</h6>
+        <p class="small text-muted mb-0">${escapeHtml(parsed.keterangan || parsed.deskripsi || item.deskripsi || '-')}</p>
+      </div>
+    </div>
+  `;
+}
+
 function renderUnsupportedPreview(item, bodyEl, label) {
   bodyEl.innerHTML = `
     <div class="bg-white p-4 rounded-3 border shadow-sm text-center">
@@ -6297,6 +6382,14 @@ async function previewArsip(id) {
     modalEl.focus({ preventScroll: true });
   }, { once: true });
   try {
+    let parsed = null;
+    if (item.parsed_data) {
+      try { parsed = typeof item.parsed_data === 'string' ? JSON.parse(item.parsed_data) : item.parsed_data; } catch (e) { parsed = null; }
+    }
+    if (parsed && (parsed.source === 'laporan_kamera' || parsed.source === 'input_manual_silakar')) {
+      return renderReportCardPreview(parsed, item, bodyEl, iconEl);
+    }
+    if (['doc', 'docx'].includes(ext)) return renderWordDocPreview(item, bodyEl, iconEl);
     if (['geojson'].includes(ext)) return renderGeoJsonPreview(item, bodyEl, iconEl);
     if (['xlsx', 'xls'].includes(ext)) return await renderSpreadsheetPreview(item, bodyEl, iconEl);
     if (ext === 'csv') { iconEl.className = 'bi bi-file-earmark-spreadsheet-fill text-success fs-4'; return renderCsvPreview(await (await fetchPreviewResponse(url)).text(), bodyEl); }
@@ -6309,7 +6402,6 @@ async function previewArsip(id) {
       const text = await (await fetchPreviewResponse(url)).text();
       try { return renderTextPreview(JSON.stringify(JSON.parse(text), null, 2), item, bodyEl, 'JSON Viewer'); } catch { return renderTextPreview(text, item, bodyEl, 'JSON (format tidak valid)'); }
     }
-    if (['doc', 'docx'].includes(ext)) { iconEl.className = 'bi bi-file-earmark-word-fill text-primary fs-4'; return renderUnsupportedPreview(item, bodyEl, 'dokumen Word'); }
     if (['zip', 'rar', '7z', 'mpk', 'shp'].includes(ext)) { iconEl.className = 'bi bi-file-earmark-zip-fill text-warning fs-4'; return renderUnsupportedPreview(item, bodyEl, 'arsip'); }
     iconEl.className = 'bi bi-file-earmark-fill text-secondary fs-4';
     renderUnsupportedPreview(item, bodyEl, 'format ini');

@@ -18,6 +18,62 @@ function parseDbError(error) {
   return null;
 }
 
+// Helper auto-sync Laporan ke Arsip Data jika status 'Selesai'
+async function syncLaporanToArsip(report) {
+  if (!report || report.status !== 'Selesai') return;
+  try {
+    const tag = `[Laporan ID: ${report.id}]`;
+    const isFire = (report.jenis_kejadian || '').toLowerCase().includes('kebakaran');
+    const folderName = isFire ? 'Laporan Kebakaran' : 'folder non kebakaran';
+    const kategori = report.jenis_kejadian || (isFire ? 'Laporan Kebakaran' : 'Non Kebakaran');
+    const judulArsip = `[Laporan Kamera] ${report.judul_kejadian || 'Kejadian Kebakaran/Darurat'}`;
+    const desc = `${tag} Pelapor: ${report.nama_pelapor || '-'} | HP: ${report.nomor_hp || '-'} | Alamat: ${report.alamat || '-'} | Jenis: ${report.jenis_kejadian || '-'} | Status: Selesai | Deskripsi: ${report.deskripsi || '-'}`;
+
+    const reportDate = report.created_at ? new Date(report.created_at) : new Date();
+    const fileYear = reportDate.getFullYear();
+    const namaFile = report.foto || `laporan_${report.id}.json`;
+    const namaAsli = report.foto || `laporan_${report.id}.json`;
+    const tipeFile = report.foto ? path.extname(report.foto).replace('.', '').toLowerCase() : 'json';
+    const fileUrl = report.foto ? `/uploads/${report.foto}` : `/api/laporan/${report.id}`;
+
+    const parsedPayload = JSON.stringify({
+      source: 'laporan_kamera',
+      report_id: report.id,
+      judul_kejadian: report.judul_kejadian,
+      nama_pelapor: report.nama_pelapor,
+      nomor_hp: report.nomor_hp,
+      alamat: report.alamat,
+      latitude: report.latitude,
+      longitude: report.longitude,
+      kabupaten: report.kabupaten,
+      kecamatan: report.kecamatan,
+      kalurahan: report.kalurahan,
+      jenis_kejadian: report.jenis_kejadian,
+      deskripsi: report.deskripsi,
+      respon_admin: report.respon_admin,
+      foto: report.foto,
+      status: report.status,
+      created_at: report.created_at
+    });
+
+    const check = await db.query("SELECT id FROM arsip_data WHERE deskripsi LIKE $1", [`%${tag}%`]);
+    if (check.rows && check.rows.length > 0) {
+      await db.query(`
+        UPDATE arsip_data 
+        SET judul_arsip = $1, kategori = $2, deskripsi = $3, nama_file = $4, nama_asli = $5, tipe_file = $6, file_url = $7, file_year = $8, parsed_data = $9, nama_folder = $10, updated_at = NOW()
+        WHERE id = $11
+      `, [judulArsip, kategori, desc, namaFile, namaAsli, tipeFile, fileUrl, fileYear, parsedPayload, folderName, check.rows[0].id]);
+    } else {
+      await db.query(`
+        INSERT INTO arsip_data (judul_arsip, kategori, deskripsi, nama_file, nama_asli, tipe_file, ukuran_file, file_url, file_year, record_count, parsed_data, nama_folder, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 1, $10, $11, $12, NOW())
+      `, [judulArsip, kategori, desc, namaFile, namaAsli, tipeFile, 1024, fileUrl, fileYear, parsedPayload, folderName, reportDate]);
+    }
+  } catch (err) {
+    console.warn('⚠️ Gagal sync Laporan ke Arsip Data:', err.message);
+  }
+}
+
 // 1. Create Laporan Baru (Masyarakat)
 const createLaporan = async (req, res) => {
   try {
@@ -59,6 +115,10 @@ const createLaporan = async (req, res) => {
 
     const result = await db.query(query, values);
     const newLaporan = result.rows[0];
+
+    if (newLaporan && newLaporan.status === 'Selesai') {
+      await syncLaporanToArsip(newLaporan);
+    }
 
     const autoResponseMsg = `Terima kasih Sdr/i ${nama_pelapor || 'Pelapor'}. Laporan kejadian "${judul_kejadian}" telah berhasil diterima oleh Sistem Damkar dan sedang menunggu verifikasi petugas.`;
 
@@ -269,11 +329,16 @@ const updateLaporan = async (req, res) => {
     ]);
 
     const updatedResult = await db.query('SELECT * FROM laporan WHERE id = $1', [id]);
+    const updatedReport = updatedResult.rows[0];
+
+    if (updatedReport && updatedReport.status === 'Selesai') {
+      await syncLaporanToArsip(updatedReport);
+    }
 
     return res.status(200).json({
       success: true,
       message: 'Status dan data laporan berhasil diperbarui.',
-      data: updatedResult.rows[0]
+      data: updatedReport
     });
 
   } catch (error) {
