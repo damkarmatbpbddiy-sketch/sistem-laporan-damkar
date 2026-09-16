@@ -1497,8 +1497,9 @@ function addRiskLegend() {
 }
 
 // Titik Desa/Kelurahan (data ringan hasil pra-proses, bukan poligon penuh)
-async function renderVillagePoints() {
+async function renderDiyVillagePoints() {
   if (!liveMap || !diyVillagePointsLayer) return;
+  if (diyVillagePointsLayer.getLayers().length > 0) return; // sudah dimuat
 
   try {
     const res = await fetch('data/diy-desa-titik.json');
@@ -1506,19 +1507,50 @@ async function renderVillagePoints() {
     const points = await res.json();
 
     points.forEach((desa) => {
-      const marker = L.circleMarker([desa.lat, desa.lng], {
-        radius: 4,
-        color: '#1f2937',
-        weight: 1,
+      const lat = Number(desa.lat);
+      const lng = Number(desa.lng);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+      const namaKd    = desa.kel_desa  || '-';
+      const jenisKd   = desa.jenis_kd  || 'Desa/Kelurahan';
+      const kecamatan = desa.kecamatan || '-';
+      const kabKota   = desa.kab_kota  || '-';
+
+      const marker = L.circleMarker([lat, lng], {
+        radius: 5,
+        color: '#92400e',
+        weight: 1.2,
         fillColor: '#f59e0b',
         fillOpacity: 0.9
       }).addTo(diyVillagePointsLayer).bindPopup(`
-        <strong>${desa.jenis_kd} ${desa.kel_desa}</strong><br>
-        Kecamatan ${desa.kecamatan}, ${desa.kab_kota}
+        <div style="min-width:200px; font-size:13px; line-height:1.7;">
+          <div style="font-size:15px; font-weight:bold; color:#b45309; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+            <span>🏘️</span> <span>${jenisKd} ${namaKd}</span>
+          </div>
+          <table style="width:100%; border-collapse:collapse;">
+            <tr>
+              <td style="color:#6b7280; padding-right:8px; white-space:nowrap; font-size:12px;">
+                <i class="bi bi-geo-alt-fill" style="color:#f59e0b;"></i> Kabupaten/Kota
+              </td>
+              <td style="font-weight:600;">${kabKota}</td>
+            </tr>
+            <tr>
+              <td style="color:#6b7280; padding-right:8px; white-space:nowrap; font-size:12px;">
+                <i class="bi bi-map-fill" style="color:#6366f1;"></i> Kecamatan
+              </td>
+              <td style="font-weight:600;">${kecamatan}</td>
+            </tr>
+            <tr>
+              <td style="color:#6b7280; padding-right:8px; white-space:nowrap; font-size:12px;">
+                <i class="bi bi-house-fill" style="color:#f59e0b;"></i> Desa/Kelurahan
+              </td>
+              <td style="font-weight:600;">${jenisKd} ${namaKd}</td>
+            </tr>
+          </table>
+        </div>
       `);
 
       liveMapBounds.extend(marker.getLatLng());
-      // Label putih pada peta admin dihilangkan sesuai instruksi agar peta bersih
     });
   } catch (err) {
     console.error('Gagal memuat titik desa/kelurahan:', err);
