@@ -1664,5 +1664,157 @@ main {
   display: none !important;
 }
 
+/* ============================================================
+   MOBILE RESPONSIVENESS & MULTI-DEVICE FLUID STYLING
+   ============================================================ */
+
+@media (max-width: 991.98px) {
+  /* Navbar & Topbar Tablet/Mobile */
+  .navbar-damkar {
+    padding: 0.6rem 0.8rem;
+  }
+  .brand-title {
+    font-size: 1.1rem;
+  }
+  .brand-subtitle {
+    font-size: 0.65rem;
+  }
+  .logo-damkar {
+    width: 38px;
+    height: 38px;
+  }
+  
+  /* Map & Dashboard Layout */
+  #map-container, .map-damkar {
+    height: clamp(300px, 45vh, 450px) !important;
+  }
+  
+  .map-viewer-heading {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .map-theme-buttons {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+}
+
+@media (max-width: 767.98px) {
+  /* Hero Section Mobile */
+  .hero-damkar {
+    padding: 3rem 0 3.5rem 0;
+  }
+  .hero-title {
+    font-size: 1.85rem;
+    line-height: 1.25;
+  }
+  .hero-desc {
+    font-size: 0.98rem;
+    margin-bottom: 1.5rem;
+  }
+  .hero-badge {
+    font-size: 0.78rem;
+    padding: 4px 12px;
+  }
+
+  /* Stat Cards Mobile Grid */
+  .stat-card {
+    padding: 1.1rem;
+    margin-bottom: 0.75rem;
+  }
+  .stat-value {
+    font-size: 2rem;
+  }
+  .stat-label {
+    font-size: 0.8rem;
+  }
+  .stat-icon {
+    font-size: 2.8rem;
+    right: 0.8rem;
+    bottom: 0.5rem;
+  }
+
+  /* Map Container Mobile */
+  #map-container, .map-damkar {
+    height: 320px !important;
+    border-radius: 10px;
+  }
+
+  .map-toolbar {
+    justify-content: center;
+  }
+
+  /* Explorer & Preview Modals Mobile */
+  .explorer-modal .modal-dialog,
+  #modalPreviewArsip .modal-dialog {
+    margin: 0.4rem;
+    max-width: 98vw;
+  }
+
+  .explorer-modal .modal-body,
+  #modalPreviewArsip .modal-body {
+    padding: 0.75rem !important;
+  }
+
+  .explorer-toolbar {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: stretch !important;
+  }
+
+  .explorer-toolbar .btn-group {
+    width: 100%;
+    display: flex;
+  }
+
+  .explorer-toolbar .btn-group .btn {
+    flex: 1;
+  }
+
+  /* Tables & Responsive Scrolling */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 8px;
+  }
+
+  .table-responsive table {
+    min-width: 650px;
+  }
+
+  /* Camera Preview Mobile Fullscreen */
+  .camera-preview {
+    height: 100dvh;
+  }
+  .camera-overlay {
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .brand-title {
+    font-size: 0.98rem;
+  }
+  .brand-subtitle {
+    display: none;
+  }
+  .hero-title {
+    font-size: 1.6rem;
+  }
+  .stat-value {
+    font-size: 1.75rem;
+  }
+  #map-container, .map-damkar {
+    height: 280px !important;
+  }
+  .btn-report-nav {
+    padding: 0.4rem 0.8rem !important;
+    font-size: 0.85rem;
+  }
+  .modal-header h5 {
+    font-size: 1rem;
+  }
+}
+
 
 
