@@ -301,15 +301,19 @@ if (isMysql) {
           ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
         `);
 
+        // Migrasi otomatis kategori lama ke 4 kategori resmi
+        await connection.query("UPDATE kejadian_silakar SET jenis_kejadian = 'Kebakaran Pemukiman' WHERE jenis_kejadian IN ('Kebakaran', 'Kebakaran Gedung', 'Kebakaran Bangunan', 'Kebakaran Rumah')");
+        await connection.query("UPDATE kejadian_silakar SET jenis_kejadian = 'Penyelamatan' WHERE jenis_kejadian IN ('Kebakaran Kendaraan', 'Evakuasi', 'Pohon Tumbang', 'Sarang Tawon', 'Non Kebakaran', 'Kecelakaan', 'Bencana Alam', 'Hazmat', 'Lainnya')");
+
         const [rows] = await connection.query('SELECT COUNT(*) as count FROM kejadian_silakar');
         if (rows && rows[0]?.count == 0) {
           const sampleRecords = [
-            ['2026-08-28', '14:30:00', '14:35:00', '14:48:00', 'Kabupaten Sleman', 'Depok', 'Caturtunggal', 'Jl. Kaliurang Km 5, Depok, Sleman', '-7.7583, 110.3812', 'Telepon 113', 'Budi Santoso', '081234567890', 'Kebakaran Permukiman', 'Rumah Tinggal', 'Korsleting Listrik', 0, 1, 4, 'Pos Damkar Sleman', 2, 'Hydrant / Mobil Tangki', 'Selesai', '16:00:00', 45000000, null, 'Penanganan selesai dengan aman.'],
+            ['2026-08-28', '14:30:00', '14:35:00', '14:48:00', 'Kabupaten Sleman', 'Depok', 'Caturtunggal', 'Jl. Kaliurang Km 5, Depok, Sleman', '-7.7583, 110.3812', 'Telepon 113', 'Budi Santoso', '081234567890', 'Kebakaran Pemukiman', 'Rumah Tinggal', 'Korsleting Listrik', 0, 1, 4, 'Pos Damkar Sleman', 2, 'Hydrant / Mobil Tangki', 'Selesai', '16:00:00', 45000000, null, 'Penanganan selesai dengan aman.'],
             ['2026-08-25', '11:15:00', '11:20:00', '11:35:00', 'Kabupaten Gunungkidul', 'Playen', 'Logandeng', 'Jl. Jogja-Wonosari Km 22, Playen', '-7.9351, 110.5512', 'Masyarakat', 'Siti Rahma', '081987654321', 'Kebakaran Lahan', 'Lalang Kering', 'Pembakaran Sampah', 0, 0, 0, 'Pos Damkar Gunungkidul', 1, 'Mobil Tangki', 'Selesai', '12:45:00', 5000000, null, 'Api berhasil dilokalisir.'],
-            ['2026-08-20', '03:45:00', '03:50:00', '04:02:00', 'Kabupaten Bantul', 'Sewon', 'Panggungharjo', 'Jl. Parangtritis Km 4.5, Sewon, Bantul', '-7.8341, 110.3621', 'Telepon 113', 'Agus Wijaya', '085712345678', 'Kebakaran Gedung', 'Ruko Sembako', 'Tabung Gas Bocor', 0, 0, 2, 'Pos Damkar Bantul', 3, 'Sumber Air Sungai / Tangki', 'Selesai', '06:15:00', 120000000, null, 'Kerugian material ruko sembako.'],
-            ['2026-08-15', '22:10:00', '22:15:00', '22:30:00', 'Kabupaten Sleman', 'Godean', 'Sidoagung', 'Jl. Godean Km 8, Sleman', '-7.7712, 110.3012', 'Masyarakat', 'Hendra', '082134567891', 'Kebakaran Gedung', 'Gudang Kayu', 'Gesekan Mesin', 0, 0, 0, 'Pos Damkar Godean', 2, 'Mobil Tangki', 'Selesai', '00:30:00', 85000000, null, 'Berhasil dipadamkan total.'],
-            ['2026-08-10', '16:20:00', '16:25:00', '16:38:00', 'Kota Yogyakarta', 'Umbulharjo', 'Pandeyan', 'Jl. Glagahsari, Umbulharjo, Kota Jogja', '-7.8123, 110.3891', 'Call Center 112', 'Rina Kartika', '087812345678', 'Kebakaran Kendaraan', 'Mobil Mini Bus', 'Kebocoran Selang Bensin', 0, 0, 1, 'Pos Damkar Pusat Yogyakarta', 1, 'APAR & Tangki', 'Selesai', '17:10:00', 35000000, null, 'Tidak ada korban jiwa.'],
-            ['2026-08-05', '09:10:00', '09:15:00', '09:30:00', 'Kabupaten Kulon Progo', 'Wates', 'Giripeni', 'Jl. Wates-Purworejo, Wates, Kulon Progo', '-7.8612, 110.1589', 'Masyarakat', 'Tri Mulyani', '081823456789', 'Kebakaran Gedung', 'Kios Sembako Pasar', 'Korsleting Listrik', 0, 0, 3, 'Pos Damkar Kulon Progo', 2, 'Hydrant Pasar', 'Dalam Penanganan', null, 25000000, null, 'Petugas masih melakukan pendinginan.']
+            ['2026-08-20', '03:45:00', '03:50:00', '04:02:00', 'Kabupaten Bantul', 'Sewon', 'Panggungharjo', 'Jl. Parangtritis Km 4.5, Sewon, Bantul', '-7.8341, 110.3621', 'Telepon 113', 'Agus Wijaya', '085712345678', 'Kebakaran Pemukiman', 'Ruko Sembako', 'Tabung Gas Bocor', 0, 0, 2, 'Pos Damkar Bantul', 3, 'Sumber Air Sungai / Tangki', 'Selesai', '06:15:00', 120000000, null, 'Kerugian material ruko sembako.'],
+            ['2026-08-15', '22:10:00', '22:15:00', '22:30:00', 'Kabupaten Sleman', 'Godean', 'Sidoagung', 'Jl. Godean Km 8, Sleman', '-7.7712, 110.3012', 'Masyarakat', 'Hendra', '082134567891', 'Kebakaran Pemukiman', 'Gudang Kayu', 'Gesekan Mesin', 0, 0, 0, 'Pos Damkar Godean', 2, 'Mobil Tangki', 'Selesai', '00:30:00', 85000000, null, 'Berhasil dipadamkan total.'],
+            ['2026-08-10', '16:20:00', '16:25:00', '16:38:00', 'Kota Yogyakarta', 'Umbulharjo', 'Pandeyan', 'Jl. Glagahsari, Umbulharjo, Kota Jogja', '-7.8123, 110.3891', 'Call Center 112', 'Rina Kartika', '087812345678', 'Penyelamatan', 'Mobil Mini Bus', 'Kebocoran Selang Bensin', 0, 0, 1, 'Pos Damkar Pusat Yogyakarta', 1, 'APAR & Tangki', 'Selesai', '17:10:00', 35000000, null, 'Tidak ada korban jiwa.'],
+            ['2026-08-05', '09:10:00', '09:15:00', '09:30:00', 'Kabupaten Kulon Progo', 'Wates', 'Giripeni', 'Jl. Wates-Purworejo, Wates, Kulon Progo', '-7.8612, 110.1589', 'Masyarakat', 'Tri Mulyani', '081823456789', 'Kebakaran Hutan', 'Kios Sembako Pasar', 'Korsleting Listrik', 0, 0, 3, 'Pos Damkar Kulon Progo', 2, 'Hydrant Pasar', 'Dalam Penanganan', null, 25000000, null, 'Petugas masih melakukan pendinginan.']
           ];
 
           for (const rec of sampleRecords) {
@@ -526,24 +530,32 @@ if (isMysql) {
       )
     `);
 
-    const silakarRows = await pool.query('SELECT COUNT(*) as count FROM kejadian_silakar');
-    if (silakarRows.rows && parseInt(silakarRows.rows[0]?.count, 10) === 0) {
-      const sampleRecords = [
-        ['2026-08-28', '14:30:00', '14:35:00', '14:48:00', 'Kabupaten Sleman', 'Depok', 'Caturtunggal', 'Jl. Kaliurang Km 5, Depok, Sleman', '-7.7583, 110.3812', 'Telepon 113', 'Budi Santoso', '081234567890', 'Kebakaran Permukiman', 'Rumah Tinggal', 'Korsleting Listrik', 0, 1, 4, 'Pos Damkar Sleman', 2, 'Hydrant / Mobil Tangki', 'Selesai', '16:00:00', 45000000, null, 'Penanganan selesai dengan aman.'],
-        ['2026-08-25', '11:15:00', '11:20:00', '11:35:00', 'Kabupaten Gunungkidul', 'Playen', 'Logandeng', 'Jl. Jogja-Wonosari Km 22, Playen', '-7.9351, 110.5512', 'Masyarakat', 'Siti Rahma', '081987654321', 'Kebakaran Lahan', 'Lalang Kering', 'Pembakaran Sampah', 0, 0, 0, 'Pos Damkar Gunungkidul', 1, 'Mobil Tangki', 'Selesai', '12:45:00', 5000000, null, 'Api berhasil dilokalisir.'],
-        ['2026-08-20', '03:45:00', '03:50:00', '04:02:00', 'Kabupaten Bantul', 'Sewon', 'Panggungharjo', 'Jl. Parangtritis Km 4.5, Sewon, Bantul', '-7.8341, 110.3621', 'Telepon 113', 'Agus Wijaya', '085712345678', 'Kebakaran Gedung', 'Ruko Sembako', 'Tabung Gas Bocor', 0, 0, 2, 'Pos Damkar Bantul', 3, 'Sumber Air Sungai / Tangki', 'Selesai', '06:15:00', 120000000, null, 'Kerugian material ruko sembako.'],
-        ['2026-08-15', '22:10:00', '22:15:00', '22:30:00', 'Kabupaten Sleman', 'Godean', 'Sidoagung', 'Jl. Godean Km 8, Sleman', '-7.7712, 110.3012', 'Masyarakat', 'Hendra', '082134567891', 'Kebakaran Gedung', 'Gudang Kayu', 'Gesekan Mesin', 0, 0, 0, 'Pos Damkar Godean', 2, 'Mobil Tangki', 'Selesai', '00:30:00', 85000000, null, 'Berhasil dipadamkan total.'],
-        ['2026-08-10', '16:20:00', '16:25:00', '16:38:00', 'Kota Yogyakarta', 'Umbulharjo', 'Pandeyan', 'Jl. Glagahsari, Umbulharjo, Kota Jogja', '-7.8123, 110.3891', 'Call Center 112', 'Rina Kartika', '087812345678', 'Kebakaran Kendaraan', 'Mobil Mini Bus', 'Kebocoran Selang Bensin', 0, 0, 1, 'Pos Damkar Pusat Yogyakarta', 1, 'APAR & Tangki', 'Selesai', '17:10:00', 35000000, null, 'Tidak ada korban jiwa.'],
-        ['2026-08-05', '09:10:00', '09:15:00', '09:30:00', 'Kabupaten Kulon Progo', 'Wates', 'Giripeni', 'Jl. Wates-Purworejo, Wates, Kulon Progo', '-7.8612, 110.1589', 'Masyarakat', 'Tri Mulyani', '081823456789', 'Kebakaran Gedung', 'Kios Sembako Pasar', 'Korsleting Listrik', 0, 0, 3, 'Pos Damkar Kulon Progo', 2, 'Hydrant Pasar', 'Dalam Penanganan', null, 25000000, null, 'Petugas masih melakukan pendinginan.']
-      ];
+    try {
+      // Migrasi otomatis kategori lama ke 4 kategori resmi
+      await pool.query("UPDATE kejadian_silakar SET jenis_kejadian = 'Kebakaran Pemukiman' WHERE jenis_kejadian IN ('Kebakaran', 'Kebakaran Gedung', 'Kebakaran Bangunan', 'Kebakaran Rumah')");
+      await pool.query("UPDATE kejadian_silakar SET jenis_kejadian = 'Penyelamatan' WHERE jenis_kejadian IN ('Kebakaran Kendaraan', 'Evakuasi', 'Pohon Tumbang', 'Sarang Tawon', 'Non Kebakaran', 'Kecelakaan', 'Bencana Alam', 'Hazmat', 'Lainnya')");
 
-      for (const rec of sampleRecords) {
-        await pool.query(`
-          INSERT INTO kejadian_silakar (tanggal_kejadian, waktu_laporan, waktu_berangkat, waktu_tiba, kabupaten_kota, kapanewon, kalurahan, alamat_lokasi, koordinat, sumber_pengaduan, nama_pelapor, nomor_kontak, jenis_kejadian, objek_terbakar, dugaan_penyebab, korban_meninggal, korban_luka, jumlah_terdampak, unit_damkarmat, jumlah_armada, sumber_air, status_penanganan, waktu_selesai, perkiraan_kerugian, dokumentasi, keterangan)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26)
-        `, rec);
+      const silakarRows = await pool.query('SELECT COUNT(*) as count FROM kejadian_silakar');
+      if (silakarRows.rows && parseInt(silakarRows.rows[0]?.count, 10) === 0) {
+        const sampleRecords = [
+          ['2026-08-28', '14:30:00', '14:35:00', '14:48:00', 'Kabupaten Sleman', 'Depok', 'Caturtunggal', 'Jl. Kaliurang Km 5, Depok, Sleman', '-7.7583, 110.3812', 'Telepon 113', 'Budi Santoso', '081234567890', 'Kebakaran Pemukiman', 'Rumah Tinggal', 'Korsleting Listrik', 0, 1, 4, 'Pos Damkar Sleman', 2, 'Hydrant / Mobil Tangki', 'Selesai', '16:00:00', 45000000, null, 'Penanganan selesai dengan aman.'],
+          ['2026-08-25', '11:15:00', '11:20:00', '11:35:00', 'Kabupaten Gunungkidul', 'Playen', 'Logandeng', 'Jl. Jogja-Wonosari Km 22, Playen', '-7.9351, 110.5512', 'Masyarakat', 'Siti Rahma', '081987654321', 'Kebakaran Lahan', 'Lalang Kering', 'Pembakaran Sampah', 0, 0, 0, 'Pos Damkar Gunungkidul', 1, 'Mobil Tangki', 'Selesai', '12:45:00', 5000000, null, 'Api berhasil dilokalisir.'],
+          ['2026-08-20', '03:45:00', '03:50:00', '04:02:00', 'Kabupaten Bantul', 'Sewon', 'Panggungharjo', 'Jl. Parangtritis Km 4.5, Sewon, Bantul', '-7.8341, 110.3621', 'Telepon 113', 'Agus Wijaya', '085712345678', 'Kebakaran Pemukiman', 'Ruko Sembako', 'Tabung Gas Bocor', 0, 0, 2, 'Pos Damkar Bantul', 3, 'Sumber Air Sungai / Tangki', 'Selesai', '06:15:00', 120000000, null, 'Kerugian material ruko sembako.'],
+          ['2026-08-15', '22:10:00', '22:15:00', '22:30:00', 'Kabupaten Sleman', 'Godean', 'Sidoagung', 'Jl. Godean Km 8, Sleman', '-7.7712, 110.3012', 'Masyarakat', 'Hendra', '082134567891', 'Kebakaran Pemukiman', 'Gudang Kayu', 'Gesekan Mesin', 0, 0, 0, 'Pos Damkar Godean', 2, 'Mobil Tangki', 'Selesai', '00:30:00', 85000000, null, 'Berhasil dipadamkan total.'],
+          ['2026-08-10', '16:20:00', '16:25:00', '16:38:00', 'Kota Yogyakarta', 'Umbulharjo', 'Pandeyan', 'Jl. Glagahsari, Umbulharjo, Kota Jogja', '-7.8123, 110.3891', 'Call Center 112', 'Rina Kartika', '087812345678', 'Penyelamatan', 'Mobil Mini Bus', 'Kebocoran Selang Bensin', 0, 0, 1, 'Pos Damkar Pusat Yogyakarta', 1, 'APAR & Tangki', 'Selesai', '17:10:00', 35000000, null, 'Tidak ada korban jiwa.'],
+          ['2026-08-05', '09:10:00', '09:15:00', '09:30:00', 'Kabupaten Kulon Progo', 'Wates', 'Giripeni', 'Jl. Wates-Purworejo, Wates, Kulon Progo', '-7.8612, 110.1589', 'Masyarakat', 'Tri Mulyani', '081823456789', 'Kebakaran Hutan', 'Kios Sembako Pasar', 'Korsleting Listrik', 0, 0, 3, 'Pos Damkar Kulon Progo', 2, 'Hydrant Pasar', 'Dalam Penanganan', null, 25000000, null, 'Petugas masih melakukan pendinginan.']
+        ];
+
+        for (const rec of sampleRecords) {
+          await pool.query(`
+            INSERT INTO kejadian_silakar (tanggal_kejadian, waktu_laporan, waktu_berangkat, waktu_tiba, kabupaten_kota, kapanewon, kalurahan, alamat_lokasi, koordinat, sumber_pengaduan, nama_pelapor, nomor_kontak, jenis_kejadian, objek_terbakar, dugaan_penyebab, korban_meninggal, korban_luka, jumlah_terdampak, unit_damkarmat, jumlah_armada, sumber_air, status_penanganan, waktu_selesai, perkiraan_kerugian, dokumentasi, keterangan)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26)
+          `, rec);
+        }
+        console.log('✅ Sample data SILAKAR PostgreSQL berhasil di-seed.');
       }
-      console.log('✅ Sample data SILAKAR PostgreSQL berhasil di-seed.');
+    } catch (silakarErr) {
+      console.warn('⚠️ ensurePostgresSilakarSchema notice:', silakarErr.message);
     }
   }
 
@@ -576,9 +588,14 @@ async function query(text, params = []) {
     if (Array.isArray(rows)) {
       return { rows, rowCount: rows.length };
     } else if (rows && rows.insertId) {
-      if (/INSERT\s+INTO\s+laporan\b/i.test(mysqlSql)) {
-        const [insertedRows] = await pool.query('SELECT * FROM laporan WHERE id = ?', [rows.insertId]);
-        return { rows: insertedRows, rowCount: 1, insertId: rows.insertId };
+      const match = /INSERT\s+INTO\s+([a-zA-Z0-9_]+)\b/i.exec(mysqlSql);
+      if (match && match[1]) {
+        try {
+          const [insertedRows] = await pool.query(`SELECT * FROM ${match[1]} WHERE id = ?`, [rows.insertId]);
+          return { rows: insertedRows, rowCount: 1, insertId: rows.insertId };
+        } catch (e) {
+          return { rows: [{ id: rows.insertId }], rowCount: 1, insertId: rows.insertId };
+        }
       }
       return { rows: [{ id: rows.insertId }], rowCount: 1, insertId: rows.insertId };
     }

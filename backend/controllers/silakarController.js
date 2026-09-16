@@ -11,8 +11,79 @@ const fallbackSilakarData = [
   { id: 6, tanggal_kejadian: '2026-08-05', waktu_laporan: '09:10:00', kabupaten_kota: 'Kabupaten Kulon Progo', kapanewon: 'Wates', kalurahan: 'Giripeni', alamat_lokasi: 'Jl. Wates-Purworejo, Wates, Kulon Progo', jenis_kejadian: 'Kebakaran Hutan', objek_terbakar: 'Kios Sembako Pasar', dugaan_penyebab: 'Korsleting Listrik', korban_meninggal: 0, korban_luka: 0, jumlah_terdampak: 3, unit_damkarmat: 'Pos Damkar Kulon Progo', jumlah_armada: 2, status_penanganan: 'Dalam Penanganan', perkiraan_kerugian: 25000000, keterangan: 'Petugas masih melakukan pendinginan.' }
 ];
 
+let isTableReady = false;
+
+async function ensureSilakarReady() {
+  if (isTableReady) return;
+  try {
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS kejadian_silakar (
+        id SERIAL PRIMARY KEY,
+        tanggal_kejadian DATE NOT NULL,
+        waktu_laporan TIME NULL,
+        waktu_berangkat TIME NULL,
+        waktu_tiba TIME NULL,
+        kabupaten_kota VARCHAR(100) NULL,
+        kapanewon VARCHAR(100) NULL,
+        kalurahan VARCHAR(100) NULL,
+        alamat_lokasi TEXT NULL,
+        koordinat VARCHAR(100) NULL,
+        sumber_pengaduan VARCHAR(100) NULL,
+        nama_pelapor VARCHAR(150) NULL,
+        nomor_kontak VARCHAR(30) NULL,
+        jenis_kejadian VARCHAR(100) NULL,
+        objek_terbakar VARCHAR(255) NULL,
+        dugaan_penyebab VARCHAR(255) NULL,
+        korban_meninggal INT DEFAULT 0,
+        korban_luka INT DEFAULT 0,
+        jumlah_terdampak INT DEFAULT 0,
+        unit_damkarmat VARCHAR(255) NULL,
+        jumlah_armada INT DEFAULT 0,
+        sumber_air VARCHAR(255) NULL,
+        status_penanganan VARCHAR(100) DEFAULT 'Dalam Penanganan',
+        waktu_selesai TIME NULL,
+        perkiraan_kerugian BIGINT DEFAULT 0,
+        dokumentasi VARCHAR(255) NULL,
+        keterangan TEXT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Migrasi otomatis kategori lama ke 4 kategori resmi
+    await db.query("UPDATE kejadian_silakar SET jenis_kejadian = 'Kebakaran Pemukiman' WHERE jenis_kejadian IN ('Kebakaran', 'Kebakaran Gedung', 'Kebakaran Bangunan', 'Kebakaran Rumah')");
+    await db.query("UPDATE kejadian_silakar SET jenis_kejadian = 'Penyelamatan' WHERE jenis_kejadian IN ('Kebakaran Kendaraan', 'Evakuasi', 'Pohon Tumbang', 'Sarang Tawon', 'Non Kebakaran', 'Kecelakaan', 'Bencana Alam', 'Hazmat', 'Lainnya')");
+
+    // Jika tabel masih kosong, masukkan sample records resmi ke database
+    const countRes = await db.query('SELECT COUNT(*) as count FROM kejadian_silakar');
+    const totalCount = parseInt(countRes.rows?.[0]?.count || 0, 10);
+    if (totalCount === 0) {
+      for (const item of fallbackSilakarData) {
+        await db.query(`
+          INSERT INTO kejadian_silakar (
+            tanggal_kejadian, waktu_laporan, kabupaten_kota, kapanewon, kalurahan, alamat_lokasi,
+            jenis_kejadian, objek_terbakar, dugaan_penyebab, korban_meninggal, korban_luka,
+            jumlah_terdampak, unit_damkarmat, jumlah_armada, status_penanganan, perkiraan_kerugian, keterangan
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+        `, [
+          item.tanggal_kejadian, item.waktu_laporan, item.kabupaten_kota, item.kapanewon, item.kalurahan, item.alamat_lokasi,
+          item.jenis_kejadian, item.objek_terbakar, item.dugaan_penyebab, item.korban_meninggal, item.korban_luka,
+          item.jumlah_terdampak, item.unit_damkarmat, item.jumlah_armada, item.status_penanganan, item.perkiraan_kerugian, item.keterangan
+        ]);
+      }
+      console.log('✅ Inisialisasi data SILATKAR ke database berhasil.');
+    }
+
+    isTableReady = true;
+  } catch (err) {
+    console.warn('⚠️ Inisialisasi kejadian_silakar notice:', err.message);
+  }
+}
+
 const getAllSilakar = async (req, res) => {
   try {
+    await ensureSilakarReady();
+
     const { search, status, startDate, endDate, kabupaten, jenis } = req.query;
     let queryText = 'SELECT * FROM kejadian_silakar WHERE 1=1';
     const params = [];
@@ -96,6 +167,7 @@ const getAllSilakar = async (req, res) => {
 
 const getSilakarById = async (req, res) => {
   try {
+    await ensureSilakarReady();
     const { id } = req.params;
     const result = await db.query('SELECT * FROM kejadian_silakar WHERE id = $1', [id]);
     if (result.rows.length === 0) return res.status(404).json({ success: false, message: 'Data kejadian tidak ditemukan.' });
@@ -107,13 +179,14 @@ const getSilakarById = async (req, res) => {
 
 const createSilakar = async (req, res) => {
   try {
+    await ensureSilakarReady();
     const { tanggal_kejadian, waktu_laporan, waktu_berangkat, waktu_tiba, kabupaten_kota, kapanewon, kalurahan, alamat_lokasi, koordinat, sumber_pengaduan, nama_pelapor, nomor_kontak, jenis_kejadian, objek_terbakar, dugaan_penyebab, korban_meninggal, korban_luka, jumlah_terdampak, unit_damkarmat, jumlah_armada, sumber_air, status_penanganan, waktu_selesai, perkiraan_kerugian, keterangan } = req.body;
     if (!tanggal_kejadian) { if (req.file) fss.unlinkSync(req.file.path); return res.status(400).json({ success: false, message: 'Tanggal kejadian wajib diisi.' }); }
     const dokumentasi = req.file ? req.file.filename : null;
     const q = 'INSERT INTO kejadian_silakar (tanggal_kejadian, waktu_laporan, waktu_berangkat, waktu_tiba, kabupaten_kota, kapanewon, kalurahan, alamat_lokasi, koordinat, sumber_pengaduan, nama_pelapor, nomor_kontak, jenis_kejadian, objek_terbakar, dugaan_penyebab, korban_meninggal, korban_luka, jumlah_terdampak, unit_damkarmat, jumlah_armada, sumber_air, status_penanganan, waktu_selesai, perkiraan_kerugian, dokumentasi, keterangan) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26) RETURNING *';
     const values = [tanggal_kejadian, waktu_laporan||null, waktu_berangkat||null, waktu_tiba||null, kabupaten_kota||null, kapanewon||null, kalurahan||null, alamat_lokasi||null, koordinat||null, sumber_pengaduan||null, nama_pelapor||null, nomor_kontak||null, jenis_kejadian||null, objek_terbakar||null, dugaan_penyebab||null, parseInt(korban_meninggal)||0, parseInt(korban_luka)||0, parseInt(jumlah_terdampak)||0, unit_damkarmat||null, parseInt(jumlah_armada)||0, sumber_air||null, status_penanganan||'Dalam Penanganan', waktu_selesai||null, parseInt(perkiraan_kerugian)||0, dokumentasi, keterangan||null];
     const result = await db.query(q, values);
-    return res.status(201).json({ success: true, message: 'Data kejadian SILAKAR berhasil disimpan.', data: result.rows[0] });
+    return res.status(201).json({ success: true, message: 'Data kejadian SILAKAR berhasil disimpan ke database.', data: result.rows[0] });
   } catch (error) {
     console.error('Error createSilakar:', error);
     if (req.file && fss.existsSync(req.file.path)) fss.unlinkSync(req.file.path);
@@ -123,6 +196,7 @@ const createSilakar = async (req, res) => {
 
 const updateSilakar = async (req, res) => {
   try {
+    await ensureSilakarReady();
     const { id } = req.params;
     const check = await db.query('SELECT * FROM kejadian_silakar WHERE id = $1', [id]);
     if (check.rows.length === 0) return res.status(404).json({ success: false, message: 'Data kejadian tidak ditemukan.' });
@@ -133,7 +207,7 @@ const updateSilakar = async (req, res) => {
     const uq = 'UPDATE kejadian_silakar SET tanggal_kejadian=$1, waktu_laporan=$2, waktu_berangkat=$3, waktu_tiba=$4, kabupaten_kota=$5, kapanewon=$6, kalurahan=$7, alamat_lokasi=$8, koordinat=$9, sumber_pengaduan=$10, nama_pelapor=$11, nomor_kontak=$12, jenis_kejadian=$13, objek_terbakar=$14, dugaan_penyebab=$15, korban_meninggal=$16, korban_luka=$17, jumlah_terdampak=$18, unit_damkarmat=$19, jumlah_armada=$20, sumber_air=$21, status_penanganan=$22, waktu_selesai=$23, perkiraan_kerugian=$24, dokumentasi=$25, keterangan=$26, updated_at=NOW() WHERE id=$27';
     await db.query(uq, [tanggal_kejadian||current.tanggal_kejadian, waktu_laporan!==undefined?(waktu_laporan||null):current.waktu_laporan, waktu_berangkat!==undefined?(waktu_berangkat||null):current.waktu_berangkat, waktu_tiba!==undefined?(waktu_tiba||null):current.waktu_tiba, kabupaten_kota||current.kabupaten_kota, kapanewon!==undefined?kapanewon:current.kapanewon, kalurahan!==undefined?kalurahan:current.kalurahan, alamat_lokasi||current.alamat_lokasi, koordinat!==undefined?koordinat:current.koordinat, sumber_pengaduan!==undefined?sumber_pengaduan:current.sumber_pengaduan, nama_pelapor!==undefined?nama_pelapor:current.nama_pelapor, nomor_kontak!==undefined?nomor_kontak:current.nomor_kontak, jenis_kejadian||current.jenis_kejadian, objek_terbakar!==undefined?objek_terbakar:current.objek_terbakar, dugaan_penyebab!==undefined?dugaan_penyebab:current.dugaan_penyebab, parseInt(korban_meninggal)>=0?parseInt(korban_meninggal):current.korban_meninggal, parseInt(korban_luka)>=0?parseInt(korban_luka):current.korban_luka, parseInt(jumlah_terdampak)>=0?parseInt(jumlah_terdampak):current.jumlah_terdampak, unit_damkarmat!==undefined?unit_damkarmat:current.unit_damkarmat, parseInt(jumlah_armada)>=0?parseInt(jumlah_armada):current.jumlah_armada, sumber_air!==undefined?sumber_air:current.sumber_air, status_penanganan||current.status_penanganan, waktu_selesai!==undefined?(waktu_selesai||null):current.waktu_selesai, parseInt(perkiraan_kerugian)>=0?parseInt(perkiraan_kerugian):current.perkiraan_kerugian, dokumentasi, keterangan!==undefined?keterangan:current.keterangan, id]);
     const updated = await db.query('SELECT * FROM kejadian_silakar WHERE id = $1', [id]);
-    return res.status(200).json({ success: true, message: 'Data kejadian berhasil diperbarui.', data: updated.rows[0] });
+    return res.status(200).json({ success: true, message: 'Data kejadian berhasil diperbarui di database.', data: updated.rows[0] });
   } catch (error) {
     console.error('Error updateSilakar:', error);
     return res.status(500).json({ success: false, message: 'Gagal memperbarui data kejadian.' });
@@ -142,13 +216,14 @@ const updateSilakar = async (req, res) => {
 
 const deleteSilakar = async (req, res) => {
   try {
+    await ensureSilakarReady();
     const { id } = req.params;
     const check = await db.query('SELECT * FROM kejadian_silakar WHERE id = $1', [id]);
     if (check.rows.length === 0) return res.status(404).json({ success: false, message: 'Data kejadian tidak ditemukan.' });
     const record = check.rows[0];
     if (record.dokumentasi) { const fp = path.join(__dirname, '../uploads', record.dokumentasi); if (fss.existsSync(fp)) fss.unlinkSync(fp); }
     await db.query('DELETE FROM kejadian_silakar WHERE id = $1', [id]);
-    return res.status(200).json({ success: true, message: 'Data kejadian berhasil dihapus.' });
+    return res.status(200).json({ success: true, message: 'Data kejadian berhasil dihapus dari database.' });
   } catch (error) {
     return res.status(500).json({ success: false, message: 'Gagal menghapus data kejadian.' });
   }
