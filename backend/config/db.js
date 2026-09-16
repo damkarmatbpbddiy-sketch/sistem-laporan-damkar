@@ -192,6 +192,64 @@ if (isMysql) {
             await connection.query(`ALTER TABLE laporan ADD COLUMN ${columnName} ${definition}`);
           }
         }
+
+        // Auto-seed Master Kabupaten DIY jika masih kosong
+        const [kabRows] = await connection.query('SELECT COUNT(*) as count FROM kabupaten');
+        if (kabRows && kabRows[0]?.count == 0) {
+          const defaultKabs = ['Kota Yogyakarta', 'Kabupaten Sleman', 'Kabupaten Bantul', 'Kabupaten Kulon Progo', 'Kabupaten Gunungkidul'];
+          for (const k of defaultKabs) {
+            await connection.query('INSERT INTO kabupaten (nama) VALUES (?)', [k]);
+          }
+          console.log('✅ Master data Kabupaten DIY berhasil di-seed ke MySQL.');
+        }
+
+        // Auto-seed Master Pos Damkar jika masih kosong
+        const [posRows] = await connection.query('SELECT COUNT(*) as count FROM pos_damkar');
+        if (posRows && posRows[0]?.count == 0) {
+          const samplePos = [
+            ['Pos Damkar Induk Kyai Mojo', 'Jl. Kyai Mojo No. 56, Jetis, Kota Yogyakarta', '-7.7845', '110.3582'],
+            ['Pos Damkar Sleman Pusat', 'Jl. Magelang Km 10, Tridadi, Sleman', '-7.7123', '110.3541'],
+            ['Pos Damkar Depok Sleman', 'Babarsari, Caturtunggal, Depok, Sleman', '-7.7782', '110.4089'],
+            ['Pos Damkar Godean', 'Jl. Godean Km 9, Godean, Sleman', '-7.7712', '110.3012'],
+            ['Pos Damkar Bantul', 'Jl. Jenderal Sudirman No. 1, Bantul', '-7.8872', '110.3312'],
+            ['Pos Damkar Banguntapan', 'Jl. Ringroad Timur, Banguntapan, Bantul', '-7.8189', '110.4072'],
+            ['Pos Damkar Kulon Progo', 'Jl. Sugiman, Pengasih, Wates, Kulon Progo', '-7.8542', '110.1582'],
+            ['Pos Damkar Gunungkidul', 'Jl. Brigjen Katamso, Wonosari, Gunungkidul', '-7.9621', '110.6012']
+          ];
+          for (const p of samplePos) {
+            await connection.query('INSERT INTO pos_damkar (nama, alamat, latitude, longitude) VALUES (?, ?, ?, ?)', p);
+          }
+          console.log('✅ Master data Pos Damkar DIY berhasil di-seed ke MySQL.');
+        }
+
+        // Auto-seed Data Laporan Kejadian jika masih kosong
+        const [lapRows] = await connection.query('SELECT COUNT(*) as count FROM laporan');
+        if (lapRows && lapRows[0]?.count == 0) {
+          const sampleIncidents = [
+            ['Kebakaran Rumah Permukiman', 'Budi Santoso', '081234567890', 'Jl. Kaliurang Km 5, Depok, Sleman', '-7.7583', '110.3812', 'Kabupaten Sleman', 'Depok', 'Caturtunggal', 'Kebakaran Permukiman', 'Kebakaran disebabkan korsleting listrik pada dapur rumah.', 'Selesai', '2024-03-15 14:30:00'],
+            ['Kebakaran Lahan Kering', 'Siti Rahma', '081987654321', 'Kapanewon Playen, Gunungkidul', '-7.9351', '110.5512', 'Kabupaten Gunungkidul', 'Playen', 'Logandeng', 'Kebakaran Lahan', 'Api membesar membakar ilalang kering di pinggir jalan.', 'Selesai', '2024-08-20 11:15:00'],
+            ['Kebakaran Ruko Sembako', 'Agus Wijaya', '085712345678', 'Jl. Parangtritis Km 4, Sewon, Bantul', '-7.8341', '110.3621', 'Kabupaten Bantul', 'Sewon', 'Panggungharjo', 'Kebakaran Gedung', 'Kebakaran di toko kelontong, 2 unit armada dikerahkan.', 'Selesai', '2025-01-10 03:45:00'],
+            ['Kebakaran Gudang Kayu', 'Hendra Prasetya', '082134567891', 'Godean, Sleman', '-7.7712', '110.3012', 'Kabupaten Sleman', 'Godean', 'Sidoagung', 'Kebakaran Gedung', 'Gudang pengolahan kayu terbakar pukul 22:00.', 'Selesai', '2025-05-18 22:10:00'],
+            ['Kebakaran Mobil Mini Bus', 'Eko Nugroho', '081398765432', 'Jl. Solo Km 9, Kalasan, Sleman', '-7.7789', '110.4589', 'Kabupaten Sleman', 'Kalasan', 'Tirtomartani', 'Kebakaran Kendaraan', 'Mobil terbakar di bahu jalan akibat kebocoran bahan bakar.', 'Selesai', '2026-02-04 16:20:00'],
+            ['Kebakaran Restoran', 'Rina Kartika', '087812345678', 'Umbulharjo, Kota Yogyakarta', '-7.8123', '110.3891', 'Kota Yogyakarta', 'Umbulharjo', 'Pandeyan', 'Kebakaran Gedung', 'Kebakaran akibat tabung gas elpiji bocor di dapur restoran.', 'Selesai', '2026-06-12 18:05:00'],
+            ['Kebakaran Lahan Pertanian', 'Bambang Utomo', '085298765432', 'Pengasih, Kulon Progo', '-7.8542', '110.1582', 'Kabupaten Kulon Progo', 'Pengasih', 'Tawangsari', 'Kebakaran Lahan', 'Pembakaran sampah merembet ke area pertanian.', 'Diproses', '2026-08-01 13:00:00'],
+            ['Kebakaran Pasar Tradisional', 'Tri Mulyani', '081823456789', 'Wates, Kulon Progo', '-7.8612', '110.1589', 'Kabupaten Kulon Progo', 'Wates', 'Giripeni', 'Kebakaran Gedung', 'Kios sembako terbakar pada pagi hari.', 'Selesai', '2026-08-10 05:30:00'],
+            ['Evakuasi Sarang Tawon Vespa', 'Dewi Lestari', '085612345678', 'Tegalrejo, Kota Yogyakarta', '-7.7889', '110.3541', 'Kota Yogyakarta', 'Tegalrejo', 'Kricak', 'Non-Kebakaran / Rescue', 'Sarang tawon vespa membahayakan warga di atap rumah.', 'Selesai', '2024-04-10 19:30:00'],
+            ['Penyelamatan Sapi Terperosok Sumur', 'Pak Marto', '081298765432', 'Imogiri, Bantul', '-7.9245', '110.3812', 'Kabupaten Bantul', 'Imogiri', 'Wukirsari', 'Non-Kebakaran / Rescue', 'Sapi milik warga masuk ke sumur tua kedalaman 4 meter.', 'Selesai', '2024-09-05 08:00:00'],
+            ['Pelepasan Cincin Macet di Jari', 'Anisa Putri', '087712345678', 'Mlati, Sleman', '-7.7345', '110.3582', 'Kabupaten Sleman', 'Mlati', 'Sinduadi', 'Non-Kebakaran / Rescue', 'Cincin membengkak pada jari korban, dipotong dengan mini grinder.', 'Selesai', '2025-03-22 10:15:00'],
+            ['Evakuasi Ular Kobra Masuk Rumah', 'Dedi Kurniawan', '082298765432', 'Banguntapan, Bantul', '-7.8189', '110.4072', 'Kabupaten Bantul', 'Banguntapan', 'Baturetno', 'Non-Kebakaran / Rescue', 'Ular kobra sepanjang 1.5 meter berada di bawah tempat tidur.', 'Selesai', '2025-07-14 21:40:00'],
+            ['Evakuasi Pohon Tumbang Menutup Jalan', 'Suparno', '081312345678', 'Wonosari, Gunungkidul', '-7.9621', '110.6012', 'Kabupaten Gunungkidul', 'Wonosari', 'Kepek', 'Non-Kebakaran / Rescue', 'Pohon mendoan besar tumbang menimpa kabel dan menutup jalan utama.', 'Selesai', '2026-01-25 15:10:00'],
+            ['Penyelamatan Kucing Terjebak di Tiang Listrik', 'Maya Sari', '085398765432', 'Kasihan, Bantul', '-7.8245', '110.3341', 'Kabupaten Bantul', 'Kasihan', 'Tamantirto', 'Non-Kebakaran / Rescue', 'Kucing terjebak di puncak tiang listrik selama 2 hari.', 'Selesai', '2026-08-08 09:20:00']
+          ];
+
+          for (const lap of sampleIncidents) {
+            await connection.query(`
+              INSERT INTO laporan (judul_kejadian, nama_pelapor, nomor_hp, alamat, latitude, longitude, kabupaten, kecamatan, kalurahan, jenis_kejadian, deskripsi, status, created_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `, lap);
+          }
+          console.log('✅ Sample data laporan kejadian berhasil di-seed ke MySQL.');
+        }
       } finally {
         connection.release();
       }
@@ -459,6 +517,64 @@ if (isMysql) {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    // Auto-seed Master Kabupaten DIY jika masih kosong (PostgreSQL)
+    const [kabPgRows] = await pool.query('SELECT COUNT(*) as count FROM kabupaten').then(res => [res.rows]);
+    if (kabPgRows && parseInt(kabPgRows[0]?.count || 0, 10) === 0) {
+      const defaultKabs = ['Kota Yogyakarta', 'Kabupaten Sleman', 'Kabupaten Bantul', 'Kabupaten Kulon Progo', 'Kabupaten Gunungkidul'];
+      for (const k of defaultKabs) {
+        await pool.query('INSERT INTO kabupaten (nama) VALUES ($1)', [k]);
+      }
+      console.log('✅ Master data Kabupaten DIY berhasil di-seed ke PostgreSQL.');
+    }
+
+    // Auto-seed Master Pos Damkar jika masih kosong (PostgreSQL)
+    const [posPgRows] = await pool.query('SELECT COUNT(*) as count FROM pos_damkar').then(res => [res.rows]);
+    if (posPgRows && parseInt(posPgRows[0]?.count || 0, 10) === 0) {
+      const samplePos = [
+        ['Pos Damkar Induk Kyai Mojo', 'Jl. Kyai Mojo No. 56, Jetis, Kota Yogyakarta', '-7.7845', '110.3582'],
+        ['Pos Damkar Sleman Pusat', 'Jl. Magelang Km 10, Tridadi, Sleman', '-7.7123', '110.3541'],
+        ['Pos Damkar Depok Sleman', 'Babarsari, Caturtunggal, Depok, Sleman', '-7.7782', '110.4089'],
+        ['Pos Damkar Godean', 'Jl. Godean Km 9, Godean, Sleman', '-7.7712', '110.3012'],
+        ['Pos Damkar Bantul', 'Jl. Jenderal Sudirman No. 1, Bantul', '-7.8872', '110.3312'],
+        ['Pos Damkar Banguntapan', 'Jl. Ringroad Timur, Banguntapan, Bantul', '-7.8189', '110.4072'],
+        ['Pos Damkar Kulon Progo', 'Jl. Sugiman, Pengasih, Wates, Kulon Progo', '-7.8542', '110.1582'],
+        ['Pos Damkar Gunungkidul', 'Jl. Brigjen Katamso, Wonosari, Gunungkidul', '-7.9621', '110.6012']
+      ];
+      for (const p of samplePos) {
+        await pool.query('INSERT INTO pos_damkar (nama, alamat, latitude, longitude) VALUES ($1, $2, $3, $4)', p);
+      }
+      console.log('✅ Master data Pos Damkar DIY berhasil di-seed ke PostgreSQL.');
+    }
+
+    // Auto-seed Data Laporan Kejadian jika masih kosong (PostgreSQL)
+    const [lapPgRows] = await pool.query('SELECT COUNT(*) as count FROM laporan').then(res => [res.rows]);
+    if (lapPgRows && parseInt(lapPgRows[0]?.count || 0, 10) === 0) {
+      const sampleIncidents = [
+        ['Kebakaran Rumah Permukiman', 'Budi Santoso', '081234567890', 'Jl. Kaliurang Km 5, Depok, Sleman', '-7.7583', '110.3812', 'Kabupaten Sleman', 'Depok', 'Caturtunggal', 'Kebakaran Permukiman', 'Kebakaran disebabkan korsleting listrik pada dapur rumah.', 'Selesai', '2024-03-15 14:30:00'],
+        ['Kebakaran Lahan Kering', 'Siti Rahma', '081987654321', 'Kapanewon Playen, Gunungkidul', '-7.9351', '110.5512', 'Kabupaten Gunungkidul', 'Playen', 'Logandeng', 'Kebakaran Lahan', 'Api membesar membakar ilalang kering di pinggir jalan.', 'Selesai', '2024-08-20 11:15:00'],
+        ['Kebakaran Ruko Sembako', 'Agus Wijaya', '085712345678', 'Jl. Parangtritis Km 4, Sewon, Bantul', '-7.8341', '110.3621', 'Kabupaten Bantul', 'Sewon', 'Panggungharjo', 'Kebakaran Gedung', 'Kebakaran di toko kelontong, 2 unit armada dikerahkan.', 'Selesai', '2025-01-10 03:45:00'],
+        ['Kebakaran Gudang Kayu', 'Hendra Prasetya', '082134567891', 'Godean, Sleman', '-7.7712', '110.3012', 'Kabupaten Sleman', 'Godean', 'Sidoagung', 'Kebakaran Gedung', 'Gudang pengolahan kayu terbakar pukul 22:00.', 'Selesai', '2025-05-18 22:10:00'],
+        ['Kebakaran Mobil Mini Bus', 'Eko Nugroho', '081398765432', 'Jl. Solo Km 9, Kalasan, Sleman', '-7.7789', '110.4589', 'Kabupaten Sleman', 'Kalasan', 'Tirtomartani', 'Kebakaran Kendaraan', 'Mobil terbakar di bahu jalan akibat kebocoran bahan bakar.', 'Selesai', '2026-02-04 16:20:00'],
+        ['Kebakaran Restoran', 'Rina Kartika', '087812345678', 'Umbulharjo, Kota Yogyakarta', '-7.8123', '110.3891', 'Kota Yogyakarta', 'Umbulharjo', 'Pandeyan', 'Kebakaran Gedung', 'Kebakaran akibat tabung gas elpiji bocor di dapur restoran.', 'Selesai', '2026-06-12 18:05:00'],
+        ['Kebakaran Lahan Pertanian', 'Bambang Utomo', '085298765432', 'Pengasih, Kulon Progo', '-7.8542', '110.1582', 'Kabupaten Kulon Progo', 'Pengasih', 'Tawangsari', 'Kebakaran Lahan', 'Pembakaran sampah merembet ke area pertanian.', 'Diproses', '2026-08-01 13:00:00'],
+        ['Kebakaran Pasar Tradisional', 'Tri Mulyani', '081823456789', 'Wates, Kulon Progo', '-7.8612', '110.1589', 'Kabupaten Kulon Progo', 'Wates', 'Giripeni', 'Kebakaran Gedung', 'Kios sembako terbakar pada pagi hari.', 'Selesai', '2026-08-10 05:30:00'],
+        ['Evakuasi Sarang Tawon Vespa', 'Dewi Lestari', '085612345678', 'Tegalrejo, Kota Yogyakarta', '-7.7889', '110.3541', 'Kota Yogyakarta', 'Tegalrejo', 'Kricak', 'Non-Kebakaran / Rescue', 'Sarang tawon vespa membahayakan warga di atap rumah.', 'Selesai', '2024-04-10 19:30:00'],
+        ['Penyelamatan Sapi Terperosok Sumur', 'Pak Marto', '081298765432', 'Imogiri, Bantul', '-7.9245', '110.3812', 'Kabupaten Bantul', 'Imogiri', 'Wukirsari', 'Non-Kebakaran / Rescue', 'Sapi milik warga masuk ke sumur tua kedalaman 4 meter.', 'Selesai', '2024-09-05 08:00:00'],
+        ['Pelepasan Cincin Macet di Jari', 'Anisa Putri', '087712345678', 'Mlati, Sleman', '-7.7345', '110.3582', 'Kabupaten Sleman', 'Mlati', 'Sinduadi', 'Non-Kebakaran / Rescue', 'Cincin membengkak pada jari korban, dipotong dengan mini grinder.', 'Selesai', '2025-03-22 10:15:00'],
+        ['Evakuasi Ular Kobra Masuk Rumah', 'Dedi Kurniawan', '082298765432', 'Banguntapan, Bantul', '-7.8189', '110.4072', 'Kabupaten Bantul', 'Banguntapan', 'Baturetno', 'Non-Kebakaran / Rescue', 'Ular kobra sepanjang 1.5 meter berada di bawah tempat tidur.', 'Selesai', '2025-07-14 21:40:00'],
+        ['Evakuasi Pohon Tumbang Menutup Jalan', 'Suparno', '081312345678', 'Wonosari, Gunungkidul', '-7.9621', '110.6012', 'Kabupaten Gunungkidul', 'Wonosari', 'Kepek', 'Non-Kebakaran / Rescue', 'Pohon mendoan besar tumbang menimpa kabel dan menutup jalan utama.', 'Selesai', '2026-01-25 15:10:00'],
+        ['Penyelamatan Kucing Terjebak di Tiang Listrik', 'Maya Sari', '085398765432', 'Kasihan, Bantul', '-7.8245', '110.3341', 'Kabupaten Bantul', 'Kasihan', 'Tamantirto', 'Non-Kebakaran / Rescue', 'Kucing terjebak di puncak tiang listrik selama 2 hari.', 'Selesai', '2026-08-08 09:20:00']
+      ];
+
+      for (const lap of sampleIncidents) {
+        await pool.query(`
+          INSERT INTO laporan (judul_kejadian, nama_pelapor, nomor_hp, alamat, latitude, longitude, kabupaten, kecamatan, kalurahan, jenis_kejadian, deskripsi, status, created_at)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+        `, lap);
+      }
+      console.log('✅ Sample data laporan kejadian berhasil di-seed ke PostgreSQL.');
+    }
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS arsip_data (
