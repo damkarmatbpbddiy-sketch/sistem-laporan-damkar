@@ -150,7 +150,63 @@ const stopHomeCameraStream = () => {
 const startHomeCameraCapture = async () => {
   const cameraVideo = document.getElementById('home-camera-video');
   const cameraPane = document.getElementById('home-camera-pane');
+  const hpInput = document.getElementById('home-nomor_hp');
 
+  // --- LANGKAH 1: Minta nomor WhatsApp sebelum buka kamera ---
+  const existingHp = (hpInput && hpInput.value && hpInput.value !== '-') ? hpInput.value : '';
+  const { value: nomorWa, isConfirmed } = await Swal.fire({
+    title: '<i class="bi bi-whatsapp" style="color:#25d366"></i> Nomor WhatsApp Pelapor',
+    html: `
+      <p class="text-muted small mb-3" style="line-height:1.5;">
+        Isi nomor WhatsApp Anda agar petugas dapat mengonfirmasi laporan dengan mudah kepada pelapor.
+      </p>
+      <div class="input-group">
+        <span class="input-group-text bg-success text-white">
+          <i class="bi bi-whatsapp"></i>
+        </span>
+        <input
+          id="swal-nomor-wa"
+          type="tel"
+          class="form-control form-control-lg"
+          placeholder="Contoh: 08123456789"
+          value="${existingHp}"
+          inputmode="numeric"
+          maxlength="15"
+        >
+      </div>
+      <div id="swal-wa-error" class="text-danger small mt-2 d-none">
+        <i class="bi bi-exclamation-circle-fill"></i> Nomor WhatsApp wajib diisi sebelum memotret.
+      </div>
+    `,
+    showCancelButton: true,
+    confirmButtonText: '<i class="bi bi-camera-fill me-1"></i> Buka Kamera',
+    cancelButtonText: 'Batal',
+    confirmButtonColor: '#dc2626',
+    cancelButtonColor: '#6c757d',
+    focusConfirm: false,
+    allowOutsideClick: false,
+    didOpen: () => {
+      const input = document.getElementById('swal-nomor-wa');
+      if (input) input.focus();
+    },
+    preConfirm: () => {
+      const input = document.getElementById('swal-nomor-wa');
+      const errorDiv = document.getElementById('swal-wa-error');
+      const val = input ? input.value.trim() : '';
+      if (!val) {
+        if (errorDiv) errorDiv.classList.remove('d-none');
+        return false;
+      }
+      return val;
+    }
+  });
+
+  if (!isConfirmed || !nomorWa) return;
+
+  // Simpan nomor WhatsApp ke hidden input
+  if (hpInput) hpInput.value = nomorWa;
+
+  // --- LANGKAH 2: Pastikan lokasi sudah siap ---
   const locationReady = await ensureHomeLocationReady();
   if (!locationReady) return;
 
@@ -160,11 +216,12 @@ const startHomeCameraCapture = async () => {
     return;
   }
 
+  // --- LANGKAH 3: Buka kamera ---
   try {
     homeCameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
     if (cameraVideo) cameraVideo.srcObject = homeCameraStream;
     if (cameraPane) cameraPane.classList.remove('d-none');
-    showHomeGeoStatus('Kamera aktif. Tangkap foto ketika siap.', 'success');
+    showHomeGeoStatus(`Kamera aktif. No. WA: ${nomorWa} — Tangkap foto ketika siap.`, 'success');
   } catch (err) {
     console.error('Kamera error:', err);
     showHomeGeoStatus('Gagal mengakses kamera.', 'danger');
