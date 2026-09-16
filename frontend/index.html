@@ -69,53 +69,52 @@
     </div>
 
 
-    <button
-      class="navbar-toggler navbar-dark"
-      type="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#navbarNav">
+    <!-- Menu Titik Tiga (Kebab Dropdown) -->
+    <div class="dropdown ms-auto">
+      <button
+        class="btn-titik-tiga"
+        type="button"
+        id="navMenuDots"
+        data-bs-toggle="dropdown"
+        data-bs-offset="0,10"
+        aria-expanded="false"
+        title="Menu Navigasi">
+        <i class="bi bi-three-dots-vertical"></i>
+      </button>
 
-      <span class="navbar-toggler-icon"></span>
-
-    </button>
-
-
-    <div
-      class="collapse navbar-collapse"
-      id="navbarNav">
-
-      <ul
-        class="navbar-nav ms-auto align-items-center gap-1 mt-3 mt-lg-0">
-
-
-        <li class="nav-item">
-          <a class="nav-link nav-link-custom active" href="index.html">
-            <i class="bi bi-house-door-fill"></i> Beranda
+      <ul class="dropdown-menu dropdown-menu-end dropdown-menu-damkar" aria-labelledby="navMenuDots">
+        <li>
+          <a class="dropdown-item active" href="index.html">
+            <i class="bi bi-house-door-fill text-primary"></i>
+            <span>Beranda</span>
           </a>
         </li>
 
-        <li class="nav-item">
-          <a class="nav-link nav-link-custom text-danger fw-bold" href="silakar.html">
-            <i class="bi bi-fire"></i> SILATKAR DIY
+        <li>
+          <a class="dropdown-item fw-bold text-danger" href="silakar.html">
+            <i class="bi bi-fire text-danger"></i>
+            <span>SILATKAR DIY</span>
           </a>
         </li>
 
-        <li class="nav-item">
-          <a class="nav-link nav-link-custom btn-report-nav ms-lg-2 ms-0" href="laporan.html">
-            <i class="bi bi-exclamation-triangle-fill"></i> Laporkan Kejadian
+        <li>
+          <a class="dropdown-item dropdown-item-report" href="laporan.html">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span>Laporkan Kejadian</span>
           </a>
         </li>
 
-        <div id="auth-nav-container" class="d-flex align-items-center">
-          <li class="nav-item ms-lg-2">
-            <a class="nav-link nav-link-custom" href="login.html">
-              <i class="bi bi-shield-lock-fill"></i> Login Admin
+        <li><hr class="dropdown-divider my-2" style="border-color: rgba(255,255,255,0.1);"></li>
+
+        <div id="auth-nav-container">
+          <li>
+            <a class="dropdown-item" href="login.html">
+              <i class="bi bi-shield-lock-fill text-info"></i>
+              <span>Login Admin</span>
             </a>
           </li>
         </div>
-
       </ul>
-
     </div>
 
   </nav>

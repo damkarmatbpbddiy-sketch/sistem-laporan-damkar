@@ -1168,28 +1168,57 @@ async function initDamkarMap() {
 document.addEventListener('DOMContentLoaded', () => {
   const authNavContainer = document.getElementById('auth-nav-container');
   if (authNavContainer) {
+    const isDropdown = authNavContainer.closest('.dropdown-menu') !== null;
     if (isLoggedIn()) {
       const adminUser = JSON.parse(localStorage.getItem('adminUser') || '{}');
-      authNavContainer.innerHTML = `
-        <li class="nav-item">
-          <a class="nav-link nav-link-custom" href="admin.html">
-            <i class="bi bi-speedometer2"></i> Dashboard Admin
-          </a>
-        </li>
-        <li class="nav-item ms-2">
-          <button onclick="logoutAdmin()" class="btn btn-outline-light btn-sm px-3">
-            <i class="bi bi-box-arrow-right"></i> Logout (${adminUser.username || 'Admin'})
-          </button>
-        </li>
-      `;
+      if (isDropdown) {
+        authNavContainer.innerHTML = `
+          <li>
+            <a class="dropdown-item" href="admin.html">
+              <i class="bi bi-speedometer2 text-success"></i>
+              <span>Dashboard Admin</span>
+            </a>
+          </li>
+          <li class="mt-1">
+            <button onclick="logoutAdmin()" class="dropdown-item text-danger border-0 bg-transparent w-100 text-start">
+              <i class="bi bi-box-arrow-right"></i>
+              <span>Logout (${adminUser.username || 'Admin'})</span>
+            </button>
+          </li>
+        `;
+      } else {
+        authNavContainer.innerHTML = `
+          <li class="nav-item">
+            <a class="nav-link nav-link-custom" href="admin.html">
+              <i class="bi bi-speedometer2"></i> Dashboard Admin
+            </a>
+          </li>
+          <li class="nav-item ms-2">
+            <button onclick="logoutAdmin()" class="btn btn-outline-light btn-sm px-3">
+              <i class="bi bi-box-arrow-right"></i> Logout (${adminUser.username || 'Admin'})
+            </button>
+          </li>
+        `;
+      }
     } else {
-      authNavContainer.innerHTML = `
-        <li class="nav-item">
-          <a class="nav-link nav-link-custom" href="login.html">
-            <i class="bi bi-shield-lock-fill"></i> Login Admin
-          </a>
-        </li>
-      `;
+      if (isDropdown) {
+        authNavContainer.innerHTML = `
+          <li>
+            <a class="dropdown-item" href="login.html">
+              <i class="bi bi-shield-lock-fill text-info"></i>
+              <span>Login Admin</span>
+            </a>
+          </li>
+        `;
+      } else {
+        authNavContainer.innerHTML = `
+          <li class="nav-item">
+            <a class="nav-link nav-link-custom" href="login.html">
+              <i class="bi bi-shield-lock-fill"></i> Login Admin
+            </a>
+          </li>
+        `;
+      }
     }
   }
 

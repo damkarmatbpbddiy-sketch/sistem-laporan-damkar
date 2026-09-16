@@ -121,6 +121,76 @@ main {
   box-shadow: 0 6px 16px rgba(220, 38, 38, 0.5);
 }
 
+/* --- TITIK TIGA NAVBAR MENU --- */
+.btn-titik-tiga {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 1.25rem;
+}
+
+.btn-titik-tiga:hover, .btn-titik-tiga:focus, .btn-titik-tiga[aria-expanded="true"] {
+  background: rgba(220, 38, 38, 0.25);
+  border-color: var(--primary-red);
+  color: #ffffff;
+  box-shadow: 0 0 16px rgba(220, 38, 38, 0.4);
+  transform: translateY(-1px);
+}
+
+.dropdown-menu-damkar {
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  padding: 0.6rem 0.5rem;
+  min-width: 230px;
+  margin-top: 10px !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.dropdown-menu-damkar .dropdown-item {
+  color: #cbd5e1;
+  font-weight: 500;
+  padding: 0.65rem 0.95rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.92rem;
+  transition: all 0.2s ease;
+}
+
+.dropdown-menu-damkar .dropdown-item:hover,
+.dropdown-menu-damkar .dropdown-item.active {
+  background: rgba(220, 38, 38, 0.18);
+  color: #ffffff !important;
+  border-left: 3px solid var(--primary-red);
+}
+
+.dropdown-menu-damkar .dropdown-item-report {
+  background: linear-gradient(135deg, var(--primary-red) 0%, var(--primary-red-dark) 100%);
+  color: #ffffff !important;
+  font-weight: 600;
+  margin: 4px 0;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.dropdown-menu-damkar .dropdown-item-report:hover {
+  background: linear-gradient(135deg, #ef4444 0%, var(--primary-red) 100%);
+  color: #ffffff !important;
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.5);
+  border-left: none;
+}
+
 /* --- HERO SECTION --- */
 .hero-damkar {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #3f0707 100%);
