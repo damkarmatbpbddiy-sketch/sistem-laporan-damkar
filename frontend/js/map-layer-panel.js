@@ -524,7 +524,89 @@ async function loadAdminOverlays() {
           direction: 'center',
           className: 'kabupaten-label'
         });
-        layer.bindPopup(`<strong>🏛️ ${nama}</strong><br><small class="text-muted">Daerah Istimewa Yogyakarta</small>`);
+
+        layer.on('click', async (e) => {
+          if (!e || !e.latlng) return;
+          const lat = e.latlng.lat;
+          const lng = e.latlng.lng;
+
+          const popup = L.popup({ maxWidth: 340 })
+            .setLatLng(e.latlng)
+            .setContent(`
+              <div style="min-width:260px; max-width:320px; font-size:12.5px; line-height:1.6; color:#1f2937;">
+                <div style="font-size:15px; font-weight:700; color:#1e3a8a; margin-bottom:8px; display:flex; align-items:center; gap:6px; border-bottom:2px solid #e2e8f0; padding-bottom:5px;">
+                  <span>🏛️</span> <span>${escapeHtml(nama)}</span>
+                </div>
+                <div style="margin-bottom:8px; background:#fffbeb; border:1px solid #fef3c7; border-left:4px solid #f59e0b; border-radius:4px; padding:6px 10px;">
+                  <div style="font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#b45309; margin-bottom:2px;">
+                    📍 Alamat Lengkap
+                  </div>
+                  <div style="font-size:12.5px; font-weight:600; color:#1e293b; line-height:1.4;">
+                    <i class="bi bi-hourglass-split"></i> Mengambil alamat lengkap...
+                  </div>
+                </div>
+                <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                  <tr style="border-bottom:1px solid #f1f5f9;">
+                    <td style="color:#64748b; padding:4px 6px 4px 0; white-space:nowrap;">Kab./Kota:</td>
+                    <td style="font-weight:600; padding:4px 0; color:#1e293b;">${escapeHtml(nama)}</td>
+                  </tr>
+                  <tr style="border-bottom:1px solid #f1f5f9;">
+                    <td style="color:#64748b; padding:4px 6px 4px 0; white-space:nowrap;">Provinsi:</td>
+                    <td style="font-weight:600; padding:4px 0; color:#1e293b;">Daerah Istimewa Yogyakarta</td>
+                  </tr>
+                  <tr>
+                    <td style="color:#64748b; padding:4px 6px 4px 0; white-space:nowrap;">Koordinat:</td>
+                    <td style="font-family:monospace; padding:4px 0; color:#475569; font-size:11.5px;">${lat.toFixed(6)}, ${lng.toFixed(6)}</td>
+                  </tr>
+                </table>
+              </div>
+            `)
+            .openOn(liveMap);
+
+          try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`, {
+              headers: { 'Accept-Language': 'id' }
+            });
+            if (res.ok) {
+              const data = await res.json();
+              const displayName = data.display_name || `${nama}, D.I. Yogyakarta`;
+              popup.setContent(`
+                <div style="min-width:260px; max-width:320px; font-size:12.5px; line-height:1.6; color:#1f2937;">
+                  <div style="font-size:15px; font-weight:700; color:#1e3a8a; margin-bottom:8px; display:flex; align-items:center; gap:6px; border-bottom:2px solid #e2e8f0; padding-bottom:5px;">
+                    <span>🏛️</span> <span>${escapeHtml(nama)}</span>
+                  </div>
+                  <div style="margin-bottom:8px; background:#fffbeb; border:1px solid #fef3c7; border-left:4px solid #f59e0b; border-radius:4px; padding:6px 10px;">
+                    <div style="font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#b45309; margin-bottom:2px;">
+                      📍 Alamat Lengkap
+                    </div>
+                    <div style="font-size:12.5px; font-weight:600; color:#1e293b; line-height:1.4;">
+                      ${escapeHtml(displayName)}
+                    </div>
+                  </div>
+                  <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                    <tr style="border-bottom:1px solid #f1f5f9;">
+                      <td style="color:#64748b; padding:4px 6px 4px 0; white-space:nowrap;">Kab./Kota:</td>
+                      <td style="font-weight:600; padding:4px 0; color:#1e293b;">${escapeHtml(nama)}</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #f1f5f9;">
+                      <td style="color:#64748b; padding:4px 6px 4px 0; white-space:nowrap;">Provinsi:</td>
+                      <td style="font-weight:600; padding:4px 0; color:#1e293b;">Daerah Istimewa Yogyakarta</td>
+                    </tr>
+                    <tr>
+                      <td style="color:#64748b; padding:4px 6px 4px 0; white-space:nowrap;">Koordinat:</td>
+                      <td style="font-family:monospace; padding:4px 0; color:#475569; font-size:11.5px;">${lat.toFixed(6)}, ${lng.toFixed(6)}</td>
+                    </tr>
+                  </table>
+                  <div style="margin-top:8px; text-align:right;">
+                    <a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" class="btn btn-sm btn-outline-primary" style="font-size:11.5px; padding:2px 8px;">
+                      <i class="bi bi-box-arrow-up-right"></i> Google Maps
+                    </a>
+                  </div>
+                </div>
+              `);
+            }
+          } catch (err) {}
+        });
       }
     }),
     loadGeoJSON('Batas Kecamatan/Kapanewon', 'data/diy-kecamatan.geojson', layerSrsBatasKecamatan, {
@@ -533,7 +615,91 @@ async function loadAdminOverlays() {
       onEachFeature: (feature, layer) => {
         const nama = feature.properties?.nama || feature.properties?.kecamatan || feature.properties?.WADMKC || 'Kecamatan';
         const kab = feature.properties?.kab_kota || feature.properties?.WADMKK || '-';
-        layer.bindPopup(`<strong>Kecamatan / Kapanewon ${nama}</strong><br><small class="text-muted">Kabupaten/Kota: ${kab}</small>`);
+        const isKota = kab.toLowerCase().includes('kota') || kab.toLowerCase().includes('yogyakarta');
+        const sebutanKec = isKota ? 'Kemantren' : 'Kapanewon';
+
+        layer.on('click', async (e) => {
+          if (!e || !e.latlng) return;
+          const lat = e.latlng.lat;
+          const lng = e.latlng.lng;
+
+          const popup = L.popup({ maxWidth: 340 })
+            .setLatLng(e.latlng)
+            .setContent(`
+              <div style="min-width:260px; max-width:320px; font-size:12.5px; line-height:1.6; color:#1f2937;">
+                <div style="font-size:15px; font-weight:700; color:#1e293b; margin-bottom:8px; display:flex; align-items:center; gap:6px; border-bottom:2px solid #e2e8f0; padding-bottom:5px;">
+                  <span>🗺️</span> <span>${escapeHtml(sebutanKec)} ${escapeHtml(nama)}</span>
+                </div>
+                <div style="margin-bottom:8px; background:#fffbeb; border:1px solid #fef3c7; border-left:4px solid #f59e0b; border-radius:4px; padding:6px 10px;">
+                  <div style="font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#b45309; margin-bottom:2px;">
+                    📍 Alamat Lengkap
+                  </div>
+                  <div style="font-size:12.5px; font-weight:600; color:#1e293b; line-height:1.4;">
+                    <i class="bi bi-hourglass-split"></i> Mengambil alamat lengkap...
+                  </div>
+                </div>
+                <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                  <tr style="border-bottom:1px solid #f1f5f9;">
+                    <td style="color:#64748b; padding:4px 6px 4px 0; white-space:nowrap;">${escapeHtml(sebutanKec)}:</td>
+                    <td style="font-weight:600; padding:4px 0; color:#1e293b;">${escapeHtml(nama)}</td>
+                  </tr>
+                  <tr style="border-bottom:1px solid #f1f5f9;">
+                    <td style="color:#64748b; padding:4px 6px 4px 0; white-space:nowrap;">Kab./Kota:</td>
+                    <td style="font-weight:600; padding:4px 0; color:#1e293b;">${escapeHtml(kab)}</td>
+                  </tr>
+                  <tr>
+                    <td style="color:#64748b; padding:4px 6px 4px 0; white-space:nowrap;">Koordinat:</td>
+                    <td style="font-family:monospace; padding:4px 0; color:#475569; font-size:11.5px;">${lat.toFixed(6)}, ${lng.toFixed(6)}</td>
+                  </tr>
+                </table>
+              </div>
+            `)
+            .openOn(liveMap);
+
+          try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`, {
+              headers: { 'Accept-Language': 'id' }
+            });
+            if (res.ok) {
+              const data = await res.json();
+              const displayName = data.display_name || `${nama}, ${kab}`;
+              popup.setContent(`
+                <div style="min-width:260px; max-width:320px; font-size:12.5px; line-height:1.6; color:#1f2937;">
+                  <div style="font-size:15px; font-weight:700; color:#1e293b; margin-bottom:8px; display:flex; align-items:center; gap:6px; border-bottom:2px solid #e2e8f0; padding-bottom:5px;">
+                    <span>🗺️</span> <span>${escapeHtml(sebutanKec)} ${escapeHtml(nama)}</span>
+                  </div>
+                  <div style="margin-bottom:8px; background:#fffbeb; border:1px solid #fef3c7; border-left:4px solid #f59e0b; border-radius:4px; padding:6px 10px;">
+                    <div style="font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#b45309; margin-bottom:2px;">
+                      📍 Alamat Lengkap
+                    </div>
+                    <div style="font-size:12.5px; font-weight:600; color:#1e293b; line-height:1.4;">
+                      ${escapeHtml(displayName)}
+                    </div>
+                  </div>
+                  <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                    <tr style="border-bottom:1px solid #f1f5f9;">
+                      <td style="color:#64748b; padding:4px 6px 4px 0; white-space:nowrap;">${escapeHtml(sebutanKec)}:</td>
+                      <td style="font-weight:600; padding:4px 0; color:#1e293b;">${escapeHtml(nama)}</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #f1f5f9;">
+                      <td style="color:#64748b; padding:4px 6px 4px 0; white-space:nowrap;">Kab./Kota:</td>
+                      <td style="font-weight:600; padding:4px 0; color:#1e293b;">${escapeHtml(kab)}</td>
+                    </tr>
+                    <tr>
+                      <td style="color:#64748b; padding:4px 6px 4px 0; white-space:nowrap;">Koordinat:</td>
+                      <td style="font-family:monospace; padding:4px 0; color:#475569; font-size:11.5px;">${lat.toFixed(6)}, ${lng.toFixed(6)}</td>
+                    </tr>
+                  </table>
+                  <div style="margin-top:8px; text-align:right;">
+                    <a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" class="btn btn-sm btn-outline-primary" style="font-size:11.5px; padding:2px 8px;">
+                      <i class="bi bi-box-arrow-up-right"></i> Google Maps
+                    </a>
+                  </div>
+                </div>
+              `);
+            }
+          } catch (err) {}
+        });
       }
     }),
     loadGeoJSON('Batas Kelurahan/Desa', 'data/diy-desa-batas.geojson', layerSrsBatasDesa, {
@@ -541,7 +707,81 @@ async function loadAdminOverlays() {
       style: { color: '#64748b', weight: 0.9, opacity: 0.8, fill: false, dashArray: '3, 3' },
       onEachFeature: (feature, layer) => {
         const ket = feature.properties?.Keterangan || feature.properties?.Batas || 'Batas Kelurahan/Desa';
-        layer.bindPopup(`<strong>${ket}</strong><br><small class="text-muted">Batas Administrasi Kalurahan/Desa DIY</small>`);
+
+        layer.on('click', async (e) => {
+          if (!e || !e.latlng) return;
+          const lat = e.latlng.lat;
+          const lng = e.latlng.lng;
+
+          const popup = L.popup({ maxWidth: 340 })
+            .setLatLng(e.latlng)
+            .setContent(`
+              <div style="min-width:260px; max-width:320px; font-size:12.5px; line-height:1.6; color:#1f2937;">
+                <div style="font-size:15px; font-weight:700; color:#0f172a; margin-bottom:8px; display:flex; align-items:center; gap:6px; border-bottom:2px solid #e2e8f0; padding-bottom:5px;">
+                  <span>🏡</span> <span>${escapeHtml(ket)}</span>
+                </div>
+                <div style="margin-bottom:8px; background:#fffbeb; border:1px solid #fef3c7; border-left:4px solid #f59e0b; border-radius:4px; padding:6px 10px;">
+                  <div style="font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#b45309; margin-bottom:2px;">
+                    📍 Alamat Lengkap
+                  </div>
+                  <div style="font-size:12.5px; font-weight:600; color:#1e293b; line-height:1.4;">
+                    <i class="bi bi-hourglass-split"></i> Mengambil alamat lengkap...
+                  </div>
+                </div>
+                <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                  <tr style="border-bottom:1px solid #f1f5f9;">
+                    <td style="color:#64748b; padding:4px 6px 4px 0; white-space:nowrap;">Keterangan:</td>
+                    <td style="font-weight:600; padding:4px 0; color:#1e293b;">${escapeHtml(ket)}</td>
+                  </tr>
+                  <tr>
+                    <td style="color:#64748b; padding:4px 6px 4px 0; white-space:nowrap;">Koordinat:</td>
+                    <td style="font-family:monospace; padding:4px 0; color:#475569; font-size:11.5px;">${lat.toFixed(6)}, ${lng.toFixed(6)}</td>
+                  </tr>
+                </table>
+              </div>
+            `)
+            .openOn(liveMap);
+
+          try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`, {
+              headers: { 'Accept-Language': 'id' }
+            });
+            if (res.ok) {
+              const data = await res.json();
+              const displayName = data.display_name || `${ket}, D.I. Yogyakarta`;
+              popup.setContent(`
+                <div style="min-width:260px; max-width:320px; font-size:12.5px; line-height:1.6; color:#1f2937;">
+                  <div style="font-size:15px; font-weight:700; color:#0f172a; margin-bottom:8px; display:flex; align-items:center; gap:6px; border-bottom:2px solid #e2e8f0; padding-bottom:5px;">
+                    <span>🏡</span> <span>${escapeHtml(ket)}</span>
+                  </div>
+                  <div style="margin-bottom:8px; background:#fffbeb; border:1px solid #fef3c7; border-left:4px solid #f59e0b; border-radius:4px; padding:6px 10px;">
+                    <div style="font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#b45309; margin-bottom:2px;">
+                      📍 Alamat Lengkap
+                    </div>
+                    <div style="font-size:12.5px; font-weight:600; color:#1e293b; line-height:1.4;">
+                      ${escapeHtml(displayName)}
+                    </div>
+                  </div>
+                  <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                    <tr style="border-bottom:1px solid #f1f5f9;">
+                      <td style="color:#64748b; padding:4px 6px 4px 0; white-space:nowrap;">Keterangan:</td>
+                      <td style="font-weight:600; padding:4px 0; color:#1e293b;">${escapeHtml(ket)}</td>
+                    </tr>
+                    <tr>
+                      <td style="color:#64748b; padding:4px 6px 4px 0; white-space:nowrap;">Koordinat:</td>
+                      <td style="font-family:monospace; padding:4px 0; color:#475569; font-size:11.5px;">${lat.toFixed(6)}, ${lng.toFixed(6)}</td>
+                    </tr>
+                  </table>
+                  <div style="margin-top:8px; text-align:right;">
+                    <a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" class="btn btn-sm btn-outline-primary" style="font-size:11.5px; padding:2px 8px;">
+                      <i class="bi bi-box-arrow-up-right"></i> Google Maps
+                    </a>
+                  </div>
+                </div>
+              `);
+            }
+          } catch (err) {}
+        });
       }
     }),
     loadShapefile('Jaringan Jalan', {
