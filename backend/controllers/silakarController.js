@@ -2,15 +2,6 @@ const db = require('../config/db');
 const fss = require('fs');
 const path = require('path');
 
-const fallbackSilakarData = [
-  { id: 1, tanggal_kejadian: '2026-08-28', waktu_laporan: '14:30:00', kabupaten_kota: 'Kabupaten Sleman', kapanewon: 'Depok', kalurahan: 'Caturtunggal', alamat_lokasi: 'Jl. Kaliurang Km 5, Depok, Sleman', jenis_kejadian: 'Kebakaran Pemukiman', objek_terbakar: 'Rumah Tinggal', dugaan_penyebab: 'Korsleting Listrik', korban_meninggal: 0, korban_luka: 1, jumlah_terdampak: 4, unit_damkarmat: 'Pos Damkar Sleman', jumlah_armada: 2, status_penanganan: 'Selesai', perkiraan_kerugian: 45000000, keterangan: 'Penanganan selesai dengan aman.' },
-  { id: 2, tanggal_kejadian: '2026-08-25', waktu_laporan: '11:15:00', kabupaten_kota: 'Kabupaten Gunungkidul', kapanewon: 'Playen', kalurahan: 'Logandeng', alamat_lokasi: 'Jl. Jogja-Wonosari Km 22, Playen', jenis_kejadian: 'Kebakaran Lahan', objek_terbakar: 'Lalang Kering', dugaan_penyebab: 'Pembakaran Sampah', korban_meninggal: 0, korban_luka: 0, jumlah_terdampak: 0, unit_damkarmat: 'Pos Damkar Gunungkidul', jumlah_armada: 1, status_penanganan: 'Selesai', perkiraan_kerugian: 5000000, keterangan: 'Api berhasil dilokalisir.' },
-  { id: 3, tanggal_kejadian: '2026-08-20', waktu_laporan: '03:45:00', kabupaten_kota: 'Kabupaten Bantul', kapanewon: 'Sewon', kalurahan: 'Panggungharjo', alamat_lokasi: 'Jl. Parangtritis Km 4.5, Sewon, Bantul', jenis_kejadian: 'Kebakaran Pemukiman', objek_terbakar: 'Ruko Sembako', dugaan_penyebab: 'Tabung Gas Bocor', korban_meninggal: 0, korban_luka: 0, jumlah_terdampak: 2, unit_damkarmat: 'Pos Damkar Bantul', jumlah_armada: 3, status_penanganan: 'Selesai', perkiraan_kerugian: 120000000, keterangan: 'Kerugian material ruko sembako.' },
-  { id: 4, tanggal_kejadian: '2026-08-15', waktu_laporan: '22:10:00', kabupaten_kota: 'Kabupaten Sleman', kapanewon: 'Godean', kalurahan: 'Sidoagung', alamat_lokasi: 'Jl. Godean Km 8, Sleman', jenis_kejadian: 'Kebakaran Pemukiman', objek_terbakar: 'Gudang Kayu', dugaan_penyebab: 'Gesekan Mesin', korban_meninggal: 0, korban_luka: 0, jumlah_terdampak: 0, unit_damkarmat: 'Pos Damkar Godean', jumlah_armada: 2, status_penanganan: 'Selesai', perkiraan_kerugian: 85000000, keterangan: 'Berhasil dipadamkan total.' },
-  { id: 5, tanggal_kejadian: '2026-08-10', waktu_laporan: '16:20:00', kabupaten_kota: 'Kota Yogyakarta', kapanewon: 'Umbulharjo', kalurahan: 'Pandeyan', alamat_lokasi: 'Jl. Glagahsari, Umbulharjo, Kota Jogja', jenis_kejadian: 'Penyelamatan', objek_terbakar: 'Mobil Mini Bus', dugaan_penyebab: 'Kebocoran Selang Bensin', korban_meninggal: 0, korban_luka: 0, jumlah_terdampak: 1, unit_damkarmat: 'Pos Damkar Pusat Yogyakarta', jumlah_armada: 1, status_penanganan: 'Selesai', perkiraan_kerugian: 35000000, keterangan: 'Tidak ada korban jiwa.' },
-  { id: 6, tanggal_kejadian: '2026-08-05', waktu_laporan: '09:10:00', kabupaten_kota: 'Kabupaten Kulon Progo', kapanewon: 'Wates', kalurahan: 'Giripeni', alamat_lokasi: 'Jl. Wates-Purworejo, Wates, Kulon Progo', jenis_kejadian: 'Kebakaran Hutan', objek_terbakar: 'Kios Sembako Pasar', dugaan_penyebab: 'Korsleting Listrik', korban_meninggal: 0, korban_luka: 0, jumlah_terdampak: 3, unit_damkarmat: 'Pos Damkar Kulon Progo', jumlah_armada: 2, status_penanganan: 'Dalam Penanganan', perkiraan_kerugian: 25000000, keterangan: 'Petugas masih melakukan pendinginan.' }
-];
-
 let isTableReady = false;
 
 async function ensureSilakarReady() {
@@ -53,26 +44,6 @@ async function ensureSilakarReady() {
     // Migrasi otomatis kategori lama ke 4 kategori resmi
     await db.query("UPDATE kejadian_silakar SET jenis_kejadian = 'Kebakaran Pemukiman' WHERE jenis_kejadian IN ('Kebakaran', 'Kebakaran Gedung', 'Kebakaran Bangunan', 'Kebakaran Rumah')");
     await db.query("UPDATE kejadian_silakar SET jenis_kejadian = 'Penyelamatan' WHERE jenis_kejadian IN ('Kebakaran Kendaraan', 'Evakuasi', 'Pohon Tumbang', 'Sarang Tawon', 'Non Kebakaran', 'Kecelakaan', 'Bencana Alam', 'Hazmat', 'Lainnya')");
-
-    // Jika tabel masih kosong, masukkan sample records resmi ke database
-    const countRes = await db.query('SELECT COUNT(*) as count FROM kejadian_silakar');
-    const totalCount = parseInt(countRes.rows?.[0]?.count || 0, 10);
-    if (totalCount === 0) {
-      for (const item of fallbackSilakarData) {
-        await db.query(`
-          INSERT INTO kejadian_silakar (
-            tanggal_kejadian, waktu_laporan, kabupaten_kota, kapanewon, kalurahan, alamat_lokasi,
-            jenis_kejadian, objek_terbakar, dugaan_penyebab, korban_meninggal, korban_luka,
-            jumlah_terdampak, unit_damkarmat, jumlah_armada, status_penanganan, perkiraan_kerugian, keterangan
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
-        `, [
-          item.tanggal_kejadian, item.waktu_laporan, item.kabupaten_kota, item.kapanewon, item.kalurahan, item.alamat_lokasi,
-          item.jenis_kejadian, item.objek_terbakar, item.dugaan_penyebab, item.korban_meninggal, item.korban_luka,
-          item.jumlah_terdampak, item.unit_damkarmat, item.jumlah_armada, item.status_penanganan, item.perkiraan_kerugian, item.keterangan
-        ]);
-      }
-      console.log('✅ Inisialisasi data SILATKAR ke database berhasil.');
-    }
 
     isTableReady = true;
   } catch (err) {
@@ -127,11 +98,6 @@ const getAllSilakar = async (req, res) => {
       rowsData = result.rows || [];
     } catch (dbErr) {
       console.warn('⚠️ db.query kejadian_silakar error:', dbErr.message);
-    }
-
-    // Fallback jika database masih kosong dan tidak sedang difilter
-    if (rowsData.length === 0 && !search && !status && !startDate && !endDate && !kabupaten && !jenis) {
-      rowsData = fallbackSilakarData;
     }
 
     const stats = rowsData.reduce((acc, row) => {

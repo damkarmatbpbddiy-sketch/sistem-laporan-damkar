@@ -1,5 +1,13 @@
 // silakar.js — Handler SILAKAR DIY
 const API_BASE = '/api/silakar';
+const SILAKAR_CACHE_KEY_DATA = 'silakar_cache_clean_v1';
+const SILAKAR_CACHE_KEY_STATS = 'silakar_cache_clean_stats_v1';
+
+try {
+  localStorage.removeItem('silakar_cache_data');
+  localStorage.removeItem('silakar_cache_stats');
+} catch (e) {}
+
 let currentSilakarData = [];
 
 // ===================== UTILITY =====================
@@ -131,8 +139,8 @@ async function fetchSilakar(silent = false) {
     // Simpan ke local storage jika tanpa filter agar load berikutnya seketika (0 ms)
     if (!search && !startDate && !endDate && !kabupaten && !status && !jenis) {
       try {
-        localStorage.setItem('silakar_cache_data', JSON.stringify(currentSilakarData));
-        localStorage.setItem('silakar_cache_stats', JSON.stringify(json.stats));
+        localStorage.setItem(SILAKAR_CACHE_KEY_DATA, JSON.stringify(currentSilakarData));
+        localStorage.setItem(SILAKAR_CACHE_KEY_STATS, JSON.stringify(json.stats));
       } catch (e) {}
     }
 
@@ -489,13 +497,19 @@ async function showDetail(id) {
 
 // ===================== INIT =====================
 document.addEventListener('DOMContentLoaded', () => {
-  // 1. Tampilkan data dari localStorage cache seketika (0 ms, tidak perlu tunggu loading)
+  // 1. Bersihkan cache lama agar data dummy lama terhapus total
   try {
-    const cachedData = localStorage.getItem('silakar_cache_data');
-    const cachedStats = localStorage.getItem('silakar_cache_stats');
+    localStorage.removeItem('silakar_cache_data');
+    localStorage.removeItem('silakar_cache_stats');
+  } catch (e) {}
+
+  // 2. Tampilkan data dari localStorage cache seketika (0 ms, tidak perlu tunggu loading)
+  try {
+    const cachedData = localStorage.getItem(SILAKAR_CACHE_KEY_DATA);
+    const cachedStats = localStorage.getItem(SILAKAR_CACHE_KEY_STATS);
     if (cachedData) {
       const parsedData = JSON.parse(cachedData);
-      if (Array.isArray(parsedData) && parsedData.length > 0) {
+      if (Array.isArray(parsedData)) {
         currentSilakarData = parsedData;
         if (cachedStats) updateSilakarStats(JSON.parse(cachedStats));
         renderSilakarRows(parsedData);
