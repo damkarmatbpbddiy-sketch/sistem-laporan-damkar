@@ -718,6 +718,85 @@ async function initLiveMap() {
   renderDiyVillagePoints();
   renderPosDamkarMarkers();
   renderSrsLayer();
+
+  // Klik di peta langsung menampilkan popup detail alamat lengkap
+  liveMap.on('click', async (e) => {
+    if (!e || !e.latlng) return;
+    const lat = e.latlng.lat;
+    const lng = e.latlng.lng;
+
+    const popup = L.popup({ maxWidth: 330 })
+      .setLatLng(e.latlng)
+      .setContent(`
+        <div style="min-width:240px; font-size:12.5px; line-height:1.6; color:#1f2937;">
+          <div style="font-size:14px; font-weight:700; color:#b45309; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+            <span>📍</span> <span>Lokasi Dipilih</span>
+          </div>
+          <div style="color:#64748b; font-size:12px; margin-bottom:6px;">
+            <i class="bi bi-hourglass-split"></i> Mengambil alamat lengkap...
+          </div>
+          <div style="font-size:11.5px; color:#94a3b8; font-family:monospace;">
+            Koordinat: ${lat.toFixed(6)}, ${lng.toFixed(6)}
+          </div>
+        </div>
+      `)
+      .openOn(liveMap);
+
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`, {
+        headers: { 'Accept-Language': 'id' }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const displayName = data.display_name || `Koordinat ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+        popup.setContent(`
+          <div style="min-width:260px; max-width:320px; font-size:12.5px; line-height:1.6; color:#1f2937;">
+            <div style="font-size:14.5px; font-weight:700; color:#0f172a; margin-bottom:8px; display:flex; align-items:center; gap:6px; border-bottom:2px solid #e2e8f0; padding-bottom:4px;">
+              <span>📍</span> <span>Detail Alamat Lokasi</span>
+            </div>
+            <div style="margin-bottom:8px; background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #3b82f6; border-radius:4px; padding:6px 10px;">
+              <div style="font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#64748b; margin-bottom:2px;">
+                Alamat Lengkap
+              </div>
+              <div style="font-size:12.5px; font-weight:600; color:#0f172a; line-height:1.4;">
+                ${escapeHtml(displayName)}
+              </div>
+            </div>
+            <table style="width:100%; border-collapse:collapse; font-size:12px;">
+              <tr style="border-bottom:1px solid #f1f5f9;">
+                <td style="color:#64748b; padding:3px 6px 3px 0; white-space:nowrap;">Koordinat:</td>
+                <td style="font-family:monospace; padding:3px 0; font-weight:600; color:#334155; font-size:11.5px;">${lat.toFixed(6)}, ${lng.toFixed(6)}</td>
+              </tr>
+            </table>
+            <div style="margin-top:8px; text-align:right;">
+              <a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" class="btn btn-sm btn-outline-primary" style="font-size:11.5px; padding:2px 8px;">
+                <i class="bi bi-box-arrow-up-right"></i> Google Maps
+              </a>
+            </div>
+          </div>
+        `);
+      } else {
+        throw new Error('Reverse geocode gagal');
+      }
+    } catch (err) {
+      popup.setContent(`
+        <div style="min-width:240px; font-size:12.5px; line-height:1.6; color:#1f2937;">
+          <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+            <span>📍</span> <span>Lokasi Dipilih</span>
+          </div>
+          <div style="margin-bottom:6px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; padding:6px 10px;">
+            <div style="font-size:10.5px; font-weight:700; color:#64748b; text-transform:uppercase;">Koordinat Lokasi</div>
+            <div style="font-family:monospace; font-weight:600; color:#0f172a;">${lat.toFixed(6)}, ${lng.toFixed(6)}</div>
+          </div>
+          <div style="margin-top:6px; text-align:right;">
+            <a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" class="btn btn-sm btn-outline-primary" style="font-size:11.5px; padding:2px 8px;">
+              <i class="bi bi-box-arrow-up-right"></i> Google Maps
+            </a>
+          </div>
+        </div>
+      `);
+    }
+  });
 }
 
 function switchAdminMapTheme(theme) {
@@ -1516,6 +1595,13 @@ async function renderDiyVillagePoints() {
       const kecamatan = desa.kecamatan || '-';
       const kabKota   = desa.kab_kota  || '-';
 
+      const isKota = kabKota.toLowerCase().includes('kota') || kabKota.toLowerCase().includes('yogyakarta');
+      const prefixKab = (kabKota.toLowerCase().startsWith('kab') || kabKota.toLowerCase().startsWith('kota')) ? kabKota : `Kabupaten ${kabKota}`;
+      const sebutanKec = isKota ? 'Kemantren' : 'Kapanewon';
+      const sebutanDesa = isKota ? (jenisKd || 'Kelurahan') : (jenisKd || 'Kalurahan');
+      const kodeWilayah = desa.kode_kd || desa.kode_kec || '-';
+      const alamatLengkapDesa = `${sebutanDesa} ${namaKd}, ${sebutanKec} ${kecamatan}, ${prefixKab}, Daerah Istimewa Yogyakarta`;
+
       const marker = L.circleMarker([lat, lng], {
         radius: 5,
         color: '#92400e',
@@ -1523,28 +1609,48 @@ async function renderDiyVillagePoints() {
         fillColor: '#f59e0b',
         fillOpacity: 0.9
       }).addTo(diyVillagePointsLayer).bindPopup(`
-        <div style="min-width:200px; font-size:13px; line-height:1.7;">
-          <div style="font-size:15px; font-weight:bold; color:#b45309; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
-            <span>🏘️</span> <span>${jenisKd} ${namaKd}</span>
+        <div style="min-width:260px; max-width:320px; font-size:12.5px; line-height:1.6; color:#1f2937;">
+          <div style="font-size:15px; font-weight:700; color:#b45309; margin-bottom:8px; display:flex; align-items:center; gap:6px; border-bottom:2px solid #fde68a; padding-bottom:5px;">
+            <span>🏘️</span> <span>${escapeHtml(sebutanDesa)} ${escapeHtml(namaKd)}</span>
           </div>
-          <table style="width:100%; border-collapse:collapse;">
-            <tr>
-              <td style="color:#6b7280; padding-right:8px; white-space:nowrap; font-size:12px;">
-                <i class="bi bi-geo-alt-fill" style="color:#f59e0b;"></i> Kabupaten/Kota
+          <div style="margin-bottom:8px; background:#fffbeb; border:1px solid #fef3c7; border-left:4px solid #f59e0b; border-radius:4px; padding:6px 10px;">
+            <div style="font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#b45309; margin-bottom:2px;">
+              📍 Alamat Lengkap
+            </div>
+            <div style="font-size:12.5px; font-weight:600; color:#1e293b; line-height:1.4;">
+              ${escapeHtml(alamatLengkapDesa)}
+            </div>
+          </div>
+          <table style="width:100%; border-collapse:collapse; font-size:12px;">
+            <tr style="border-bottom:1px solid #f1f5f9;">
+              <td style="color:#64748b; padding:4px 6px 4px 0; white-space:nowrap; vertical-align:top;">
+                <i class="bi bi-geo-alt-fill" style="color:#f59e0b;"></i> Kab./Kota
               </td>
-              <td style="font-weight:600;">${kabKota}</td>
+              <td style="font-weight:600; padding:4px 0; color:#1e293b;">${escapeHtml(kabKota)}</td>
+            </tr>
+            <tr style="border-bottom:1px solid #f1f5f9;">
+              <td style="color:#64748b; padding:4px 6px 4px 0; white-space:nowrap; vertical-align:top;">
+                <i class="bi bi-map-fill" style="color:#6366f1;"></i> ${escapeHtml(sebutanKec)}
+              </td>
+              <td style="font-weight:600; padding:4px 0; color:#1e293b;">${escapeHtml(kecamatan)}</td>
+            </tr>
+            <tr style="border-bottom:1px solid #f1f5f9;">
+              <td style="color:#64748b; padding:4px 6px 4px 0; white-space:nowrap; vertical-align:top;">
+                <i class="bi bi-house-fill" style="color:#10b981;"></i> ${escapeHtml(sebutanDesa)}
+              </td>
+              <td style="font-weight:600; padding:4px 0; color:#1e293b;">${escapeHtml(namaKd)}</td>
+            </tr>
+            <tr style="border-bottom:1px solid #f1f5f9;">
+              <td style="color:#64748b; padding:4px 6px 4px 0; white-space:nowrap; vertical-align:top;">
+                <i class="bi bi-hash" style="color:#8b5cf6;"></i> Kode Wilayah
+              </td>
+              <td style="font-weight:600; padding:4px 0; color:#1e293b;">${escapeHtml(kodeWilayah)}</td>
             </tr>
             <tr>
-              <td style="color:#6b7280; padding-right:8px; white-space:nowrap; font-size:12px;">
-                <i class="bi bi-map-fill" style="color:#6366f1;"></i> Kecamatan
+              <td style="color:#64748b; padding:4px 6px 4px 0; white-space:nowrap; vertical-align:top;">
+                <i class="bi bi-compass" style="color:#0ea5e9;"></i> Koordinat
               </td>
-              <td style="font-weight:600;">${kecamatan}</td>
-            </tr>
-            <tr>
-              <td style="color:#6b7280; padding-right:8px; white-space:nowrap; font-size:12px;">
-                <i class="bi bi-house-fill" style="color:#f59e0b;"></i> Desa/Kelurahan
-              </td>
-              <td style="font-weight:600;">${jenisKd} ${namaKd}</td>
+              <td style="font-family:monospace; font-weight:500; padding:4px 0; color:#475569; font-size:11.5px;">${lat.toFixed(6)}, ${lng.toFixed(6)}</td>
             </tr>
           </table>
         </div>
@@ -1662,15 +1768,61 @@ function renderLiveMap(reports) {
       .replace(/'/g, "\\'");
     const routeUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(lat)},${encodeURIComponent(lng)}&travelmode=driving`;
 
+    const namaLokasi = report.alamat || 'Titik Lokasi Terdeteksi';
+    const desaLokasi = report.kalurahan ? `${report.kalurahan}` : '';
+    const kecLokasi = report.kecamatan ? `Kec. ${report.kecamatan}` : '';
+    const kabLokasi = report.kabupaten ? `${report.kabupaten}` : '';
+    const alamatParts = [namaLokasi, desaLokasi, kecLokasi, kabLokasi, 'D.I. Yogyakarta'].filter(Boolean);
+    const alamatLengkapKejadian = alamatParts.join(', ');
+
     const popupHtml = `
-      <div style="min-width:220px;">
-        <strong>${escapeHtml(report.judul_kejadian || '-')}</strong><br>
-        <small>${escapeHtml(report.alamat || '-')}</small><br>
-        <span class="badge-status badge-${status.includes('selesai') ? 'selesai' : status.includes('proses') ? 'diproses' : 'menunggu'}">
-          ${escapeHtml(report.status || 'Menunggu')}
-        </span><br>
-        <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="updateGoogleCameraFrame(${lat}, ${lng}, '${reportTitle}')">Tampilkan Kamera Google</button>
-        <button type="button" class="btn btn-sm btn-outline-danger mt-2 ms-1" onclick="window.open('${routeUrl}', '_blank')">Buka Rute</button>
+      <div style="min-width:260px; max-width:320px; font-size:12.5px; line-height:1.6; color:#1f2937;">
+        <div style="font-size:14.5px; font-weight:700; color:#dc2626; margin-bottom:6px; display:flex; align-items:center; gap:6px; border-bottom:2px solid #fecaca; padding-bottom:4px;">
+          <span>🔥</span> <span>${escapeHtml(report.judul_kejadian || 'Laporan Kebakaran')}</span>
+        </div>
+
+        <div style="margin-bottom:8px; background:#fef2f2; border:1px solid #fee2e2; border-left:4px solid #ef4444; border-radius:4px; padding:6px 10px;">
+          <div style="font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#991b1b; margin-bottom:2px;">
+            📍 Alamat Lengkap
+          </div>
+          <div style="font-size:12.5px; font-weight:600; color:#1e293b; line-height:1.4;">
+            ${escapeHtml(alamatLengkapKejadian)}
+          </div>
+        </div>
+
+        <table style="width:100%; border-collapse:collapse; font-size:12px; margin-bottom:8px;">
+          <tr style="border-bottom:1px solid #f1f5f9;">
+            <td style="color:#64748b; padding:3px 6px 3px 0; white-space:nowrap;">Status:</td>
+            <td style="padding:3px 0;">
+              <span class="badge-status badge-${status.includes('selesai') ? 'selesai' : status.includes('proses') ? 'diproses' : 'menunggu'}">
+                ${escapeHtml(report.status || 'Menunggu')}
+              </span>
+            </td>
+          </tr>
+          ${report.jenis_kejadian ? `
+          <tr style="border-bottom:1px solid #f1f5f9;">
+            <td style="color:#64748b; padding:3px 6px 3px 0; white-space:nowrap;">Jenis Kejadian:</td>
+            <td style="font-weight:600; padding:3px 0; color:#1e293b;">${escapeHtml(report.jenis_kejadian)}</td>
+          </tr>` : ''}
+          <tr style="border-bottom:1px solid #f1f5f9;">
+            <td style="color:#64748b; padding:3px 6px 3px 0; white-space:nowrap;">Koordinat:</td>
+            <td style="font-family:monospace; padding:3px 0; color:#475569; font-size:11.5px;">${lat.toFixed(6)}, ${lng.toFixed(6)}</td>
+          </tr>
+          ${report.nama_pelapor ? `
+          <tr>
+            <td style="color:#64748b; padding:3px 6px 3px 0; white-space:nowrap;">Pelapor:</td>
+            <td style="font-weight:500; padding:3px 0; color:#1e293b;">${escapeHtml(report.nama_pelapor)}</td>
+          </tr>` : ''}
+        </table>
+
+        <div style="display:flex; gap:6px; margin-top:6px;">
+          <button type="button" class="btn btn-sm btn-outline-primary flex-fill" onclick="updateGoogleCameraFrame(${lat}, ${lng}, '${reportTitle}')">
+            <i class="bi bi-camera-video"></i> Kamera
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-danger flex-fill" onclick="window.open('${routeUrl}', '_blank')">
+            <i class="bi bi-signpost-2"></i> Buka Rute
+          </button>
+        </div>
       </div>
     `;
 
@@ -1678,7 +1830,7 @@ function renderLiveMap(reports) {
     const marker = L.marker([lat, lng], { icon }).addTo(targetLayer).bindPopup(popupHtml);
     marker.on('click', () => {
       updateGoogleCameraFrame(lat, lng, report.judul_kejadian || 'Laporan Kebakaran');
-      window.open(routeUrl, '_blank');
+      marker.openPopup();
     });
   });
 }

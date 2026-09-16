@@ -82,6 +82,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const desaLayer =
         L.layerGroup();
 
+    // Layer khusus titik desa (terpisah dari garis batas)
+    const titikDesaLayer =
+        L.layerGroup();
+
     const damkarLayer =
         L.layerGroup();
 
@@ -113,6 +117,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         L.layerGroup();
 
     const nonKebakaranTematikLayer =
+        L.layerGroup();
+
+    const batasKecamatanTematikLayer =
         L.layerGroup();
 
 
@@ -883,10 +890,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             {
 
                 style: {
-                    color: '#374151',
-                    weight: 1,
-                    fillColor: '#dbeafe',
-                    fillOpacity: 0.12
+                    // Garis batas kecamatan tipis — langsung tampil dari GeoJSON
+                    color: '#475569',
+                    weight: 0.9,
+                    opacity: 0.85,
+                    fill: false,
+                    dashArray: null
                 },
 
                 onEachFeature(
@@ -899,10 +908,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                             feature.properties
                         );
 
+                    const kab = feature.properties?.kab_kota || '-';
+
                     layer.bindPopup(`
-                        <strong>
-                            Kecamatan ${nama}
-                        </strong>
+                        <strong>${nama}</strong>
+                        <br><small style="color:#6b7280;">${kab}</small>
                     `);
                 }
 
@@ -947,29 +957,77 @@ document.addEventListener('DOMContentLoaded', async () => {
                     return;
                 }
 
+                const namaKd    = desa.kel_desa  || '-';
+                const jenisKd   = desa.jenis_kd  || 'Desa/Kelurahan';
+                const kecamatan = desa.kecamatan || '-';
+                const kabKota   = desa.kab_kota  || '-';
+
+                const isKota = kabKota.toLowerCase().includes('kota') || kabKota.toLowerCase().includes('yogyakarta');
+                const prefixKab = (kabKota.toLowerCase().startsWith('kab') || kabKota.toLowerCase().startsWith('kota')) ? kabKota : `Kabupaten ${kabKota}`;
+                const sebutanKec = isKota ? 'Kemantren' : 'Kapanewon';
+                const sebutanDesa = isKota ? (jenisKd || 'Kelurahan') : (jenisKd || 'Kalurahan');
+                const kodeWilayah = desa.kode_kd || desa.kode_kec || '-';
+                const alamatLengkapDesa = `${sebutanDesa} ${namaKd}, ${sebutanKec} ${kecamatan}, ${prefixKab}, Daerah Istimewa Yogyakarta`;
+
                 L.circleMarker(
                     [lat, lng],
                     {
-                        radius: 4,
+                        radius: 5,
                         color: '#92400e',
-                        weight: 1,
+                        weight: 1.2,
                         fillColor: '#f59e0b',
                         fillOpacity: 0.9
                     }
                 )
                 .bindPopup(`
-                    <strong>
-                        ${desa.kel_desa || 'Desa/Kelurahan'}
-                    </strong>
-                    <br>
-                    Kecamatan:
-                    ${desa.kecamatan || '-'}
-                    <br>
-                    Kabupaten/Kota:
-                    ${desa.kab_kota || '-'}
+                    <div style="min-width:260px; max-width:320px; font-size:12.5px; line-height:1.6; color:#1f2937;">
+                        <div style="font-size:15px; font-weight:700; color:#b45309; margin-bottom:8px; display:flex; align-items:center; gap:6px; border-bottom:2px solid #fde68a; padding-bottom:5px;">
+                            <span>🏘️</span> <span>${sebutanDesa} ${namaKd}</span>
+                        </div>
+                        <div style="margin-bottom:8px; background:#fffbeb; border:1px solid #fef3c7; border-left:4px solid #f59e0b; border-radius:4px; padding:6px 10px;">
+                            <div style="font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#b45309; margin-bottom:2px;">
+                                📍 Alamat Lengkap
+                            </div>
+                            <div style="font-size:12.5px; font-weight:600; color:#1e293b; line-height:1.4;">
+                                ${alamatLengkapDesa}
+                            </div>
+                        </div>
+                        <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                            <tr style="border-bottom:1px solid #f1f5f9;">
+                                <td style="color:#64748b; padding:4px 6px 4px 0; white-space:nowrap; vertical-align:top;">
+                                    <i class="bi bi-geo-alt-fill" style="color:#f59e0b;"></i> Kab./Kota
+                                </td>
+                                <td style="font-weight:600; padding:4px 0; color:#1e293b;">${kabKota}</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #f1f5f9;">
+                                <td style="color:#64748b; padding:4px 6px 4px 0; white-space:nowrap; vertical-align:top;">
+                                    <i class="bi bi-map-fill" style="color:#6366f1;"></i> ${sebutanKec}
+                                </td>
+                                <td style="font-weight:600; padding:4px 0; color:#1e293b;">${kecamatan}</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #f1f5f9;">
+                                <td style="color:#64748b; padding:4px 6px 4px 0; white-space:nowrap; vertical-align:top;">
+                                    <i class="bi bi-house-fill" style="color:#10b981;"></i> ${sebutanDesa}
+                                </td>
+                                <td style="font-weight:600; padding:4px 0; color:#1e293b;">${namaKd}</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #f1f5f9;">
+                                <td style="color:#64748b; padding:4px 6px 4px 0; white-space:nowrap; vertical-align:top;">
+                                    <i class="bi bi-hash" style="color:#8b5cf6;"></i> Kode Wilayah
+                                </td>
+                                <td style="font-weight:600; padding:4px 0; color:#1e293b;">${kodeWilayah}</td>
+                            </tr>
+                            <tr>
+                                <td style="color:#64748b; padding:4px 6px 4px 0; white-space:nowrap; vertical-align:top;">
+                                    <i class="bi bi-compass" style="color:#0ea5e9;"></i> Koordinat
+                                </td>
+                                <td style="font-family:monospace; font-weight:500; padding:4px 0; color:#475569; font-size:11.5px;">${lat.toFixed(6)}, ${lng.toFixed(6)}</td>
+                            </tr>
+                        </table>
+                    </div>
                 `)
                 .addTo(
-                    desaLayer
+                    titikDesaLayer
                 );
             }
         );
@@ -1332,6 +1390,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                         return;
                     }
 
+                    const namaLokasi = item.alamat || 'Titik Lokasi Terdeteksi';
+                    const desaLokasi = item.kalurahan ? `Kal. ${item.kalurahan}` : '';
+                    const kecLokasi = item.kecamatan ? `Kec. ${item.kecamatan}` : '';
+                    const kabLokasi = item.kabupaten ? `${item.kabupaten}` : '';
+                    const alamatParts = [namaLokasi, desaLokasi, kecLokasi, kabLokasi, 'D.I. Yogyakarta'].filter(Boolean);
+                    const alamatLengkap = alamatParts.join(', ');
+
                     if (
                         isKebakaran(item)
                     ) {
@@ -1350,27 +1415,33 @@ document.addEventListener('DOMContentLoaded', async () => {
                             }
                         )
                         .bindPopup(`
-                            <strong style="
-                                color:#dc2626;
-                                font-size:17px;
-                            ">
-                                🔥 LAPORAN KEBAKARAN
-                            </strong>
-
-                            <hr>
-
-                            <b>Lokasi:</b><br>
-                            ${item.alamat || '-'}
-
-                            <br><br>
-
-                            <b>Jenis:</b>
-                            ${item.jenis_kejadian || 'Kebakaran'}
-
-                            <br><br>
-
-                            <b>Status:</b>
-                            ${item.status || 'Menunggu'}
+                            <div style="min-width:260px; max-width:320px; font-size:12.5px; line-height:1.6; color:#1f2937;">
+                                <div style="font-size:15px; font-weight:700; color:#dc2626; margin-bottom:8px; display:flex; align-items:center; gap:6px; border-bottom:2px solid #fecaca; padding-bottom:5px;">
+                                    <span>🔥</span> <span>LAPORAN KEBAKARAN</span>
+                                </div>
+                                <div style="margin-bottom:8px; background:#fef2f2; border:1px solid #fee2e2; border-left:4px solid #ef4444; border-radius:4px; padding:6px 10px;">
+                                    <div style="font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#991b1b; margin-bottom:2px;">
+                                        📍 Alamat Lengkap
+                                    </div>
+                                    <div style="font-size:12.5px; font-weight:600; color:#1e293b; line-height:1.4;">
+                                        ${alamatLengkap}
+                                    </div>
+                                </div>
+                                <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                                    <tr style="border-bottom:1px solid #f1f5f9;">
+                                        <td style="color:#64748b; padding:3px 6px 3px 0; white-space:nowrap;">Jenis:</td>
+                                        <td style="font-weight:600; padding:3px 0; color:#1e293b;">${item.jenis_kejadian || 'Kebakaran'}</td>
+                                    </tr>
+                                    <tr style="border-bottom:1px solid #f1f5f9;">
+                                        <td style="color:#64748b; padding:3px 6px 3px 0; white-space:nowrap;">Status:</td>
+                                        <td style="padding:3px 0;"><span class="badge bg-danger">${item.status || 'Menunggu'}</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="color:#64748b; padding:3px 6px 3px 0; white-space:nowrap;">Koordinat:</td>
+                                        <td style="font-family:monospace; padding:3px 0; color:#475569; font-size:11.5px;">${posisi.lat.toFixed(6)}, ${posisi.lng.toFixed(6)}</td>
+                                    </tr>
+                                </table>
+                            </div>
                         `)
                         .addTo(
                             laporanLayer
@@ -1392,24 +1463,33 @@ document.addEventListener('DOMContentLoaded', async () => {
                             }
                         )
                         .bindPopup(`
-                            <strong>
-                                ⚠️ NON-KEBAKARAN
-                            </strong>
-
-                            <hr>
-
-                            <b>Lokasi:</b><br>
-                            ${item.alamat || '-'}
-
-                            <br><br>
-
-                            <b>Jenis:</b>
-                            ${item.jenis_kejadian || '-'}
-
-                            <br><br>
-
-                            <b>Status:</b>
-                            ${item.status || 'Menunggu'}
+                            <div style="min-width:260px; max-width:320px; font-size:12.5px; line-height:1.6; color:#1f2937;">
+                                <div style="font-size:15px; font-weight:700; color:#d97706; margin-bottom:8px; display:flex; align-items:center; gap:6px; border-bottom:2px solid #fed7aa; padding-bottom:5px;">
+                                    <span>⚠️</span> <span>NON-KEBAKARAN</span>
+                                </div>
+                                <div style="margin-bottom:8px; background:#fffbeb; border:1px solid #fef3c7; border-left:4px solid #f59e0b; border-radius:4px; padding:6px 10px;">
+                                    <div style="font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#b45309; margin-bottom:2px;">
+                                        📍 Alamat Lengkap
+                                    </div>
+                                    <div style="font-size:12.5px; font-weight:600; color:#1e293b; line-height:1.4;">
+                                        ${alamatLengkap}
+                                    </div>
+                                </div>
+                                <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                                    <tr style="border-bottom:1px solid #f1f5f9;">
+                                        <td style="color:#64748b; padding:3px 6px 3px 0; white-space:nowrap;">Jenis:</td>
+                                        <td style="font-weight:600; padding:3px 0; color:#1e293b;">${item.jenis_kejadian || '-'}</td>
+                                    </tr>
+                                    <tr style="border-bottom:1px solid #f1f5f9;">
+                                        <td style="color:#64748b; padding:3px 6px 3px 0; white-space:nowrap;">Status:</td>
+                                        <td style="padding:3px 0;"><span class="badge bg-warning text-dark">${item.status || 'Menunggu'}</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="color:#64748b; padding:3px 6px 3px 0; white-space:nowrap;">Koordinat:</td>
+                                        <td style="font-family:monospace; padding:3px 0; color:#475569; font-size:11.5px;">${posisi.lat.toFixed(6)}, ${posisi.lng.toFixed(6)}</td>
+                                    </tr>
+                                </table>
+                            </div>
                         `)
                         .addTo(
                             nonKebakaranLayer
@@ -2450,6 +2530,137 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
+
+    /* ========================================================
+       30b. BATAS KECAMATAN TEMATIK
+       ======================================================== */
+
+    // Warna per kabupaten/kota
+    const WARNA_KAB = {
+        'Sleman':         { fill: '#dbeafe', stroke: '#1d4ed8' },
+        'Bantul':         { fill: '#dcfce7', stroke: '#15803d' },
+        'Kota Yogyakarta':{ fill: '#fef3c7', stroke: '#b45309' },
+        'Gunungkidul':    { fill: '#fce7f3', stroke: '#be185d' },
+        'Kulon Progo':    { fill: '#ede9fe', stroke: '#7c3aed' }
+    };
+
+    function getWarnakab(kabKota) {
+        const kk = String(kabKota || '').replace(/Kabupaten |Kota /i, '').trim();
+        for (const [key, val] of Object.entries(WARNA_KAB)) {
+            if (kk.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(kk.toLowerCase())) {
+                return val;
+            }
+        }
+        return { fill: '#f3f4f6', stroke: '#4b5563' };
+    }
+
+    function renderBatasKecamatanLayer() {
+
+        batasKecamatanTematikLayer.clearLayers();
+
+        if (!dataKecamatan) {
+            return;
+        }
+
+        L.geoJSON(
+            dataKecamatan,
+            {
+                style(feature) {
+                    const props = feature.properties || {};
+                    const kabKota = props.kab_kota || props.WADMKK || '';
+                    const w = getWarnakab(kabKota);
+                    return {
+                        color: w.stroke,
+                        weight: 1.5,
+                        fillColor: w.fill,
+                        fillOpacity: 0.55,
+                        dashArray: null
+                    };
+                },
+
+                onEachFeature(feature, layer) {
+                    const props = feature.properties || {};
+                    const namaKec = props.kecamatan || props.WADMKC || getNamaWilayah(props);
+                    const kabKota = props.kab_kota || props.WADMKK || '-';
+                    const kode = props.kode_kec || props.kode || '-';
+
+                    layer.bindPopup(`
+                        <div style="min-width:200px;">
+                            <div style="font-size:14px; font-weight:bold; color:#1e3a8a; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+                                🗺️ ${namaKec}
+                            </div>
+                            <table style="font-size:12.5px; width:100%; border-collapse:collapse;">
+                                <tr>
+                                    <td style="color:#6b7280; padding:2px 4px;">Kabupaten/Kota</td>
+                                    <td style="padding:2px 4px; font-weight:600;">: ${kabKota}</td>
+                                </tr>
+                                <tr>
+                                    <td style="color:#6b7280; padding:2px 4px;">Kode Kecamatan</td>
+                                    <td style="padding:2px 4px;">: ${kode}</td>
+                                </tr>
+                                <tr>
+                                    <td style="color:#6b7280; padding:2px 4px;">Provinsi</td>
+                                    <td style="padding:2px 4px;">: DIY</td>
+                                </tr>
+                            </table>
+                        </div>
+                    `);
+
+                    layer.on('mouseover', function () {
+                        this.setStyle({ weight: 3, fillOpacity: 0.78 });
+                        this.bringToFront();
+                    });
+
+                    layer.on('mouseout', function () {
+                        const props2 = feature.properties || {};
+                        const kabKota2 = props2.kab_kota || props2.WADMKK || '';
+                        const w = getWarnakab(kabKota2);
+                        this.setStyle({ weight: 1.5, fillOpacity: 0.55, color: w.stroke });
+                    });
+                }
+
+            }
+        ).addTo(batasKecamatanTematikLayer);
+
+        // Label nama kecamatan
+        if (dataKecamatan.features) {
+            dataKecamatan.features.forEach(feature => {
+                const props = feature.properties || {};
+                const namaKec = props.kecamatan || props.WADMKC || getNamaWilayah(props);
+                const center = getCenterOfFeature(feature);
+                if (!center) return;
+
+                const marker = L.marker(center, {
+                    icon: L.divIcon({
+                        className: 'kec-label-icon',
+                        html: `<div style="
+                            font-size:9.5px;
+                            font-weight:700;
+                            color:#1e3a8a;
+                            text-align:center;
+                            white-space:nowrap;
+                            text-shadow:
+                                1px 1px 2px rgba(255,255,255,0.95),
+                                -1px -1px 2px rgba(255,255,255,0.95),
+                                1px -1px 2px rgba(255,255,255,0.95),
+                                -1px 1px 2px rgba(255,255,255,0.95);
+                            pointer-events:none;
+                            line-height:1.2;
+                        ">${namaKec}</div>`,
+                        iconSize: [110, 20],
+                        iconAnchor: [55, 10]
+                    }),
+                    interactive: false
+                });
+
+                batasKecamatanTematikLayer.addLayer(marker);
+            });
+        }
+    }
+
+    renderBatasKecamatanLayer();
+
+
     /* ========================================================
        31. SEMBUNYIKAN LAYER
        ======================================================== */
@@ -2472,7 +2683,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             cagarBudayaLayer,
             sumbuFilosofisLayer,
             kebakaranTematikLayer,
-            nonKebakaranTematikLayer
+            nonKebakaranTematikLayer,
+            batasKecamatanTematikLayer,
+            titikDesaLayer
 
         ].forEach(
             layer => {
@@ -2829,7 +3042,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             setLegend(`
                 <div class="fw-bold mb-2">BATAS KECAMATAN</div>
-                <div class="mb-1"><span style="color:#374151; font-size:18px;">━</span> Batas Kecamatan</div>
+                <div class="mb-2">
+                    <span style="
+                        display:inline-block;
+                        width:24px;
+                        height:3px;
+                        background:#374151;
+                    "></span>
+                    Batas Kecamatan/Kapanewon
+                </div>
+                <div>
+                    <span style="
+                        display:inline-block;
+                        width:24px;
+                        height:3px;
+                        background:#1e3a8a;
+                    "></span>
+                    Batas Kabupaten/Kota
+                </div>
             `);
 
             return;
@@ -2839,14 +3069,42 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (theme === 'desa') {
 
             desaLayer.addTo(map);
+            kecamatanLayer.addTo(map);
+            if (cbKecamatan) cbKecamatan.checked = true;
 
             setMapStatus(
-                'Titik Desa/Kelurahan'
+                'Batas Desa/Kelurahan'
             );
 
             setLegend(`
-                <div class="fw-bold mb-2">TITIK DESA/KELURAHAN</div>
-                <div class="mb-1"><span style="color:#eab308; font-size:16px;">●</span> Titik Desa/Kelurahan</div>
+                <div class="fw-bold mb-2">BATAS DESA / KELURAHAN</div>
+                <div class="mb-2">
+                    <span style="
+                        display:inline-block;
+                        width:24px;
+                        height:2px;
+                        background:#4b5563;
+                    "></span>
+                    Batas Desa/Kelurahan
+                </div>
+                <div class="mb-2">
+                    <span style="
+                        display:inline-block;
+                        width:24px;
+                        height:3px;
+                        background:#374151;
+                    "></span>
+                    Batas Kecamatan/Kapanewon
+                </div>
+                <div>
+                    <span style="
+                        display:inline-block;
+                        width:24px;
+                        height:3px;
+                        background:#1e3a8a;
+                    "></span>
+                    Batas Kabupaten/Kota
+                </div>
             `);
 
             return;
