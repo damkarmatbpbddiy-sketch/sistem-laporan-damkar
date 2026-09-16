@@ -13,7 +13,8 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = path.extname(file.originalname).toLowerCase();
+    const cleanOriginalName = path.basename(file.originalname).replace(/[^a-zA-Z0-9._-]/g, '_');
+    const ext = path.extname(cleanOriginalName).toLowerCase();
     cb(null, 'arsip-' + uniqueSuffix + ext);
   }
 });
@@ -24,7 +25,13 @@ const fileFilter = (req, file, cb) => {
     '.zip', '.rar', '.7z', '.json', '.geojson', '.qmd', '.mpk', '.shp',
     '.png', '.jpg', '.jpeg', '.webp'
   ];
-  const ext = path.extname(file.originalname).toLowerCase();
+  const forbiddenExtensions = [
+    '.php', '.phtml', '.php3', '.php4', '.php5', '.phps',
+    '.exe', '.bat', '.cmd', '.sh', '.bash', '.pl', '.cgi',
+    '.asp', '.aspx', '.js', '.html', '.htm', '.jar', '.vbs'
+  ];
+  const cleanOriginalName = path.basename(file.originalname).replace(/[^a-zA-Z0-9._-]/g, '_');
+  const ext = path.extname(cleanOriginalName).toLowerCase();
   const blockedMimeTypes = [
     'application/javascript',
     'application/x-httpd-php',
@@ -33,6 +40,10 @@ const fileFilter = (req, file, cb) => {
     'text/javascript',
     'text/x-shellscript'
   ];
+
+  if (forbiddenExtensions.includes(ext)) {
+    return cb(new Error(`Security Error: Ekstensi berkas '${ext}' berpotensi bahaya dan tidak diizinkan.`), false);
+  }
 
   if (allowedExtensions.includes(ext) && !blockedMimeTypes.includes(file.mimetype.toLowerCase())) {
     cb(null, true);

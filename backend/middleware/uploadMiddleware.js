@@ -13,7 +13,8 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = path.extname(file.originalname).toLowerCase();
+    const cleanOriginalName = path.basename(file.originalname).replace(/[^a-zA-Z0-9._-]/g, '_');
+    const ext = path.extname(cleanOriginalName).toLowerCase();
     cb(null, 'laporan-' + uniqueSuffix + ext);
   }
 });

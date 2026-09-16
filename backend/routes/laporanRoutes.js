@@ -4,6 +4,7 @@ const { body } = require('express-validator');
 const laporanController = require('../controllers/laporanController');
 const verifyToken = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
+const { reportRateLimiter } = require('../middleware/securityMiddleware');
 
 // Validasi input laporan
 const validateLaporan = [
@@ -17,7 +18,7 @@ const validateLaporan = [
 ];
 
 // Public Endpoints
-router.post('/laporan', upload.single('foto'), validateLaporan, laporanController.createLaporan);
+router.post('/laporan', reportRateLimiter, upload.single('foto'), validateLaporan, laporanController.createLaporan);
 router.get('/laporan', laporanController.getAllLaporan);
 router.get('/laporan/:id', laporanController.getLaporanById);
 

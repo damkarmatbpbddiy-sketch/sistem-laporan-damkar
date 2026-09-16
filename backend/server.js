@@ -9,17 +9,24 @@ const masterRoutes = require('./routes/masterRoutes');
 const arsipRoutes = require('./routes/arsipRoutes');
 const silakarRoutes = require('./routes/silakarRoutes');
 
+const { securityHeaders, sanitizeInputs } = require('./middleware/securityMiddleware');
+
 const app = express();
+app.disable('x-powered-by');
 const PORT = process.env.PORT || 5000;
 
 const fs = require('fs');
 
+app.use(securityHeaders);
 app.use(cors({
   origin: true,
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-access-token']
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(sanitizeInputs);
 
 // Serve Uploaded Files Statically
 app.use('/uploads/arsip', express.static(path.join(__dirname, 'uploads', 'arsip'), {
