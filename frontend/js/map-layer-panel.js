@@ -456,15 +456,15 @@ async function readShapefile(path, dbfPath, prjPath, convertUtm = false) {
   }
 
   const [shpBuffer, dbfBuffer, prjText] = await Promise.all([
-    fetch(path).then((response) => {
+    fetch(encodeURI(path)).then((response) => {
       if (!response.ok) throw new Error(`${path} HTTP ${response.status}`);
       return response.arrayBuffer();
     }),
-    fetch(dbfPath).then((response) => {
+    fetch(encodeURI(dbfPath)).then((response) => {
       if (!response.ok) throw new Error(`${dbfPath} HTTP ${response.status}`);
       return response.arrayBuffer();
     }),
-    fetch(prjPath).then((response) => {
+    fetch(encodeURI(prjPath)).then((response) => {
       if (!response.ok) throw new Error(`${prjPath} HTTP ${response.status}`);
       return response.text();
     })
@@ -510,11 +510,10 @@ async function loadGeoJSON(name, path, target, options = {}, convert = false) {
 
 async function loadAdminOverlays() {
   await Promise.all([
-    loadShapefile('Batas Provinsi', {
-      shp: 'Shapefile & mpk/Data Peta WMK Cagar Budaya/Batas Administrasi Provinsi.shp',
-      dbf: 'Shapefile & mpk/Data Peta WMK Cagar Budaya/Batas Administrasi Provinsi.dbf',
-      prj: 'Shapefile & mpk/Data Peta WMK Cagar Budaya/Batas Administrasi Provinsi.prj'
-    }, layerProvinceDIY, { pane: 'pane_administrasi', style: { color: '#111827', weight: 3, fill: false } }),
+    loadGeoJSON('Batas Provinsi', 'data/diy-provinsi-batas.geojson', layerProvinceDIY, {
+      pane: 'pane_administrasi',
+      style: { color: '#0f172a', weight: 3.2, opacity: 1, fill: false }
+    }),
     loadGeoJSON('Batas Kabupaten', 'data/diy-kabkota.geojson', countyBoundaryLayer, {
       pane: 'pane_kabupaten',
       style: { color: '#1e3a8a', weight: 2.8, opacity: 0.95, fill: false, dashArray: '8, 5' },
@@ -528,16 +527,23 @@ async function loadAdminOverlays() {
         layer.bindPopup(`<strong>🏛️ ${nama}</strong><br><small class="text-muted">Daerah Istimewa Yogyakarta</small>`);
       }
     }),
-    loadShapefile('Batas Kecamatan/Kapanewon', {
-      shp: 'Shapefile & mpk/Data Peta Jangkauan Tangki Air/Data/Batas Administrasi Kelurahan DIY/Administrasi_Kapanewon_AR.shp',
-      dbf: 'Shapefile & mpk/Data Peta Jangkauan Tangki Air/Data/Batas Administrasi Kelurahan DIY/Administrasi_Kapanewon_AR.dbf',
-      prj: 'Shapefile & mpk/Data Peta Jangkauan Tangki Air/Data/Batas Administrasi Kelurahan DIY/Administrasi_Kapanewon_AR.prj'
-    }, layerSrsBatasKecamatan, { pane: 'pane_administrasi', style: { color: '#374151', weight: 1.3, fill: false } }),
-    loadShapefile('Batas Kelurahan/Desa', {
-      shp: 'Shapefile & mpk/Data Peta Jangkauan Tangki Air/Data/Batas Administrasi Kelurahan DIY/Administrasi_LN.shp',
-      dbf: 'Shapefile & mpk/Data Peta Jangkauan Tangki Air/Data/Batas Administrasi Kelurahan DIY/Administrasi_LN.dbf',
-      prj: 'Shapefile & mpk/Data Peta Jangkauan Tangki Air/Data/Batas Administrasi Kelurahan DIY/Administrasi_LN.prj'
-    }, layerSrsBatasDesa, { pane: 'pane_administrasi', style: { color: '#4b5563', weight: 0.8, fill: false } }),
+    loadGeoJSON('Batas Kecamatan/Kapanewon', 'data/diy-kecamatan.geojson', layerSrsBatasKecamatan, {
+      pane: 'pane_administrasi',
+      style: { color: '#374151', weight: 1.3, opacity: 0.85, fill: false },
+      onEachFeature: (feature, layer) => {
+        const nama = feature.properties?.nama || feature.properties?.kecamatan || feature.properties?.WADMKC || 'Kecamatan';
+        const kab = feature.properties?.kab_kota || feature.properties?.WADMKK || '-';
+        layer.bindPopup(`<strong>Kecamatan / Kapanewon ${nama}</strong><br><small class="text-muted">Kabupaten/Kota: ${kab}</small>`);
+      }
+    }),
+    loadGeoJSON('Batas Kelurahan/Desa', 'data/diy-desa-batas.geojson', layerSrsBatasDesa, {
+      pane: 'pane_administrasi',
+      style: { color: '#64748b', weight: 0.9, opacity: 0.8, fill: false, dashArray: '3, 3' },
+      onEachFeature: (feature, layer) => {
+        const ket = feature.properties?.Keterangan || feature.properties?.Batas || 'Batas Kelurahan/Desa';
+        layer.bindPopup(`<strong>${ket}</strong><br><small class="text-muted">Batas Administrasi Kalurahan/Desa DIY</small>`);
+      }
+    }),
     loadShapefile('Jaringan Jalan', {
       shp: 'Shapefile & mpk/Data Peta Jangkauan Tangki Air/Data/Jalan/Jalan.shp',
       dbf: 'Shapefile & mpk/Data Peta Jangkauan Tangki Air/Data/Jalan/Jalan.dbf',

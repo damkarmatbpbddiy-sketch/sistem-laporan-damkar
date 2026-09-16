@@ -178,7 +178,7 @@
       </div>
       <div class="fsec"><div class="fsect"><i class="bi bi-fire"></i>Detail Kejadian</div>
         <div class="row g-3">
-          <div class="col-md-4"><label class="flbl">Jenis Kejadian</label><select class="pi" id="f-jenis"><option value="">-- Pilih --</option><option>Kebakaran</option><option>Penyelamatan</option><option>Bencana Alam</option><option>Kecelakaan</option><option>Hazmat</option><option>Lainnya</option></select></div>
+          <div class="col-md-4"><label class="flbl">Jenis Kejadian</label><select class="pi" id="f-jenis"><option value="">-- Pilih --</option><option value="Kebakaran Lahan">Kebakaran Lahan</option><option value="Kebakaran Hutan">Kebakaran Hutan</option><option value="Kebakaran Pemukiman">Kebakaran Pemukiman</option><option value="Penyelamatan">Penyelamatan</option></select></div>
           <div class="col-md-4"><label class="flbl">Objek yang Terbakar</label><input type="text" class="pi" id="f-objek" placeholder="Rumah tinggal, gudang..."></div>
           <div class="col-md-4"><label class="flbl">Dugaan Penyebab</label><input type="text" class="pi" id="f-penyebab" placeholder="Korsleting, kompor gas..."></div>
         </div>
@@ -222,8 +222,8 @@
 </div>
 <div class="fwrap">
   <div class="row g-2 align-items-end">
-    <div class="col-md-2"><label>Cari Data/File</label><input type="text" class="finput" id="filter-search" placeholder="File / pelapor / alamat..."></div>
-    <div class="col-md-2"><label>Jenis Kejadian</label><input type="text" class="finput" id="filter-jenis" placeholder="Penyelamatan, tawon..." list="jenis-kejadian-options"><datalist id="jenis-kejadian-options"><option value="Penyelamatan"><option value="Kebakaran"><option value="Evakuasi"><option value="Pohon Tumbang"><option value="Sarang Tawon"><option value="Kebakaran Lahan"><option value="Kebakaran Bangunan"><option value="Non Kebakaran"></datalist></div>
+    <div class="col-md-2"><label>Cari Data</label><input type="text" class="finput" id="filter-search" placeholder="Pelapor / alamat / objek..."></div>
+    <div class="col-md-2"><label>Jenis Kejadian</label><select class="finput" id="filter-jenis"><option value="">Semua</option><option value="Kebakaran Lahan">Kebakaran Lahan</option><option value="Kebakaran Hutan">Kebakaran Hutan</option><option value="Kebakaran Pemukiman">Kebakaran Pemukiman</option><option value="Penyelamatan">Penyelamatan</option></select></div>
     <div class="col-md-2"><label>Dari Tanggal</label><input type="date" class="finput" id="filter-start"></div>
     <div class="col-md-2"><label>Sampai Tanggal</label><input type="date" class="finput" id="filter-end"></div>
     <div class="col-md-2"><label>Kabupaten/Kota</label><select class="finput" id="filter-kabupaten"><option value="">Semua</option><option>Kota Yogyakarta</option><option>Kabupaten Sleman</option><option>Kabupaten Bantul</option><option>Kabupaten Kulon Progo</option><option>Kabupaten Gunungkidul</option></select></div>
@@ -254,7 +254,7 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="js/silakar.js?v=20260903_unduh"></script>
+<script src="js/silakar.js?v=20260916_fast_silakar"></script>
 <script>
   function updateClock(){var n=new Date();document.getElementById('nav-clock').textContent=n.toLocaleDateString('id-ID',{weekday:'short',day:'2-digit',month:'short',year:'numeric'})+' '+n.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
   updateClock();setInterval(updateClock,1000);

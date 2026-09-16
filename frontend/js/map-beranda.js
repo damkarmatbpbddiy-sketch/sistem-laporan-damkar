@@ -82,6 +82,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const desaLayer =
         L.layerGroup();
 
+    // Layer khusus titik desa (terpisah dari garis batas)
+    const titikDesaLayer =
+        L.layerGroup();
+
     const damkarLayer =
         L.layerGroup();
 
@@ -113,6 +117,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         L.layerGroup();
 
     const nonKebakaranTematikLayer =
+        L.layerGroup();
+
+    const batasKecamatanTematikLayer =
         L.layerGroup();
 
 
@@ -883,10 +890,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             {
 
                 style: {
-                    color: '#374151',
-                    weight: 1,
-                    fillColor: '#dbeafe',
-                    fillOpacity: 0.12
+                    // Garis batas kecamatan tipis — langsung tampil dari GeoJSON
+                    color: '#475569',
+                    weight: 0.9,
+                    opacity: 0.85,
+                    fill: false,
+                    dashArray: null
                 },
 
                 onEachFeature(
@@ -899,10 +908,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                             feature.properties
                         );
 
+                    const kab = feature.properties?.kab_kota || '-';
+
                     layer.bindPopup(`
-                        <strong>
-                            Kecamatan ${nama}
-                        </strong>
+                        <strong>${nama}</strong>
+                        <br><small style="color:#6b7280;">${kab}</small>
                     `);
                 }
 
@@ -969,7 +979,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     ${desa.kab_kota || '-'}
                 `)
                 .addTo(
-                    desaLayer
+                    titikDesaLayer
                 );
             }
         );
@@ -2450,6 +2460,137 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
+
+    /* ========================================================
+       30b. BATAS KECAMATAN TEMATIK
+       ======================================================== */
+
+    // Warna per kabupaten/kota
+    const WARNA_KAB = {
+        'Sleman':         { fill: '#dbeafe', stroke: '#1d4ed8' },
+        'Bantul':         { fill: '#dcfce7', stroke: '#15803d' },
+        'Kota Yogyakarta':{ fill: '#fef3c7', stroke: '#b45309' },
+        'Gunungkidul':    { fill: '#fce7f3', stroke: '#be185d' },
+        'Kulon Progo':    { fill: '#ede9fe', stroke: '#7c3aed' }
+    };
+
+    function getWarnakab(kabKota) {
+        const kk = String(kabKota || '').replace(/Kabupaten |Kota /i, '').trim();
+        for (const [key, val] of Object.entries(WARNA_KAB)) {
+            if (kk.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(kk.toLowerCase())) {
+                return val;
+            }
+        }
+        return { fill: '#f3f4f6', stroke: '#4b5563' };
+    }
+
+    function renderBatasKecamatanLayer() {
+
+        batasKecamatanTematikLayer.clearLayers();
+
+        if (!dataKecamatan) {
+            return;
+        }
+
+        L.geoJSON(
+            dataKecamatan,
+            {
+                style(feature) {
+                    const props = feature.properties || {};
+                    const kabKota = props.kab_kota || props.WADMKK || '';
+                    const w = getWarnakab(kabKota);
+                    return {
+                        color: w.stroke,
+                        weight: 1.5,
+                        fillColor: w.fill,
+                        fillOpacity: 0.55,
+                        dashArray: null
+                    };
+                },
+
+                onEachFeature(feature, layer) {
+                    const props = feature.properties || {};
+                    const namaKec = props.kecamatan || props.WADMKC || getNamaWilayah(props);
+                    const kabKota = props.kab_kota || props.WADMKK || '-';
+                    const kode = props.kode_kec || props.kode || '-';
+
+                    layer.bindPopup(`
+                        <div style="min-width:200px;">
+                            <div style="font-size:14px; font-weight:bold; color:#1e3a8a; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+                                🗺️ ${namaKec}
+                            </div>
+                            <table style="font-size:12.5px; width:100%; border-collapse:collapse;">
+                                <tr>
+                                    <td style="color:#6b7280; padding:2px 4px;">Kabupaten/Kota</td>
+                                    <td style="padding:2px 4px; font-weight:600;">: ${kabKota}</td>
+                                </tr>
+                                <tr>
+                                    <td style="color:#6b7280; padding:2px 4px;">Kode Kecamatan</td>
+                                    <td style="padding:2px 4px;">: ${kode}</td>
+                                </tr>
+                                <tr>
+                                    <td style="color:#6b7280; padding:2px 4px;">Provinsi</td>
+                                    <td style="padding:2px 4px;">: DIY</td>
+                                </tr>
+                            </table>
+                        </div>
+                    `);
+
+                    layer.on('mouseover', function () {
+                        this.setStyle({ weight: 3, fillOpacity: 0.78 });
+                        this.bringToFront();
+                    });
+
+                    layer.on('mouseout', function () {
+                        const props2 = feature.properties || {};
+                        const kabKota2 = props2.kab_kota || props2.WADMKK || '';
+                        const w = getWarnakab(kabKota2);
+                        this.setStyle({ weight: 1.5, fillOpacity: 0.55, color: w.stroke });
+                    });
+                }
+
+            }
+        ).addTo(batasKecamatanTematikLayer);
+
+        // Label nama kecamatan
+        if (dataKecamatan.features) {
+            dataKecamatan.features.forEach(feature => {
+                const props = feature.properties || {};
+                const namaKec = props.kecamatan || props.WADMKC || getNamaWilayah(props);
+                const center = getCenterOfFeature(feature);
+                if (!center) return;
+
+                const marker = L.marker(center, {
+                    icon: L.divIcon({
+                        className: 'kec-label-icon',
+                        html: `<div style="
+                            font-size:9.5px;
+                            font-weight:700;
+                            color:#1e3a8a;
+                            text-align:center;
+                            white-space:nowrap;
+                            text-shadow:
+                                1px 1px 2px rgba(255,255,255,0.95),
+                                -1px -1px 2px rgba(255,255,255,0.95),
+                                1px -1px 2px rgba(255,255,255,0.95),
+                                -1px 1px 2px rgba(255,255,255,0.95);
+                            pointer-events:none;
+                            line-height:1.2;
+                        ">${namaKec}</div>`,
+                        iconSize: [110, 20],
+                        iconAnchor: [55, 10]
+                    }),
+                    interactive: false
+                });
+
+                batasKecamatanTematikLayer.addLayer(marker);
+            });
+        }
+    }
+
+    renderBatasKecamatanLayer();
+
+
     /* ========================================================
        31. SEMBUNYIKAN LAYER
        ======================================================== */
@@ -2472,7 +2613,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             cagarBudayaLayer,
             sumbuFilosofisLayer,
             kebakaranTematikLayer,
-            nonKebakaranTematikLayer
+            nonKebakaranTematikLayer,
+            batasKecamatanTematikLayer,
+            titikDesaLayer
 
         ].forEach(
             layer => {
@@ -2829,7 +2972,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             setLegend(`
                 <div class="fw-bold mb-2">BATAS KECAMATAN</div>
-                <div class="mb-1"><span style="color:#374151; font-size:18px;">━</span> Batas Kecamatan</div>
+                <div class="mb-2">
+                    <span style="
+                        display:inline-block;
+                        width:24px;
+                        height:3px;
+                        background:#374151;
+                    "></span>
+                    Batas Kecamatan/Kapanewon
+                </div>
+                <div>
+                    <span style="
+                        display:inline-block;
+                        width:24px;
+                        height:3px;
+                        background:#1e3a8a;
+                    "></span>
+                    Batas Kabupaten/Kota
+                </div>
             `);
 
             return;
@@ -2839,14 +2999,42 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (theme === 'desa') {
 
             desaLayer.addTo(map);
+            kecamatanLayer.addTo(map);
+            if (cbKecamatan) cbKecamatan.checked = true;
 
             setMapStatus(
-                'Titik Desa/Kelurahan'
+                'Batas Desa/Kelurahan'
             );
 
             setLegend(`
-                <div class="fw-bold mb-2">TITIK DESA/KELURAHAN</div>
-                <div class="mb-1"><span style="color:#eab308; font-size:16px;">●</span> Titik Desa/Kelurahan</div>
+                <div class="fw-bold mb-2">BATAS DESA / KELURAHAN</div>
+                <div class="mb-2">
+                    <span style="
+                        display:inline-block;
+                        width:24px;
+                        height:2px;
+                        background:#4b5563;
+                    "></span>
+                    Batas Desa/Kelurahan
+                </div>
+                <div class="mb-2">
+                    <span style="
+                        display:inline-block;
+                        width:24px;
+                        height:3px;
+                        background:#374151;
+                    "></span>
+                    Batas Kecamatan/Kapanewon
+                </div>
+                <div>
+                    <span style="
+                        display:inline-block;
+                        width:24px;
+                        height:3px;
+                        background:#1e3a8a;
+                    "></span>
+                    Batas Kabupaten/Kota
+                </div>
             `);
 
             return;

@@ -40,14 +40,67 @@ function statusBadge(status) {
   return '<span class="bs batal">' + safeStatus + '</span>';
 }
 
+function updateSilakarStats(s) {
+  if (!s) return;
+  const setTxt = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val ?? 0;
+  };
+  setTxt('stat-total', s.total);
+  setTxt('stat-proses', s.dalam_penanganan);
+  setTxt('stat-selesai', s.selesai);
+  setTxt('stat-meninggal', s.total_meninggal);
+  setTxt('stat-luka', s.total_luka);
+  setTxt('stat-terdampak', s.total_terdampak);
+
+  const sbTotal = document.getElementById('sb-total');
+  if (sbTotal) sbTotal.innerHTML = '<i class="bi bi-archive me-1"></i>Total: <strong style="color:white">' + (s.total || 0) + '</strong>';
+  const sbUpdate = document.getElementById('sb-update');
+  if (sbUpdate) sbUpdate.textContent = 'Diperbarui: ' + new Date().toLocaleTimeString('id-ID');
+}
+
+function renderSilakarRows(data) {
+  const tbody = document.getElementById('silakar-tbody');
+  const countInfo = document.getElementById('silakar-count-info');
+  if (countInfo) countInfo.textContent = 'Menampilkan ' + data.length + ' data kejadian';
+
+  if (!data || data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="13"><div class="empty-st"><i class="bi bi-inbox"></i>Tidak ada data ditemukan.</div></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = data.map(row => `
+    <tr>
+      <td><span class="idpill">#${row.id}</span></td>
+      <td style="white-space:nowrap">${formatDate(row.tanggal_kejadian)}</td>
+      <td>${escapeHtml(row.kabupaten_kota)}</td>
+      <td>${escapeHtml(row.kapanewon)}</td>
+      <td>${escapeHtml(row.jenis_kejadian)}</td>
+      <td>${escapeHtml(row.objek_terbakar)}</td>
+      <td>${escapeHtml(row.dugaan_penyebab)}</td>
+      <td style="text-align:center"><span style="font-weight:800;color:#ef4444">${row.korban_meninggal || 0}</span></td>
+      <td style="text-align:center"><span style="font-weight:800;color:#f59e0b">${row.korban_luka || 0}</span></td>
+      <td style="text-align:center">${row.jumlah_terdampak || 0}</td>
+      <td>${statusBadge(row.status_penanganan)}</td>
+      <td style="white-space:nowrap">${formatRupiah(row.perkiraan_kerugian)}</td>
+      <td style="white-space:nowrap">
+        <button class="abtn v" onclick="showDetail(${row.id})" title="Detail"><i class="bi bi-eye"></i></button>
+        <button class="abtn e" onclick="editSilakar(${row.id})" title="Edit"><i class="bi bi-pencil"></i></button>
+        <button class="abtn d" onclick="deleteSilakar(${row.id})" title="Hapus"><i class="bi bi-trash"></i></button>
+      </td>
+    </tr>
+  `).join('');
+}
+
 // ===================== FETCH DATA =====================
-async function fetchSilakar() {
+async function fetchSilakar(silent = false) {
   const search = document.getElementById('filter-search').value;
   const startDate = document.getElementById('filter-start').value;
   const endDate = document.getElementById('filter-end').value;
   const kabupaten = document.getElementById('filter-kabupaten').value;
   const status = document.getElementById('filter-status').value;
-  const jenis = document.getElementById('filter-jenis').value.trim();
+  const jenisEl = document.getElementById('filter-jenis');
+  const jenis = jenisEl ? jenisEl.value.trim() : '';
 
   const params = new URLSearchParams();
   if (search) params.append('search', search);
@@ -58,7 +111,9 @@ async function fetchSilakar() {
   if (jenis) params.append('jenis', jenis);
 
   const tbody = document.getElementById('silakar-tbody');
-  tbody.innerHTML = '<tr><td colspan="14" class="text-center py-4"><div class="spinner-border spinner-border-sm text-danger me-2"></div>Memuat data...</td></tr>';
+  if (!silent && !currentSilakarData.length) {
+    tbody.innerHTML = '<tr><td colspan="14" class="text-center py-4"><div class="spinner-border spinner-border-sm text-danger me-2"></div>Memuat data...</td></tr>';
+  }
 
   try {
     const res = await fetch(`${API_BASE}?${params.toString()}`);
@@ -67,60 +122,25 @@ async function fetchSilakar() {
     if (!json.success) throw new Error(json.message);
 
     // Update stats
-    const s = json.stats;
-    document.getElementById('stat-total').textContent = s.total;
-    document.getElementById('stat-proses').textContent = s.dalam_penanganan;
-    document.getElementById('stat-selesai').textContent = s.selesai;
-    document.getElementById('stat-meninggal').textContent = s.total_meninggal;
-    document.getElementById('stat-luka').textContent = s.total_luka;
-    document.getElementById('stat-terdampak').textContent = s.total_terdampak;
-
-    // Update status bar
-    var sbTotal = document.getElementById('sb-total');
-    if (sbTotal) sbTotal.innerHTML = '<i class="bi bi-archive me-1"></i>Total: <strong style="color:white">' + s.total + '</strong>';
-    var sbUpdate = document.getElementById('sb-update');
-    if (sbUpdate) sbUpdate.textContent = 'Diperbarui: ' + new Date().toLocaleTimeString('id-ID');
+    updateSilakarStats(json.stats);
 
     const data = json.data;
     currentSilakarData = Array.isArray(data) ? data : [];
-    document.getElementById('silakar-count-info').textContent = 'Menampilkan ' + data.length + ' data kejadian';
+    renderSilakarRows(currentSilakarData);
 
-    if (data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="13"><div class="empty-st"><i class="bi bi-inbox"></i>Tidak ada data ditemukan.</div></td></tr>';
-      return;
+    // Simpan ke local storage jika tanpa filter agar load berikutnya seketika (0 ms)
+    if (!search && !startDate && !endDate && !kabupaten && !status && !jenis) {
+      try {
+        localStorage.setItem('silakar_cache_data', JSON.stringify(currentSilakarData));
+        localStorage.setItem('silakar_cache_stats', JSON.stringify(json.stats));
+      } catch (e) {}
     }
-
-    tbody.innerHTML = data.map(row => `
-      <tr>
-        <td><span class="idpill">#${row.id}</span></td>
-        <td style="white-space:nowrap">${formatDate(row.tanggal_kejadian)}</td>
-        <td>${escapeHtml(row.kabupaten_kota)}</td>
-        <td>${escapeHtml(row.kapanewon)}</td>
-        <td>${escapeHtml(row.jenis_kejadian)}</td>
-        <td>
-          ${escapeHtml(row.objek_terbakar)}
-          ${row.source_type === 'upload' ? `<small style="display:block;color:#94a3b8;margin-top:3px" title="Sumber file upload"><i class="bi bi-file-earmark-arrow-up me-1"></i>${escapeHtml(row.sumber_upload || 'File upload')}</small>` : ''}
-        </td>
-        <td>${escapeHtml(row.dugaan_penyebab)}</td>
-        <td style="text-align:center"><span style="font-weight:800;color:#ef4444">${row.korban_meninggal || 0}</span></td>
-        <td style="text-align:center"><span style="font-weight:800;color:#f59e0b">${row.korban_luka || 0}</span></td>
-        <td style="text-align:center">${row.jumlah_terdampak || 0}</td>
-        <td>${statusBadge(row.status_penanganan)}</td>
-        <td style="white-space:nowrap">${formatRupiah(row.perkiraan_kerugian)}</td>
-        <td style="white-space:nowrap">
-          ${row.source_type === 'upload'
-            ? `<span class="bs batal" title="Data dari file upload: ${escapeHtml(row.sumber_upload || '')}"><i class="bi bi-file-earmark-arrow-up"></i> Upload</span>`
-            : `<button class="abtn v" onclick="showDetail(${row.id})" title="Detail"><i class="bi bi-eye"></i></button>
-               <button class="abtn e" onclick="editSilakar(${row.id})" title="Edit"><i class="bi bi-pencil"></i></button>
-               <button class="abtn d" onclick="deleteSilakar(${row.id})" title="Hapus"><i class="bi bi-trash"></i></button>`}
-        </td>
-      </tr>
-    `).join('');
-
 
   } catch (err) {
     console.error(err);
-    tbody.innerHTML = `<tr><td colspan="14" class="text-center text-danger py-4"><i class="bi bi-exclamation-triangle me-2"></i>${err.message || 'Gagal memuat data.'}</td></tr>`;
+    if (!currentSilakarData.length) {
+      tbody.innerHTML = `<tr><td colspan="14" class="text-center text-danger py-4"><i class="bi bi-exclamation-triangle me-2"></i>${err.message || 'Gagal memuat data.'}</td></tr>`;
+    }
   }
 }
 
@@ -377,7 +397,7 @@ async function deleteSilakar(id) {
   }
 }
 
-/// ===================== DETAIL MODAL =====================
+// ===================== DETAIL MODAL =====================
 async function showDetail(id) {
   var modal = document.getElementById('detail-modal');
   var body = document.getElementById('detail-modal-body');
@@ -469,31 +489,59 @@ async function showDetail(id) {
 
 // ===================== INIT =====================
 document.addEventListener('DOMContentLoaded', () => {
-  fetchSilakar();
+  // 1. Tampilkan data dari localStorage cache seketika (0 ms, tidak perlu tunggu loading)
+  try {
+    const cachedData = localStorage.getItem('silakar_cache_data');
+    const cachedStats = localStorage.getItem('silakar_cache_stats');
+    if (cachedData) {
+      const parsedData = JSON.parse(cachedData);
+      if (Array.isArray(parsedData) && parsedData.length > 0) {
+        currentSilakarData = parsedData;
+        if (cachedStats) updateSilakarStats(JSON.parse(cachedStats));
+        renderSilakarRows(parsedData);
+      }
+    }
+  } catch (e) {}
+
+  // 2. Fetch data terbaru dari database di background (silent jika cache sudah ada)
+  fetchSilakar(currentSilakarData.length > 0);
 
   let searchTimer;
   const runSearchAfterTyping = () => {
     clearTimeout(searchTimer);
-    searchTimer = setTimeout(fetchSilakar, 350);
+    searchTimer = setTimeout(() => fetchSilakar(false), 300);
   };
 
-  document.getElementById('filter-search').addEventListener('input', runSearchAfterTyping);
-  document.getElementById('filter-jenis').addEventListener('input', runSearchAfterTyping);
-  document.getElementById('filter-start').addEventListener('change', fetchSilakar);
-  document.getElementById('filter-end').addEventListener('change', fetchSilakar);
-  document.getElementById('filter-kabupaten').addEventListener('change', fetchSilakar);
-  document.getElementById('filter-status').addEventListener('change', fetchSilakar);
+  const filterSearch = document.getElementById('filter-search');
+  if (filterSearch) {
+    filterSearch.addEventListener('input', runSearchAfterTyping);
+    filterSearch.addEventListener('keypress', e => {
+      if (e.key === 'Enter') fetchSilakar(false);
+    });
+  }
 
-  // Enter key trigger search
-  document.getElementById('filter-search').addEventListener('keypress', e => {
-    if (e.key === 'Enter') fetchSilakar();
-  });
-  document.getElementById('filter-jenis').addEventListener('keypress', e => {
-    if (e.key === 'Enter') fetchSilakar();
-  });
+  const filterJenis = document.getElementById('filter-jenis');
+  if (filterJenis) {
+    filterJenis.addEventListener('change', () => fetchSilakar(false));
+  }
+
+  const filterStart = document.getElementById('filter-start');
+  if (filterStart) filterStart.addEventListener('change', () => fetchSilakar(false));
+
+  const filterEnd = document.getElementById('filter-end');
+  if (filterEnd) filterEnd.addEventListener('change', () => fetchSilakar(false));
+
+  const filterKab = document.getElementById('filter-kabupaten');
+  if (filterKab) filterKab.addEventListener('change', () => fetchSilakar(false));
+
+  const filterStatus = document.getElementById('filter-status');
+  if (filterStatus) filterStatus.addEventListener('change', () => fetchSilakar(false));
 
   // Close modal on backdrop click
-  document.getElementById('detail-modal').addEventListener('click', function(e) {
-    if (e.target === this) this.classList.remove('show');
-  });
+  const detailModal = document.getElementById('detail-modal');
+  if (detailModal) {
+    detailModal.addEventListener('click', function(e) {
+      if (e.target === this) this.classList.remove('show');
+    });
+  }
 });

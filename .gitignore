@@ -16,6 +16,7 @@ grep.exe.stackdump
 backend/uploads/
 frontend/backend/uploads/
 frontend/Shapefile & mpk/
+backend/public/Shapefile & mpk/
 
 # Large GIS source/output files not required by the web application
 Shapefile & mpk/Peta Risiko Kebakaran Lahan Pertanian_Nael.mpk
